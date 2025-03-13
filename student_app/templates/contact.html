@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact{% endblock title %}
+
+{% block content %}
+
+<section class="contact-section">
+    <h1>Contact Us</h1>
+    <p>We'd love to hear from you! Please fill out the form below or reach out using the contact details provided.</p>
+    <div class="contact_align">
+    <div class="contact-container">
+        <form class="contact-form" action="{% url 'contact' %}" method="POST">
+            {% csrf_token %}
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your Name" required>
+        
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Your Email" required>
+        
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" placeholder="Your Message" required></textarea>
+        
+            <button type="submit" class="submit-button">Send Message</button>
+        </form>
+    </div>
+
+    <div class="contact-info">
+        <h3>Contact Information</h3>
+        <p><strong>Email:</strong> milansugammelan@gmail.com</p>
+        <p><strong>Phone:</strong> +977-9800000000</p>
+        <p><strong>Address:</strong> Bagar, Pokhara, Nepal</p>
+    </div>
+</div>
+</section>
+
+<!-- Alert pop-up messages in the center -->
+{% if messages %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for message in messages %}
+                let msgType = "{{ message.tags }}"; // 'success' or 'error'
+                let color = msgType === "success" ? "green" : "red";
+                
+                // Create the alert box
+                let alertBox = document.createElement("div");
+                alertBox.textContent = "{{ message }}";
+                alertBox.style.position = "fixed";
+                alertBox.style.top = "12%";
+                alertBox.style.left = "50%";
+                alertBox.style.transform = "translate(-50%, -50%)";
+                alertBox.style.backgroundColor = color;
+                alertBox.style.color = "white";
+                alertBox.style.padding = "20px";
+                alertBox.style.borderRadius = "10px";
+                alertBox.style.textAlign = "center";
+                alertBox.style.zIndex = "1000";
+                alertBox.style.fontSize = "18px";
+                alertBox.style.fontWeight = "bold";
+                alertBox.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+
+                document.body.appendChild(alertBox);
+                
+                setTimeout(() => {
+                    alertBox.remove();
+                }, 5000);
+            {% endfor %}
+        });
+    </script>
+{% endif %}
+
+{% endblock content %}

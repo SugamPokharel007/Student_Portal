@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}notices
+    
+{% endblock title %}
+ 
+ {% block content %}
+ <div class="notice-wrapper">
+    <h1 class="notice-title">Latest Notices</h1>
+    <div class="notice-list">
+        {% for notice in notices %}
+        <div class="notice-item">
+            <h2 class="notice-heading">{{ notice.title }}</h2>
+            <p class="notice-content">{{ notice.content }}</p>
+            <span class="notice-date">{{ notice.created_at|date:"F d, Y" }}</span>
+        </div>
+        {% empty %}
+        <p class="no-notice">No notices available.</p>
+        {% endfor %}
+    </div>
+</div>
+ {% endblock content %}
+    
+    

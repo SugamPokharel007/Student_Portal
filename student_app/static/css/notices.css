@@ -1,0 +1,74 @@
+/* General Styles */
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+/* Wrapper for the notice section */
+.notice-wrapper {
+    
+    width: 60%;
+    margin: auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Page Title */
+.notice-title {
+    margin-top: 60px;
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Notice List */
+.notice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Single Notice Item */
+.notice-item {
+    background: #ffffff;
+    padding: 15px;
+    border-left: 5px solid #007bff;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Notice Title */
+.notice-heading {
+    color: #007bff;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* Notice Content */
+.notice-content {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Notice Date */
+.notice-date {
+    font-size: 12px;
+    color: gray;
+    display: block;
+    margin-top: 10px;
+    text-align: right;
+}
+
+/* No Notice Message */
+.no-notice {
+    text-align: center;
+    color: red;
+    font-weight: bold;
+    font-size: 18px;
+}

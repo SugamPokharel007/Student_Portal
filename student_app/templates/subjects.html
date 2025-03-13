@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {{ year|capfirst }} Subjects
+{% endblock title %}
+
+{% block content %}
+  <div class="subjects-container">
+    <h2>{{ year|capfirst }} Year Subjects</h2>
+    <div class="subjects-grid">
+      {% for subject in subjects %}
+      <a href="#" class="subject-box">
+          {% comment %} {% if subject.image %}
+              <img src="{{ subject.image.url }}" alt="{{ subject.name }} Image" class="subject-image">
+          {% else %}
+              <img src="{% static 'default-subject.jpg' %}" class="subject-image">
+          {% endif %} {% endcomment %}
+          {{ subject.name }}
+      </a>
+      {% empty %}
+        <p>No subjects available for this year.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock content %}
+
+

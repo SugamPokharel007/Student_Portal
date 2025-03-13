@@ -1,0 +1,96 @@
+.year-container {
+    text-align: center;
+    margin-top: 80px; /* Adds space below navbar */
+}
+
+.year-container h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.year-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 80vw; /* 80% of the viewport width */
+    height: 60vh; /* 60% of the viewport height */
+    margin: 0 auto;
+}
+
+.year-box {
+    background-color: rgb(158, 172, 221);
+    color: black;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+
+}
+
+.year-box:hover {
+    background-color: rgb(7, 48, 192);
+    color: white;
+}
+.fa-book{
+    margin-right: 30px;
+}
+
+
+/* subjects.css code is here */
+/* Container styling */
+.subjects-container {
+    text-align: center;
+    margin-top: 80px; 
+}
+
+.subjects-container h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Grid layout for subject boxes */
+.subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px;
+    width: 80vw; 
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Individual subject boxes */
+.subject-box {
+    background-color: white;
+    color: black;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 100px; 
+    border: 2px solid #333;
+    border-radius: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 40px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); 
+   
+}
+.subject-image {
+    width: 70px; 
+    height: 50px;
+   border-radius: 12px;
+}
+
+
+/* Hover effect */
+.subject-box:hover {
+    background-color: #f0f0f0;
+    color: #222;
+}

@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="{%static 'css/home.css' %}" />
+    <link rel="stylesheet" href="{%static 'css/navbar.css'%}"/>
+    {% comment %} <link rel="stylesheet" href="{%static 'css/footer.css'%}"/> {% endcomment %}
+    <link rel="stylesheet" href="{%static 'css/about.css'%}"/>
+    <link rel="stylesheet" href="{% static 'css/year.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/contact.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/register.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}"/>
+    {% comment %} <link rel="stylesheet" href="{% static 'css/subjects.css' %}"/> {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/notices.css' %}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+</head>
+<style>
+    /* Message Alert Styling */
+    .alert {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        color: white;
+        font-weight: bold;
+        z-index: 1000;
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+    }
+
+    .alert.success {
+        background-color: #28a745; /* Green for success */
+    }
+
+    .alert.error {
+        background-color: #dc3545; /* Red for error */
+    }
+</style>
+<body>
+    <body>
+        <!-- Message Alerts -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    <!-- Navbar starts here -->
+    <nav>
+        <div id="nav-logo">
+            <i class="fa-solid fa-graduation-cap fa" aria-hidden="true" style="color:white;"></i>
+            <p style="color:white;">Student Portal</p>
+        </div>
+        <div class="items-container">
+            <ul>
+                <li><a href="{% url 'home' %}" class="nav-items">Home</a></li>
+                <li><a href="{% url 'notice_list' %}" class="nav-items">Notices</a></li>
+                <li><a href="" class="nav-items">FAQ's</a></li>
+                <li class="dropdown">
+                    <a href="{% url 'year' %}" class="nav-items year">Year</a>
+                <ul class="drop">
+                <li><a href="{% url 'subjects' 'first' %}" class="nav-items">First</a></li>
+                <li><a href="{% url 'subjects' 'second' %}" class="nav-items">Second</a></li>
+                <li><a href="{% url 'subjects' 'third' %}" class="nav-items">Third</a></li>
+                <li><a href="{% url 'subjects' 'fourth' %}" class="nav-items">Fourth</a></li>
+                </ul>
+                </li>
+                <li><a href="{% url 'contact' %}" class="nav-items">Contact</a></li>
+                <li><a href="{% url 'about' %}" class="nav-items">About</a></li>
+                </ul>
+          </div>
+          <div>
+            <button class="logreg-button"> <a href="{% url 'login' %}" class="logreg_buttons">Login</a></button>  
+            <button class="logreg-button"> <a href="{% url 'register' %}" class="logreg_buttons">Register</a></button>  
+          </div>
+        </nav>
+    <!-- Navbar ends here -->
+    <main>
+        
+        {% block content %}
+            
+        {% endblock content %}
+    </main>
+     <!-- Footer starts here -->
+ <footer class="footer">
+     <!-- Footer -->
+     <footer>
+        <div class="footer">
+            <div class="footer-content"> <p>&copy; 2024 PortalHunters. All rights reserved.</p>
+                <p>Developers' team:</p>
+               <p>Sandesh Subedi</p>
+                <p>Sushant Tripathi</p>
+                <p>Sugam Pokharel</p>
+                <p>Milan Shahi</p></div>
+            <div class="footer-content">Follow us on
+                <div class="social-media"> 
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" width="30" onclick="location.href='https://facebook.com'">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" width="30" height="30" onclick="location.href='https://instagram.com'" style="cursor:pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" width="30" height="30" onclick="location.href='https://linkedin.com'" style="cursor:pointer;">
+                    {% comment %} <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/TikTok_logo.png" alt="TikTok" width="30" height="30" onclick="location.href='https://tiktok.com'" style="cursor:pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/62/Twitter_Logo.svg" alt="X" width="30" height="30" onclick="location.href='https://x.com'" style="cursor:pointer;"> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Auto-Dismiss Alerts -->
+    <script>
+        setTimeout(function() {
+            let alerts = document.querySelectorAll(".alert");
+            alerts.forEach(alert => {
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 3000);
+    </script>
+    
+<!-- Footer ends here -->
+</body>
+</html>
+    

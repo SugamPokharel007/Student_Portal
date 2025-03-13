@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Blog | student_portal{% endblock %}
+
+{% block content %}
+    <section id="register" class="register-section">
+        <form method="post" action="{% url 'register' %}" class="register-form">
+            {% csrf_token %}
+
+            <label for="first_name" class="form-label">First Name:<br>
+                <input type="text" id="first_name" name="first_name" class="form-input placeholder-bold" placeholder="First Name" required />
+            </label>
+            
+            <label for="last_name" class="form-label">Last Name:<br>
+                <input type="text" id="last_name" name="last_name" class="form-input placeholder-bold" placeholder="Last Name" required />
+            </label>
+
+            <label for="email" class="form-label">Email:<br>
+                <input type="email" id="email" name="email" class="form-input placeholder-bold" placeholder="Email" required />
+            </label>
+
+            <label for="username" class="form-label">Username:<br>
+                <input type="text" id="username" name="username" class="form-input placeholder-bold" placeholder="Username" required />
+            </label>
+
+            <label for="password" class="form-label">Password:<br>
+                <input type="password" id="password" name="password" class="form-input placeholder-bold" placeholder="Password" required />
+            </label>
+
+            <label for="confirm_password" class="form-label">Confirm Password:<br>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-input placeholder-bold" placeholder="Confirm Password" required>
+            </label>
+
+            <label for="terms" class="form-label">
+                <input type="checkbox" id="terms" name="terms" required>
+                I accept the <a href="#" class="form-link">terms</a> and <a href="#" class="form-link">conditions</a>.
+            </label>
+
+            <button type="submit" class="form-button">Register</button>
+        </form>
+        <div class="random_loginlink">
+        <p class="form-footer">Already have an account? <a href="{% url 'login' %}" class="form-link">Login here</a></p>
+        </div>
+    </section>
+{% endblock %}
