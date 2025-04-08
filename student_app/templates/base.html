@@ -76,8 +76,12 @@
                 </ul>
           </div>
           <div>
-            <button class="logreg-button"> <a href="{% url 'login' %}" class="logreg_buttons">Login</a></button>  
-            <button class="logreg-button"> <a href="{% url 'register' %}" class="logreg_buttons">Register</a></button>  
+            {% if user.is_authenticated %}
+                <button class="logreg-button"> <a href="{% url 'logout' %}" class="logreg_buttons">Logout</a></button>
+            {% else %}
+                <button class="logreg-button"> <a href="{% url 'login' %}" class="logreg_buttons">Login</a></button>  
+                <button class="logreg-button"> <a href="{% url 'register' %}" class="logreg_buttons">Register</a></button>
+            {% endif %}
           </div>
         </nav>
     <!-- Navbar ends here -->

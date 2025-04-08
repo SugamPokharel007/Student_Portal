@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-container">
+    <div class="page-header">
+        <h1>{{ subject.name }} - Syllabus</h1>
+        <a href="{% url 'subject_detail' subject.id %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Subject
+        </a>
+    </div>
+
+    <div class="content-section">
+        {% if syllabus %}
+            <div class="syllabus-content">
+                <h2>{{ syllabus.title }}</h2>
+                <div class="syllabus-description">
+                    {{ syllabus.content|linebreaks }}
+                </div>
+                {% if syllabus.file %}
+                <div class="file-actions">
+                    <a href="{{ syllabus.file.url }}" class="action-button download-button" download>
+                        <i class="fas fa-download"></i> Download Syllabus
+                    </a>
+                    <a href="{{ syllabus.file.url }}" class="action-button view-button" target="_blank">
+                        <i class="fas fa-eye"></i> View in New Tab
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="no-content">
+                <i class="fas fa-info-circle"></i>
+                <p>No syllabus available for this subject.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .content-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        color: #333;
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f0f0f0;
+        color: #333;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        transition: background-color 0.2s;
+    }
+
+    .back-button:hover {
+        background: #e0e0e0;
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+
+    .syllabus-content h2 {
+        color: #333;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .syllabus-description {
+        color: #444;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .view-button {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .view-button:hover {
+        background: #45a049;
+    }
+
+    .download-button {
+        background: #2196F3;
+        color: white;
+    }
+
+    .download-button:hover {
+        background: #1976D2;
+    }
+
+    .no-content {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+    }
+
+    .no-content i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .file-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %} 

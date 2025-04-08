@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Portal{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'student_app/css/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">Student Portal</a>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'subjects' %}">Subjects</a>
+                    <a href="{% url 'question_banks' %}">Question Banks</a>
+                    <a href="{% url 'notes' %}">Notes</a>
+                    <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'register' %}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; {% now "Y" %} Student Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'student_app/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

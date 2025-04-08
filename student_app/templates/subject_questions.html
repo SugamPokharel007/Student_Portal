@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-container">
+    <div class="page-header">
+        <h1>{{ subject.name }} - Important Questions</h1>
+        <a href="{% url 'subject_detail' subject.id %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Subject
+        </a>
+    </div>
+
+    <div class="content-section">
+        {% if question_banks %}
+            <div class="question-banks-list">
+                {% for qb in question_banks %}
+                <div class="question-bank-card">
+                    <h2>{{ qb.title }}</h2>
+                    <p class="description">{{ qb.description }}</p>
+                    <div class="file-actions">
+                        <a href="{{ qb.file.url }}" class="action-button download-button" download>
+                            <i class="fas fa-download"></i> Download Questions
+                        </a>
+                        <a href="{{ qb.file.url }}" class="action-button view-button" target="_blank">
+                            <i class="fas fa-eye"></i> View in New Tab
+                        </a>
+                    </div>
+                    <div class="card-footer">
+                        <small>Added on: {{ qb.created_at|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-content">
+                <i class="fas fa-info-circle"></i>
+                <p>No important questions available for this subject.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .content-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        color: #333;
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f0f0f0;
+        color: #333;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        transition: background-color 0.2s;
+    }
+
+    .back-button:hover {
+        background: #e0e0e0;
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+
+    .question-banks-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .question-bank-card {
+        background: #f9f9f9;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .question-bank-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .question-bank-card h2 {
+        color: #333;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+
+    .description {
+        color: #555;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .view-button {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .view-button:hover {
+        background: #45a049;
+    }
+
+    .download-button {
+        background: #2196F3;
+        color: white;
+    }
+
+    .download-button:hover {
+        background: #1976D2;
+    }
+
+    .card-footer {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #eee;
+    }
+
+    .card-footer small {
+        color: #777;
+        font-size: 0.85rem;
+    }
+
+    .no-content {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+    }
+
+    .no-content i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .question-banks-list {
+            grid-template-columns: 1fr;
+        }
+
+        .file-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %} 

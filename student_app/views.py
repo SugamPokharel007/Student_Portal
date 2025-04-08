@@ -1,4 +1,8 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect, get_object_or_404
+from django.contrib.auth import logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Subject, Notice, Syllabus, QuestionBank, Note
 
 # Create your views here.
 def home(request):
@@ -19,26 +23,87 @@ def contact(request):
 def register(request):
     return render(request, 'register.html')
 
-from django.shortcuts import render
-from .models import Subject  # Make sure to import the Subject model
-
 def subjects(request, year):
-    # Fetch the subjects for the given year from the database
     subjects_list = Subject.objects.filter(year=year)
-    
-    # Render the subjects template with the year and subjects data
     return render(request, 'subjects.html', {
         'year': year,
         'subjects': subjects_list
     })
 
-
-from .models import Notice
+def subject_detail(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    notices = Notice.objects.filter(subject=subject, is_general=False)
+    syllabus = Syllabus.objects.filter(subject=subject).first()
+    question_banks = QuestionBank.objects.filter(subject=subject)
+    notes = Note.objects.filter(subject=subject)
+    
+    return render(request, 'subject_detail.html', {
+        'subject': subject,
+        'notices': notices,
+        'syllabus': syllabus,
+        'question_banks': question_banks,
+        'notes': notes
+    })
 
 def notice_list(request):
-    notices = Notice.objects.all().order_by('-created_at')  # Latest first
-    return render(request, 'notices.html', {'notices': notices})
+    general_notices = Notice.objects.filter(is_general=True).order_by('-created_at')
+    return render(request, 'notices.html', {'notices': general_notices})
 
+@login_required
+def add_syllabus(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        file = request.FILES.get('file')
+        
+        Syllabus.objects.create(
+            subject=subject,
+            title=title,
+            content=content,
+            file=file
+        )
+        messages.success(request, 'Syllabus added successfully!')
+        return redirect('subject_detail', subject_id=subject_id)
+    
+    return render(request, 'add_syllabus.html', {'subject': subject})
+
+@login_required
+def add_question_bank(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        file = request.FILES.get('file')
+        
+        QuestionBank.objects.create(
+            subject=subject,
+            title=title,
+            description=description,
+            file=file
+        )
+        messages.success(request, 'Question bank added successfully!')
+        return redirect('subject_detail', subject_id=subject_id)
+    
+    return render(request, 'add_question_bank.html', {'subject': subject})
+
+@login_required
+def add_subject_notice(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        
+        Notice.objects.create(
+            subject=subject,
+            title=title,
+            content=content,
+            is_general=False
+        )
+        messages.success(request, 'Notice added successfully!')
+        return redirect('subject_detail', subject_id=subject_id)
+    
+    return render(request, 'add_subject_notice.html', {'subject': subject})
 
 # for contact form submission
 from .models import ContactMessage
@@ -124,3 +189,38 @@ def login_view(request):
             return redirect('login')
 
     return render(request, 'login.html')
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'You have been successfully logged out.')
+    return redirect('home')
+
+def subject_syllabus(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    syllabus = Syllabus.objects.filter(subject=subject).first()
+    
+    context = {
+        'subject': subject,
+        'syllabus': syllabus,
+    }
+    return render(request, 'subject_syllabus.html', context)
+
+def subject_questions(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    question_banks = QuestionBank.objects.filter(subject=subject)
+    
+    context = {
+        'subject': subject,
+        'question_banks': question_banks,
+    }
+    return render(request, 'subject_questions.html', context)
+
+def subject_notes(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    notes = Note.objects.filter(subject=subject).order_by('-created_at')
+    
+    context = {
+        'subject': subject,
+        'notes': notes,
+    }
+    return render(request, 'subject_notes.html', context)

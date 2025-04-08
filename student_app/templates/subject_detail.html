@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="subject-detail-container">
+    <div class="subject-header">
+        <h1>{{ subject.name }}</h1>
+        <p class="subject-description">{{ subject.description }}</p>
+    </div>
+
+    <div class="content-sections">
+        <!-- Syllabus Section -->
+        <section class="content-section" id="syllabus">
+            <div class="section-header">
+                <h2><i class="fas fa-book"></i> Syllabus</h2>
+            </div>
+            <div class="section-content">
+                {% if syllabus %}
+                    <div class="syllabus-content">
+                        <h3>{{ syllabus.title }}</h3>
+                        <p>{{ syllabus.content|truncatewords:30 }}</p>
+                        <a href="{% url 'subject_syllabus' subject.id %}" class="view-more-button">
+                            <i class="fas fa-arrow-right"></i> View Full Syllabus
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="no-content">No syllabus available for this subject.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Important Questions Section -->
+        <section class="content-section" id="questions">
+            <div class="section-header">
+                <h2><i class="fas fa-question-circle"></i> Important Questions</h2>
+            </div>
+            <div class="section-content">
+                {% if question_banks %}
+                    <div class="question-banks-preview">
+                        <p>There are {{ question_banks.count }} question bank{{ question_banks.count|pluralize }} available.</p>
+                        <a href="{% url 'subject_questions' subject.id %}" class="view-more-button">
+                            <i class="fas fa-arrow-right"></i> View All Questions
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="no-content">No important questions available for this subject.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Notes Section -->
+        <section class="content-section" id="notes">
+            <div class="section-header">
+                <h2><i class="fas fa-sticky-note"></i> Notes</h2>
+            </div>
+            <div class="section-content">
+                {% if notes %}
+                    <div class="notes-preview">
+                        <p>Chapter wise notes are available for this subject.</p>
+                        <a href="{% url 'subject_notes' subject.id %}" class="view-more-button">
+                            <i class="fas fa-arrow-right"></i> View All Notes
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="no-content">No notes available for this subject.</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    .subject-detail-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .subject-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .subject-header h1 {
+        color: #333;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .subject-description {
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    .content-sections {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .content-section {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .content-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .section-header {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-header h2 {
+        color: #444;
+        margin: 0;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-header h2 i {
+        color: #2196F3;
+    }
+
+    .section-content {
+        padding: 1.5rem;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .syllabus-content h3 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .syllabus-content p {
+        color: #666;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .question-banks-preview, .notes-preview {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .question-banks-preview p, .notes-preview p {
+        color: #666;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+    }
+
+    .view-more-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #2196F3;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .view-more-button:hover {
+        background: #1976D2;
+    }
+
+    .no-content {
+        color: #666;
+        text-align: center;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+        .content-sections {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %} 
