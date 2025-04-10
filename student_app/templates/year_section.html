@@ -1,9 +1,98 @@
 <div class="year-container">
-    <h2>Year</h2>
     <div class="year-grid">
-        <a href="{% url 'subjects' 'first' %}" class="year-box fy"><i class="fa-solid fa-book"></i>First Year</a>
-<a href="{% url 'subjects' 'second' %}" class="year-box sy"><i class="fa-solid fa-book"></i>Second Year</a>
-<a href="{% url 'subjects' 'third' %}" class="year-box ty"><i class="fa-solid fa-book"></i>Third Year</a>
-<a href="{% url 'subjects' 'fourth' %}" class="year-box fy"><i class="fa-solid fa-book"></i>Fourth Year</a>
+        <a href="{% url 'subjects' 'first' %}" class="year-card">
+            <div class="year-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3>First Year</h3>
+            <p>Access resources for your first year of study</p>
+        </a>
+        
+        <a href="{% url 'subjects' 'second' %}" class="year-card">
+            <div class="year-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <h3>Second Year</h3>
+            <p>Access resources for your second year of study</p>
+        </a>
+        
+        <a href="{% url 'subjects' 'third' %}" class="year-card">
+            <div class="year-icon">
+                <i class="fas fa-laptop-code"></i>
+            </div>
+            <h3>Third Year</h3>
+            <p>Access resources for your third year of study</p>
+        </a>
+        
+        <a href="{% url 'subjects' 'fourth' %}" class="year-card">
+            <div class="year-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <h3>Fourth Year</h3>
+            <p>Access resources for your fourth year of study</p>
+        </a>
     </div>
 </div>
+
+<style>
+    .year-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .year-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 2rem;
+    }
+
+    .year-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        text-decoration: none;
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .year-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .year-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: var(--primary-color);
+        font-size: 2rem;
+    }
+
+    .year-card h3 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .year-card p {
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .year-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

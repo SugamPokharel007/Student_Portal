@@ -1,27 +1,488 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}home {% endblock title %}
-   
-   {% block content %}
-    
-   
-     
- <!--main section sarts here-->
- 
- <div class="content-outer">
-  <div class="left-contentinner">
-    <div class="homepage_quote"><p class="homepage_quotation">"Empowering future business leaders with knowledge, innovation, and integrity. Your journey to success begins here."</p></div>
-    <div class="homepage_quote"><p class="homepage_quotation">"The foundation of great business leaders is built on knowledge, ethics, and perseverance. Learn today, lead tomorrow."
-    </p></div>
-  </div>
-  
-  
-  <div class="right-contentinner"></div>
- </div>
-</div>
- 
-{% include 'year_section.html' %}
+{% block title %}Student Portal - Home{% endblock %}
 
- {% endblock content %}
+{% block content %}
+<!-- Hero Section -->
+<section class="hero fade-in">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Welcome to Student Portal</h1>
+            <p>Your one-stop destination for academic resources, notices, and more</p>
+            {% if not user.is_authenticated %}
+            <div class="hero-buttons">
+                <a href="{% url 'login' %}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i>
+                    Register
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section features">
+    <div class="container">
+        <div class="section-header">
+            <h2>Portal Features</h2>
+            <p>Everything you need for your academic journey</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3>Subject Materials</h3>
+                <p>Access course materials, syllabi, and study resources for all your subjects</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <h3>Notices</h3>
+                <p>Stay updated with the latest announcements and important information</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <h3>Question Banks</h3>
+                <p>Practice with previous exam questions and prepare for your assessments</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-sticky-note"></i>
+                </div>
+                <h3>Notes</h3>
+                <p>Access and share study notes to enhance your learning experience</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Notices Section -->
+<section class="section latest-notices">
+    <div class="container">
+        <div class="section-header">
+            <h2>Latest Notices</h2>
+            <p>Stay informed with recent announcements</p>
+        </div>
+        <div class="notices-grid">
+            {% for notice in latest_notices %}
+            <div class="notice-card fade-in">
+                <div class="notice-header">
+                    <h3>{{ notice.title }}</h3>
+                    <span class="notice-date">{{ notice.created_at|date:"M d, Y" }}</span>
+                </div>
+                <p>{{ notice.content|truncatewords:30 }}</p>
+            </div>
+            {% empty %}
+            <div class="no-notices fade-in">
+                <i class="fas fa-info-circle"></i>
+                <p>No notices available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'notice_list' %}" class="btn btn-primary">
+                <i class="fas fa-list"></i>
+                View All Notices
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Year Selection Section -->
+<section class="section year-selection">
+    <div class="container">
+        <div class="section-header">
+            <h2>Select Your Year</h2>
+            <p>Access resources specific to your academic year</p>
+        </div>
+        <div class="year-grid">
+            <a href="{% url 'subjects' 'first' %}" class="year-card fade-in">
+                <div class="year-icon">
+                    <i class="fas fa-1"></i>
+                </div>
+                <h3>First Year</h3>
+                <p>Foundation courses and introductory subjects</p>
+            </a>
+            <a href="{% url 'subjects' 'second' %}" class="year-card fade-in">
+                <div class="year-icon">
+                    <i class="fas fa-2"></i>
+                </div>
+                <h3>Second Year</h3>
+                <p>Core subjects and specialized topics</p>
+            </a>
+            <a href="{% url 'subjects' 'third' %}" class="year-card fade-in">
+                <div class="year-icon">
+                    <i class="fas fa-3"></i>
+                </div>
+                <h3>Third Year</h3>
+                <p>Advanced courses and practical applications</p>
+            </a>
+            <a href="{% url 'subjects' 'fourth' %}" class="year-card fade-in">
+                <div class="year-icon">
+                    <i class="fas fa-4"></i>
+                </div>
+                <h3>Fourth Year</h3>
+                <p>Final year projects and specialized studies</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="section contact-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Get in Touch</h2>
+            <p>Have questions or need assistance?</p>
+        </div>
+        <div class="contact-container fade-in">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h3>Email Us</h3>
+                        <p>msss@studentportal.com</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <h3>Call Us</h3>
+                        <p>+977-9800000000</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <h3>Visit Us</h3>
+                        <p>Prithivi Narayan Campus, Pokhara</p>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-form-container">
+                <a href="{% url 'contact' %}" class="btn btn-primary">
+                    <i class="fas fa-envelope"></i>
+                    Contact Form
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Container */
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Hero Section */
+    .hero {
+        background: linear-gradient(rgba(74, 144, 226, 0.9), rgba(44, 62, 80, 0.9)), url('{% static "images/hero-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 6rem 0;
+        text-align: center;
+        margin-top: -2rem;
+        margin-bottom: 3rem;
+    }
+
+    .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .hero h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .hero p {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* Section Styles */
+    .section {
+        padding: 4rem 0;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+
+    .section-header p {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: var(--dark-gray);
+    }
+
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+
+    .feature-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow);
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    .feature-card h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary-color);
+        font-size: clamp(1.2rem, 2vw, 1.5rem);
+    }
+
+    .feature-card p {
+        color: var(--dark-gray);
+        font-size: clamp(0.9rem, 1.5vw, 1rem);
+    }
+
+    /* Notices Grid */
+    .notices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+
+    .notice-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        height: 100%;
+    }
+
+    .notice-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .notice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .notice-header h3 {
+        font-size: clamp(1.1rem, 2vw, 1.3rem);
+        color: var(--secondary-color);
+    }
+
+    .notice-date {
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+    }
+
+    /* Year Grid */
+    .year-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+
+    .year-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: var(--transition);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .year-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow);
+    }
+
+    .year-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--secondary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    .year-card h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary-color);
+        font-size: clamp(1.2rem, 2vw, 1.5rem);
+    }
+
+    .year-card p {
+        color: var(--dark-gray);
+        font-size: clamp(0.9rem, 1.5vw, 1rem);
+    }
+
+    /* Contact Section */
+    .contact-container {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .contact-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .contact-item i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .contact-item h3 {
+        font-size: clamp(1rem, 1.5vw, 1.2rem);
+        margin-bottom: 0.5rem;
+        color: var(--secondary-color);
+    }
+
+    .contact-form-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .container {
+            padding: 0 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero {
+            padding: 4rem 0;
+        }
+
+        .section {
+            padding: 3rem 0;
+        }
+
+        .features-grid,
+        .notices-grid,
+        .year-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .contact-info {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hero-buttons .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero {
+            padding: 3rem 0;
+        }
+
+        .section {
+            padding: 2rem 0;
+        }
+
+        .feature-card,
+        .notice-card,
+        .year-card {
+            padding: 1.5rem;
+        }
+
+        .contact-container {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
  

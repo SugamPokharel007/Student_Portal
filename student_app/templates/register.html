@@ -1,46 +1,207 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Blog | student_portal{% endblock %}
+{% block title %}Register | Student Portal{% endblock %}
 
 {% block content %}
-    <section id="register" class="register-section">
-        <form method="post" action="{% url 'register' %}" class="register-form">
-            {% csrf_token %}
+<section class="section auth-section">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Join our student portal and access all resources</p>
+                </div>
+                
+                <form method="post" action="{% url 'register' %}" class="auth-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Enter your first name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Enter your last name" required>
+                            </div>
+                        </div>
+                    </div>
 
-            <label for="first_name" class="form-label">First Name:<br>
-                <input type="text" id="first_name" name="first_name" class="form-input placeholder-bold" placeholder="First Name" required />
-            </label>
-            
-            <label for="last_name" class="form-label">Last Name:<br>
-                <input type="text" id="last_name" name="last_name" class="form-input placeholder-bold" placeholder="Last Name" required />
-            </label>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                    </div>
 
-            <label for="email" class="form-label">Email:<br>
-                <input type="email" id="email" name="email" class="form-input placeholder-bold" placeholder="Email" required />
-            </label>
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <i class="fas fa-user-circle"></i>
+                            <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required>
+                        </div>
+                    </div>
 
-            <label for="username" class="form-label">Username:<br>
-                <input type="text" id="username" name="username" class="form-input placeholder-bold" placeholder="Username" required />
-            </label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm your password" required>
+                            </div>
+                        </div>
+                    </div>
 
-            <label for="password" class="form-label">Password:<br>
-                <input type="password" id="password" name="password" class="form-input placeholder-bold" placeholder="Password" required />
-            </label>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms" class="checkbox-label">
+                                I accept the <a href="#" class="auth-link">terms</a> and <a href="#" class="auth-link">conditions</a>
+                            </label>
+                        </div>
+                    </div>
 
-            <label for="confirm_password" class="form-label">Confirm Password:<br>
-                <input type="password" id="confirm_password" name="confirm_password" class="form-input placeholder-bold" placeholder="Confirm Password" required>
-            </label>
-
-            <label for="terms" class="form-label">
-                <input type="checkbox" id="terms" name="terms" required>
-                I accept the <a href="#" class="form-link">terms</a> and <a href="#" class="form-link">conditions</a>.
-            </label>
-
-            <button type="submit" class="form-button">Register</button>
-        </form>
-        <div class="random_loginlink">
-        <p class="form-footer">Already have an account? <a href="{% url 'login' %}" class="form-link">Login here</a></p>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-user-plus"></i>
+                            Register
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="{% url 'login' %}" class="auth-link">Login here</a></p>
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-section {
+        background-color: var(--light-gray);
+        min-height: calc(100vh - 80px - 300px);
+        display: flex;
+        align-items: center;
+    }
+
+    .auth-container {
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .auth-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+        font-size: 2rem;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-header p {
+        color: var(--dark-gray);
+    }
+
+    .auth-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--dark-gray);
+    }
+
+    .input-group .form-control {
+        padding-left: 3rem;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        margin-top: 0.25rem;
+    }
+
+    .checkbox-label {
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+    }
+
+    .btn-block {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--light-gray);
+    }
+
+    .auth-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .auth-card {
+            padding: 2rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}

@@ -1,35 +1,137 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Login |student portal{% endblock %}
+{% block title %}Login | Student Portal{% endblock %}
 
 {% block content %}
-<div class="login-container">
+<section class="section auth-section">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Login</h1>
+                    <p>Welcome back! Please login to your account.</p>
+                </div>
+                
+                <form method="post" action="{% url 'login' %}" class="auth-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+                        </div>
+                    </div>
 
-     <!-- Register Link Section -->
-     <section id="register-link" class="register-link-section">
-      <p class="login-footer">Don't have an account? <a href="{% url 'register' %}" class="login-link switch-link" id="to-register">Register here</a></p>
-  </section>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                    </div>
 
-    <div class="login-wrapper">
-      <!-- Login Form -->
-        <section id="login" class="login-section">
-            <form method="post" action="{% url 'login' %}" class="login-form">
-                {% csrf_token %}
-                <label for="username" class="login-label">Username:<br>
-                    <input type="text" id="username" name="username" class="login-input placeholder-bold" placeholder="Username" required>
-                </label>
-
-                <label for="password" class="login-label">Password:<br>
-                    <input type="password" id="password" name="password" class="login-input placeholder-bold" placeholder="Password" required>
-                </label>
-
-                <button type="submit" class="login-button">Login</button>
-            </form>
-           
-        </section>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="{% url 'register' %}" class="auth-link">Register here</a></p>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+{% endblock %}
 
+{% block extra_css %}
+<style>
+    .auth-section {
+        background-color: var(--light-gray);
+        min-height: calc(100vh - 80px - 300px);
+        display: flex;
+        align-items: center;
+    }
 
+    .auth-container {
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .auth-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+        font-size: 2rem;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-header p {
+        color: var(--dark-gray);
+    }
+
+    .auth-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--dark-gray);
+    }
+
+    .input-group .form-control {
+        padding-left: 3rem;
+    }
+
+    .btn-block {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--light-gray);
+    }
+
+    .auth-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .auth-card {
+            padding: 2rem;
+        }
+    }
+</style>
 {% endblock %}

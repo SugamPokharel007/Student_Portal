@@ -1,7 +1,27 @@
 {% extends 'base.html' %}
 {% load static %}
- {% block title %}year{% endblock title %}
-    {% block content %}
+
+{% block title %}Year Selection | Student Portal{% endblock %}
+
+{% block content %}
+<section class="section year-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Select Your Year</h1>
+            <p>Choose your academic year to access relevant resources</p>
+        </div>
+        
         {% include 'year_section.html' %}
-    {% endblock content %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .year-section {
+        background-color: var(--light-gray);
+        padding: 4rem 0;
+    }
+</style>
+{% endblock %}
     

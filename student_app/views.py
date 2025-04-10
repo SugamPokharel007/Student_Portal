@@ -2,11 +2,24 @@ from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Subject, Notice, Syllabus, QuestionBank, Note
+from .models import Subject, Notice, Syllabus, QuestionBank, Note, Subscription
+from django.utils import timezone
 
 # Create your views here.
 def home(request):
-    return render(request, 'home.html')
+    # Get the latest general notices
+    latest_notices = Notice.objects.filter(is_general=True).order_by('-created_at')[:3]
+    
+    # If no notices exist, create a test notice
+    if not latest_notices.exists():
+        Notice.objects.create(
+            title="Welcome to Student Portal",
+            content="Welcome to our Student Portal! This is a test notice to demonstrate the notice system. You can add more notices through the admin panel.",
+            is_general=True
+        )
+        latest_notices = Notice.objects.filter(is_general=True).order_by('-created_at')[:3]
+    
+    return render(request, 'home.html', {'latest_notices': latest_notices})
 
 def login(request):
     return render(request, 'login.html')
@@ -205,6 +218,78 @@ def subject_syllabus(request, subject_id):
     }
     return render(request, 'subject_syllabus.html', context)
 
+def subscription_view(request):
+    """View for the subscription page with pricing packages"""
+    if not request.user.is_authenticated:
+        messages.info(request, 'Please log in to view subscription options.')
+        return redirect('login')
+    return render(request, 'subscription.html')
+
+@login_required
+def subscribe(request, subscription_type):
+    """View for the subscription form"""
+    if subscription_type not in ['monthly', 'semi_yearly', 'yearly']:
+        messages.error(request, 'Invalid subscription type')
+        return redirect('subscription')
+    
+    # Check if user already has an active subscription
+    try:
+        existing_subscription = Subscription.objects.get(user=request.user, is_active=True)
+        if existing_subscription:
+            messages.info(request, 'You already have an active subscription')
+            return redirect('home')
+    except Subscription.DoesNotExist:
+        pass
+    
+    if request.method == 'POST':
+        try:
+            # Create a new subscription
+            subscription = Subscription.objects.create(
+                user=request.user,
+                subscription_type=subscription_type,
+                start_date=timezone.now(),
+                is_active=True
+            )
+            
+            # Redirect to success page
+            return redirect('subscription_success')
+        except Exception as e:
+            messages.error(request, f'Error creating subscription: {str(e)}')
+            return redirect('subscription')
+    
+    return render(request, 'subscribe.html', {'subscription_type': subscription_type})
+
+@login_required
+def subscription_success(request):
+    """View for the subscription success page"""
+    try:
+        subscription = Subscription.objects.get(user=request.user, is_active=True)
+        return render(request, 'subscription_success.html', {'subscription': subscription})
+    except Subscription.DoesNotExist:
+        messages.error(request, 'No active subscription found')
+        return redirect('subscription')
+
+# Decorator to check if user has an active subscription
+def subscription_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        try:
+            subscription = Subscription.objects.get(user=request.user, is_active=True)
+            if timezone.now() > subscription.end_date:
+                subscription.is_active = False
+                subscription.save()
+                messages.error(request, 'Your subscription has expired. Please renew to access premium content.')
+                return redirect('subscription')
+            return view_func(request, *args, **kwargs)
+        except Subscription.DoesNotExist:
+            messages.error(request, 'You need an active subscription to access this content.')
+            return redirect('subscription')
+        except Exception as e:
+            messages.error(request, f'Error checking subscription: {str(e)}')
+            return redirect('home')
+    return wrapper
+
+# Update the subject_questions view to require only login
+@login_required
 def subject_questions(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
     question_banks = QuestionBank.objects.filter(subject=subject)
@@ -215,6 +300,8 @@ def subject_questions(request, subject_id):
     }
     return render(request, 'subject_questions.html', context)
 
+# Update the subject_notes view to require only login
+@login_required
 def subject_notes(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
     notes = Note.objects.filter(subject=subject).order_by('-created_at')

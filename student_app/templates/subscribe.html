@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subscribe | Student Portal{% endblock %}
+
+{% block content %}
+<section class="subscribe-section">
+    <div class="container">
+        <div class="subscribe-container">
+            <div class="subscribe-header">
+                <h1>Complete Your Subscription</h1>
+                <p>You're just a few steps away from accessing premium content</p>
+            </div>
+            
+            <div class="subscription-summary">
+                <h2>Subscription Summary</h2>
+                <div class="summary-details">
+                    <div class="summary-item">
+                        <span class="label">Plan:</span>
+                        <span class="value">{{ subscription_type|title }} Plan</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Duration:</span>
+                        <span class="value">
+                            {% if subscription_type == 'monthly' %}
+                                1 Month
+                            {% elif subscription_type == 'semi_yearly' %}
+                                6 Months
+                            {% else %}
+                                1 Year
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Price:</span>
+                        <span class="value price">
+                            {% if subscription_type == 'monthly' %}
+                                ₹499
+                            {% elif subscription_type == 'semi_yearly' %}
+                                ₹2,499
+                            {% else %}
+                                ₹4,499
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="payment-section">
+                <h2>Payment Details</h2>
+                <form method="POST" class="payment-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="subscription_type" value="{{ subscription_type }}">
+                    
+                    <div class="form-group">
+                        <label for="card_name">Name on Card</label>
+                        <input type="text" id="card_name" name="card_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="card_number">Card Number</label>
+                        <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry_date">Expiry Date</label>
+                            <input type="text" id="expiry_date" name="expiry_date" placeholder="MM/YY" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" name="cvv" placeholder="123" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email for Receipt</label>
+                        <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                    
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a></label>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Complete Subscription</button>
+                        <a href="{% url 'subscription' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="secure-payment">
+                <i class="fas fa-lock"></i>
+                <p>Your payment information is secure and encrypted</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .subscribe-section {
+        padding: 4rem 0;
+        background-color: var(--light-gray);
+    }
+    
+    .subscribe-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+    
+    .subscribe-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .subscribe-header h1 {
+        font-size: 2rem;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .subscribe-header p {
+        color: var(--dark-gray);
+    }
+    
+    .subscription-summary {
+        background: var(--light-gray);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .subscription-summary h2 {
+        font-size: 1.3rem;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .summary-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .summary-item .label {
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+        margin-bottom: 0.3rem;
+    }
+    
+    .summary-item .value {
+        font-weight: bold;
+        color: var(--text-color);
+    }
+    
+    .summary-item .price {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+    }
+    
+    .payment-section {
+        margin-bottom: 2rem;
+    }
+    
+    .payment-section h2 {
+        font-size: 1.3rem;
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+    }
+    
+    .payment-form {
+        display: grid;
+        gap: 1.5rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-group label {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+    
+    .form-group input {
+        padding: 0.8rem;
+        border: 1px solid var(--light-gray);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .terms-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .terms-checkbox input {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .terms-checkbox label {
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+    }
+    
+    .terms-checkbox a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .terms-checkbox a:hover {
+        text-decoration: underline;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .secure-payment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+    
+    .secure-payment i {
+        color: var(--success-color);
+    }
+    
+    @media (max-width: 768px) {
+        .subscribe-container {
+            padding: 1.5rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %} 

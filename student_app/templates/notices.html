@@ -1,25 +1,168 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}notices
-    
-{% endblock title %}
- 
- {% block content %}
- <div class="notice-wrapper">
-    <h1 class="notice-title">Latest Notices</h1>
-    <div class="notice-list">
-        {% for notice in notices %}
-        <div class="notice-item">
-            <h2 class="notice-heading">{{ notice.title }}</h2>
-            <p class="notice-content">{{ notice.content }}</p>
-            <span class="notice-date">{{ notice.created_at|date:"F d, Y" }}</span>
+{% block title %}Notices | Student Portal{% endblock %}
+
+{% block content %}
+<section class="section notices-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Latest Notices</h1>
+            <p>Stay updated with important announcements</p>
         </div>
-        {% empty %}
-        <p class="no-notice">No notices available.</p>
-        {% endfor %}
+        
+        <div class="notices-container">
+            {% if notices %}
+                <div class="notices-grid">
+                    {% for notice in notices %}
+                        <div class="notice-card">
+                            <div class="notice-header">
+                                <h3>{{ notice.title }}</h3>
+                                <span class="notice-date">{{ notice.created_at|date:"F d, Y" }}</span>
+                            </div>
+                            <div class="notice-content">
+                                {{ notice.content|linebreaks }}
+                            </div>
+                            {% if notice.file %}
+                                <div class="notice-attachment">
+                                    <a href="{{ notice.file.url }}" class="attachment-link" target="_blank">
+                                        <i class="fas fa-paperclip"></i>
+                                        Download Attachment
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-notices">
+                    <div class="no-notices-icon">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <h3>No Notices Available</h3>
+                    <p>There are no notices to display at this time.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
-</div>
- {% endblock content %}
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notices-section {
+        background-color: var(--light-gray);
+        padding: 4rem 0;
+    }
+
+    .notices-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .notices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .notice-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+
+    .notice-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .notice-header {
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--light-gray);
+        padding-bottom: 1rem;
+    }
+
+    .notice-header h3 {
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+        font-size: 1.3rem;
+    }
+
+    .notice-date {
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+
+    .notice-content {
+        color: var(--text-color);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .notice-attachment {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--light-gray);
+    }
+
+    .attachment-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .attachment-link:hover {
+        color: var(--secondary-color);
+    }
+
+    .no-notices {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+
+    .no-notices-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: var(--dark-gray);
+    }
+
+    .no-notices h3 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .no-notices p {
+        color: var(--dark-gray);
+    }
+
+    @media (max-width: 768px) {
+        .notices-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .notice-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
     
     

@@ -1,32 +1,228 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
-
-{% block title %}about{% endblock title %}
+{% block title %}About | Student Portal{% endblock %}
 
 {% block content %}
-    <!-- About Section -->
-    <section class="about-section">
-        <div class="about-container">
-            <h1 class="about-title">About Our Student Portal</h1>
-            <p class="about-description">
-                Welcome to the Student Portal, a centralized platform designed to streamline academic activities and provide students with easy access to essential resources. Our system ensures a seamless learning experience by offering:
-            </p>
-            
-            <div class="about-features">
-                <div class="about-feature"> Real-time updates on notices and announcements,</div>
-                <div class="about-feature"> Access to course syllabi, notes, and past exam papers,</div>
-                <div class="about-feature"> Interactive student forums and discussions,</div>
-                <div class="about-feature"> Efficient course registration and progress tracking</div>
-            </div>
-
-            <p class="about-description">
-                Our mission is to empower students with digital tools that enhance learning, collaboration, and academic success. Join us and experience a smarter way to manage your studies!
-            </p>
+<section class="section about-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>About Our Student Portal</h1>
+            <p>Your gateway to academic excellence</p>
         </div>
-    </section>
-    
-{% endblock content %}
+        
+        <div class="about-container">
+            <div class="about-content">
+                <p class="about-description">
+                    Welcome to the Student Portal, a centralized platform designed to streamline academic activities and provide students with easy access to essential resources. Our system ensures a seamless learning experience by offering comprehensive tools and resources for your academic journey.
+                </p>
+                
+                <div class="about-features">
+                    <div class="about-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <h3>Real-time Updates</h3>
+                        <p>Stay informed with the latest notices and announcements from your department.</p>
+                    </div>
+                    
+                    <div class="about-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3>Academic Resources</h3>
+                        <p>Access course syllabi, study notes, and past exam papers to enhance your learning.</p>
+                    </div>
+                    
+                    <div class="about-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Student Community</h3>
+                        <p>Connect with peers through interactive forums and collaborative study groups.</p>
+                    </div>
+                    
+                    <div class="about-feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Progress Tracking</h3>
+                        <p>Monitor your academic progress and stay on track with your educational goals.</p>
+                    </div>
+                </div>
+
+                <div class="about-mission">
+                    <h2>Our Mission</h2>
+                    <p>
+                        Our mission is to empower students with digital tools that enhance learning, collaboration, and academic success. We believe in creating an environment where students can thrive academically and develop the skills needed for future success.
+                    </p>
+                </div>
+                
+                <div class="about-team">
+                    <h2>Our Team</h2>
+                    <div class="team-members">
+                        <div class="team-member">
+                            <div class="member-avatar">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <h3>PortalHunters</h3>
+                            <p>Development Team</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-section {
+        background-color: var(--light-gray);
+        padding: 4rem 0;
+    }
+
+    .about-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .about-content {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 3rem;
+        box-shadow: var(--shadow);
+    }
+
+    .about-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--text-color);
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .about-features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .about-feature-card {
+        background: var(--light-gray);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition);
+    }
+
+    .about-feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow);
+    }
+
+    .about-feature-card .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    .about-feature-card h3 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+
+    .about-feature-card p {
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .about-mission {
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .about-mission h2 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+    }
+
+    .about-mission p {
+        color: var(--text-color);
+        line-height: 1.8;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .about-team {
+        text-align: center;
+    }
+
+    .about-team h2 {
+        color: var(--secondary-color);
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .team-members {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    .team-member {
+        text-align: center;
+    }
+
+    .member-avatar {
+        width: 100px;
+        height: 100px;
+        background: var(--light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+        color: var(--primary-color);
+    }
+
+    .team-member h3 {
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .team-member p {
+        color: var(--dark-gray);
+    }
+
+    @media (max-width: 768px) {
+        .about-content {
+            padding: 2rem;
+        }
+        
+        .about-features {
+            grid-template-columns: 1fr;
+        }
+        
+        .team-members {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+{% endblock %}
 
     

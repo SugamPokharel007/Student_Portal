@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Premium Features | Student Portal{% endblock %}
+
+{% block content %}
+<section class="subscription-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Free & Premium Features</h1>
+            <p>Access our comprehensive learning resources with both free and premium features</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="features-column">
+                <h2 class="features-title">Free Features</h2>
+                <div class="feature-card free">
+                    <div class="feature-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Subject Notes</h3>
+                    <p>Access comprehensive study notes for all subjects and topics.</p>
+                </div>
+                
+                <div class="feature-card free">
+                    <div class="feature-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3>Important Questions</h3>
+                    <p>Get access to important questions for all subjects and chapters.</p>
+                </div>
+                
+                <div class="feature-card free">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Previous Year Papers</h3>
+                    <p>Access previous year question papers with solutions.</p>
+                </div>
+                
+                <div class="feature-card free">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Community Forum</h3>
+                    <p>Join discussions and interact with other students.</p>
+                </div>
+            </div>
+            
+            <div class="features-column">
+                <h2 class="features-title">Premium Features</h2>
+                <div class="feature-card premium">
+                    <div class="feature-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>Video Solutions</h3>
+                    <p>Watch step-by-step video explanations for complex problems.</p>
+                </div>
+                
+                <div class="feature-card premium">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Live Doubt Solving</h3>
+                    <p>Get your doubts cleared in real-time through live sessions.</p>
+                </div>
+                
+                <div class="feature-card premium">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>1-on-1 Mentoring</h3>
+                    <p>Connect with experienced mentors for personalized guidance.</p>
+                </div>
+                
+                <div class="feature-card premium">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Priority Support</h3>
+                    <p>Get priority access to our support team for assistance.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="subscription-cta">
+            <h2>Ready to Upgrade?</h2>
+            <p>Contact us to learn more about our premium subscription options and pricing.</p>
+            <a href="{% url 'contact' %}" class="btn btn-primary">Contact Us</a>
+        </div>
+        
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>What features are available for free?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Free features include access to all subject notes, important questions, previous year papers, and community forum discussions. These resources are available to all registered users.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How do I access premium content?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Once you subscribe to our premium plan, you'll get immediate access to all premium content. You can access it through your dashboard or the respective subject pages.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Can I upgrade or downgrade my subscription?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, you can upgrade or downgrade your subscription at any time. Changes will take effect at the start of your next billing cycle.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Is there a refund policy?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We offer a 7-day money-back guarantee if you're not satisfied with our premium features. Contact our support team for assistance.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .subscription-section {
+        padding: 4rem 0;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .section-header h1 {
+        font-size: 2.5rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header p {
+        font-size: 1.2rem;
+        color: #666;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        margin-bottom: 4rem;
+    }
+    
+    .features-title {
+        font-size: 1.8rem;
+        color: #333;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .features-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .feature-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .feature-card.free {
+        border: 2px solid #4CAF50;
+    }
+    
+    .feature-card.premium {
+        border: 2px solid #4a6cf7;
+    }
+    
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .feature-card.free .feature-icon {
+        background: rgba(76, 175, 80, 0.1);
+    }
+    
+    .feature-card.premium .feature-icon {
+        background: rgba(74, 108, 247, 0.1);
+    }
+    
+    .feature-icon i {
+        font-size: 2rem;
+    }
+    
+    .feature-card.free .feature-icon i {
+        color: #4CAF50;
+    }
+    
+    .feature-card.premium .feature-icon i {
+        color: #4a6cf7;
+    }
+    
+    .feature-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+    
+    .feature-card p {
+        color: #666;
+        line-height: 1.6;
+    }
+    
+    .subscription-cta {
+        text-align: center;
+        background: linear-gradient(135deg, #4a6cf7, #6a8dff);
+        color: white;
+        padding: 3rem;
+        border-radius: 10px;
+        margin-bottom: 4rem;
+    }
+    
+    .subscription-cta h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .subscription-cta p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .btn-primary {
+        background: white;
+        color: #4a6cf7;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .faq-section {
+        margin-top: 4rem;
+    }
+    
+    .faq-section h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        color: #333;
+    }
+    
+    .faq-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .faq-item {
+        background: #fff;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+    
+    .faq-question {
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .faq-question h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin: 0;
+    }
+    
+    .faq-question i {
+        color: #4a6cf7;
+        transition: transform 0.3s ease;
+    }
+    
+    .faq-answer {
+        padding: 0 1.5rem 1.5rem;
+        display: none;
+    }
+    
+    .faq-answer p {
+        color: #666;
+        line-height: 1.6;
+    }
+    
+    .faq-item.active .faq-question i {
+        transform: rotate(180deg);
+    }
+    
+    .faq-item.active .faq-answer {
+        display: block;
+    }
+    
+    @media (max-width: 768px) {
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .subscription-cta {
+            padding: 2rem;
+        }
+        
+        .section-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqItems = document.querySelectorAll('.faq-item');
+        
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            
+            question.addEventListener('click', () => {
+                // Close all other items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('active');
+            });
+        });
+    });
+</script>
+{% endblock %} 
