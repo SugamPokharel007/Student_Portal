@@ -1,0 +1,14 @@
+# Django Settings
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Google OAuth Credentials
+# Get these from: https://console.developers.google.com/
+GOOGLE_CLIENT_ID=your-google-client-id-here
+GOOGLE_CLIENT_SECRET=your-google-client-secret-here
+
+# Facebook OAuth Credentials
+# Get these from: https://developers.facebook.com/
+FACEBOOK_APP_ID=your-facebook-app-id-here
+FACEBOOK_APP_SECRET=your-facebook-app-secret-here 

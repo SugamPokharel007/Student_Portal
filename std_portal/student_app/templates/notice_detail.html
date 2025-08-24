@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ notice.title }} | Student Portal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'notice_list' %}">Notices</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ notice.title|truncatechars:30 }}</li>
+                </ol>
+            </nav>
+
+            <!-- Notice Card -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="h3 mb-2">{{ notice.title }}</h1>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    {{ notice.created_at|date:"F d, Y" }}
+                                </span>
+                                {% if notice.is_important %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Important
+                                </span>
+                                {% endif %}
+                                {% if notice.subject %}
+                                <span class="badge bg-info text-white">
+                                    <i class="fas fa-book me-1"></i>
+                                    {{ notice.subject.name }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-success text-white">
+                                    <i class="fas fa-bullhorn me-1"></i>
+                                    General Notice
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a href="{% url 'notice_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Back to Notices
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="notice-content">
+                        {{ notice.content|linebreaks }}
+                    </div>
+                    
+                    {% if notice.created_by %}
+                    <div class="mt-4 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>
+                            Posted by: {{ notice.created_by.get_full_name|default:notice.created_by.username }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Related Notices -->
+            {% if notice.subject %}
+            <div class="mt-5">
+                <h4 class="mb-3">
+                    <i class="fas fa-link me-2"></i>
+                    Related Notices for {{ notice.subject.name }}
+                </h4>
+                <div class="row g-3">
+                    {% for related_notice in notice.subject.notice_set.all|slice:":3" %}
+                        {% if related_notice.id != notice.id %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ related_notice.title|truncatechars:50 }}</h6>
+                                    <p class="card-text small text-muted">
+                                        {{ related_notice.content|truncatewords:15 }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">{{ related_notice.created_at|date:"M d, Y" }}</small>
+                                        <a href="{% url 'notice_detail' related_notice.id %}" class="btn btn-outline-primary btn-sm">
+                                            Read More
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.notice-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #2c3e50;
+}
+
+.notice-content p {
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--secondary-color);
+}
+</style>
+{% endblock %} 
