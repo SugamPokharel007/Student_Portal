@@ -5,6 +5,7 @@
 <div class="content-container">
     <div class="page-header">
         <h1>{{ subject.name }} - Syllabus</h1>
+        <span class="badge bg-primary">{{ subject.faculty.name }}</span>
         <a href="{% url 'subject_detail' subject.id %}" class="back-button">
             <i class="fas fa-arrow-left"></i> Back to Subject
         </a>

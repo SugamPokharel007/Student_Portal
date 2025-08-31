@@ -4,164 +4,213 @@
 {% block title %}Notices | Student Portal{% endblock %}
 
 {% block content %}
-<section class="section notices-section">
-    <div class="container">
-        <div class="section-header">
-            <h1>Latest Notices</h1>
-            <p>Stay updated with important announcements</p>
-        </div>
-        
-        <div class="notices-container">
-            {% if notices %}
-                <div class="notices-grid">
-                    {% for notice in notices %}
-                        <div class="notice-card">
-                            <div class="notice-header">
-                                <h3>{{ notice.title }}</h3>
-                                <span class="notice-date">{{ notice.created_at|date:"F d, Y" }}</span>
-                            </div>
-                            <div class="notice-content">
-                                {{ notice.content|linebreaks }}
-                            </div>
-                            {% if notice.file %}
-                                <div class="notice-attachment">
-                                    <a href="{{ notice.file.url }}" class="attachment-link" target="_blank">
-                                        <i class="fas fa-paperclip"></i>
-                                        Download Attachment
-                                    </a>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="no-notices">
-                    <div class="no-notices-icon">
-                        <i class="fas fa-bell-slash"></i>
-                    </div>
-                    <h3>No Notices Available</h3>
-                    <p>There are no notices to display at this time.</p>
-                </div>
-            {% endif %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-5 fw-bold text-gradient mb-3">
+                <i class="fas fa-bullhorn me-3"></i>
+                Latest Notices
+            </h1>
+            <p class="lead text-muted">Stay updated with important announcements and updates</p>
         </div>
     </div>
-</section>
-{% endblock %}
 
-{% block extra_css %}
+    <!-- Notices Grid -->
+    {% if notices %}
+        <div class="row g-4">
+            {% for notice in notices %}
+            <div class="col-lg-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                <div class="card h-100 border-0 shadow-sm notice-card">
+                    <div class="card-header bg-gradient-primary text-white border-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-2">{{ notice.title|truncatechars:60 }}</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        {{ notice.created_at|date:"M d, Y" }}
+                                    </span>
+                                    {% if notice.is_important %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        Important
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-white p-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'notice_detail' notice.id %}">
+                                        <i class="fas fa-eye me-2"></i>View Details
+                                    </a></li>
+                                    {% if notice.subject %}
+                                    <li><a class="dropdown-item" href="{% url 'subject_detail' notice.subject.id %}">
+                                        <i class="fas fa-book me-2"></i>View Subject
+                                    </a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column">
+                        <div class="flex-grow-1">
+                            <p class="card-text text-muted mb-3">
+                                {{ notice.content|truncatewords:25|linebreaks }}
+                            </p>
+                            
+                            {% if notice.subject %}
+                            <div class="mb-3">
+                                <span class="badge bg-info text-white">
+                                    <i class="fas fa-book me-1"></i>
+                                    {{ notice.subject.name }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {% if notice.created_by %}
+                                        <i class="fas fa-user me-1"></i>
+                                        {{ notice.created_by.get_full_name|default:notice.created_by.username }}
+                                    {% else %}
+                                        <i class="fas fa-user-tie me-1"></i>
+                                        Admin
+                                    {% endif %}
+                                </small>
+                                <a href="{% url 'notice_detail' notice.id %}" class="btn btn-primary btn-sm rounded-pill">
+                                    <i class="fas fa-arrow-right me-1"></i>
+                                    Read More
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination (if needed) -->
+        {% if notices.has_other_pages %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <nav aria-label="Notices pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if notices.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ notices.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in notices.paginator.page_range %}
+                        <li class="page-item {% if notices.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if notices.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ notices.next_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <!-- No Notices State -->
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 text-center">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-bell-slash text-muted" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="text-muted mb-3">No Notices Available</h3>
+                        <p class="text-muted mb-4">
+                            There are no notices to display at this time. Check back later for updates.
+                        </p>
+                        <a href="{% url 'home' %}" class="btn btn-primary rounded-pill">
+                            <i class="fas fa-home me-2"></i>
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
 <style>
-    .notices-section {
-        background-color: var(--light-gray);
-        padding: 4rem 0;
-    }
+.notice-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
 
-    .notices-container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
+.notice-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
 
-    .notices-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-    }
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+}
 
-    .notice-card {
-        background: var(--white);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: var(--shadow);
-        transition: var(--transition);
-    }
+.badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+}
 
-    .notice-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-hover);
-    }
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 
-    .notice-header {
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid var(--light-gray);
-        padding-bottom: 1rem;
-    }
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+}
 
-    .notice-header h3 {
-        color: var(--secondary-color);
-        margin-bottom: 0.5rem;
-        font-size: 1.3rem;
-    }
+.dropdown-menu {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
 
-    .notice-date {
-        color: var(--dark-gray);
-        font-size: 0.9rem;
-    }
+.dropdown-item:hover {
+    background-color: var(--light-gray);
+}
 
-    .notice-content {
-        color: var(--text-color);
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
+.pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    border: none;
+    color: var(--primary-color);
+}
 
-    .notice-attachment {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--light-gray);
-    }
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
 
-    .attachment-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--primary-color);
-        text-decoration: none;
-        font-weight: 500;
-        transition: var(--transition);
-    }
-
-    .attachment-link:hover {
-        color: var(--secondary-color);
-    }
-
-    .no-notices {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: var(--white);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-    }
-
-    .no-notices-icon {
-        width: 80px;
-        height: 80px;
-        background: var(--light-gray);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 2rem;
-        color: var(--dark-gray);
-    }
-
-    .no-notices h3 {
-        color: var(--secondary-color);
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-    }
-
-    .no-notices p {
-        color: var(--dark-gray);
-    }
-
-    @media (max-width: 768px) {
-        .notices-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .notice-card {
-            padding: 1.5rem;
-        }
-    }
+.pagination .page-link:hover {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+}
 </style>
 {% endblock %}
     

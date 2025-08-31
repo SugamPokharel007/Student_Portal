@@ -1,0 +1,669 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Become a Contributor | Sikshya Kendra{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="contributor-hero py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <div class="hero-content">
+                    <div class="hero-icon mb-4">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h1 class="display-4 fw-bold text-white mb-3">Join Our Contributor Community</h1>
+                    <p class="lead text-white-50 mb-4">
+                        Share your knowledge, help fellow students, and become part of a growing educational community. 
+                        Your contributions make a real difference in students' academic journey.
+                    </p>
+                    <div class="hero-stats d-flex justify-content-center gap-4">
+                        <div class="stat-item">
+                            <div class="stat-number text-warning fw-bold">500+</div>
+                            <div class="stat-label text-white-50">Active Contributors</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number text-warning fw-bold">10K+</div>
+                            <div class="stat-label text-white-50">Resources Shared</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number text-warning fw-bold">50K+</div>
+                            <div class="stat-label text-white-50">Students Helped</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Benefits Section -->
+                <div class="row g-4 mb-5" data-aos="fade-up">
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <div class="benefit-icon">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            <h5 class="benefit-title">Share Knowledge</h5>
+                            <p class="benefit-description">Upload study materials, notes, and question banks to help other students excel in their studies.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <div class="benefit-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <h5 class="benefit-title">Build Reputation</h5>
+                            <p class="benefit-description">Establish yourself as a trusted educator and gain recognition in the academic community.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <div class="benefit-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <h5 class="benefit-title">Make Impact</h5>
+                            <p class="benefit-description">Your contributions directly help thousands of students achieve their educational goals.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Application Form -->
+                <div class="application-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-edit me-2"></i>Contributor Application Form
+                        </h3>
+                        <p class="card-subtitle">Tell us about yourself and why you want to contribute</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <form method="post" class="application-form" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="fas fa-university me-2"></i>Faculty Information
+                                </h5>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.faculty.id_for_label }}" class="form-label">
+                                        <i class="fas fa-graduation-cap me-2"></i>Faculty/Department
+                                    </label>
+                                    {{ form.faculty }}
+                                    {% if form.faculty.errors %}
+                                        <div class="error-message">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            {{ form.faculty.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="help-text">
+                                        Select the faculty you want to contribute to. This helps us organize content better.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="fas fa-comment me-2"></i>Motivation & Goals
+                                </h5>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.reason.id_for_label }}" class="form-label">
+                                        <i class="fas fa-lightbulb me-2"></i>Why do you want to become a contributor?
+                                    </label>
+                                    {{ form.reason }}
+                                    {% if form.reason.errors %}
+                                        <div class="error-message">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            {{ form.reason.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="help-text">
+                                        Tell us about your motivation and what you hope to achieve as a contributor.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h5 class="section-title">
+                                    <i class="fas fa-briefcase me-2"></i>Experience & Background
+                                </h5>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.experience.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user-graduate me-2"></i>Relevant Experience (Optional)
+                                    </label>
+                                    {{ form.experience }}
+                                    {% if form.experience.errors %}
+                                        <div class="error-message">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            {{ form.experience.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="help-text">
+                                        Describe any relevant experience you have in education, content creation, or your field of study.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Guidelines -->
+                            <div class="guidelines-section">
+                                <div class="guidelines-header">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <h5>Contributor Guidelines</h5>
+                                </div>
+                                <div class="guidelines-content">
+                                    <div class="guideline-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Ensure all uploaded content is accurate and educational</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Respect copyright and intellectual property rights</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Provide clear descriptions for your resources</span>
+                                    </div>
+                                    <div class="guideline-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>Maintain high quality standards in your contributions</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="form-actions">
+                                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Application
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Process Information -->
+                <div class="process-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clock me-2"></i>Application Process
+                        </h3>
+                        <p class="card-subtitle">Here's what happens after you submit your application</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="process-steps">
+                            <div class="process-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Submit Application</h6>
+                                    <p class="step-description">Fill out the form with your details and motivation</p>
+                                </div>
+                            </div>
+                            
+                            <div class="process-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Review Process</h6>
+                                    <p class="step-description">Our team reviews your application within 2-3 business days</p>
+                                </div>
+                            </div>
+                            
+                            <div class="process-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Approval & Onboarding</h6>
+                                    <p class="step-description">Get approved and receive contributor privileges</p>
+                                </div>
+                            </div>
+                            
+                            <div class="process-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Start Contributing</h6>
+                                    <p class="step-description">Begin uploading and managing educational resources</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Hero Section */
+.contributor-hero {
+    position: relative;
+    overflow: hidden;
+}
+
+.contributor-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-icon {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 2.5rem;
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.hero-stats {
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+}
+
+/* Benefits Section */
+.benefit-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.benefit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.benefit-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.benefit-title {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #2d3748;
+}
+
+.benefit-description {
+    color: #718096;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Application Card */
+.application-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.application-card .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.card-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+    opacity: 0.9;
+    margin: 0;
+}
+
+.application-card .card-body {
+    padding: 2rem;
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.help-text {
+    color: #718096;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.error-message {
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Guidelines Section */
+.guidelines-section {
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.guidelines-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.guidelines-header h5 {
+    margin: 0;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.guidelines-content {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.guideline-item {
+    display: flex;
+    align-items: center;
+    color: #4a5568;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-outline-secondary:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e0;
+}
+
+/* Process Card */
+.process-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.process-card .card-header {
+    background: #f7fafc;
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.process-card .card-title {
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.process-card .card-subtitle {
+    color: #718096;
+    margin: 0;
+}
+
+.process-card .card-body {
+    padding: 2rem;
+}
+
+.process-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.process-step {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+}
+
+.process-step:hover {
+    background: #edf2f7;
+    transform: translateY(-2px);
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0 auto 1rem;
+}
+
+.step-title {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.step-description {
+    color: #718096;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .process-steps {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .application-card .card-header,
+    .application-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .benefit-card {
+        padding: 1.5rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+[data-aos="fade-up"] {
+    animation: fadeInUp 0.6s ease-out;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.querySelector('.application-form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+    
+    // Auto-resize textareas
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+    
+    // Form submission loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+        });
+    }
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 
