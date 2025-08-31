@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subscription Successful | Student Portal{% endblock %}
+
+{% block content %}
+<section class="success-section">
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1>Subscription Successful!</h1>
+            <p>Thank you for subscribing to our premium plan. Your account has been upgraded successfully.</p>
+            
+            <div class="subscription-details">
+                <h2>Subscription Details</h2>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="label">Plan:</span>
+                        <span class="value">{{ subscription.subscription_type|title }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Start Date:</span>
+                        <span class="value">{{ subscription.start_date|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">End Date:</span>
+                        <span class="value">{{ subscription.end_date|date:"F d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h2>What's Next?</h2>
+                <div class="steps-grid">
+                    <div class="step-item">
+                        <div class="step-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3>Access Premium Content</h3>
+                        <p>Explore our premium question banks and study materials.</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3>Watch Video Solutions</h3>
+                        <p>Learn from our detailed video explanations.</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3>Join Live Sessions</h3>
+                        <p>Participate in live doubt solving sessions.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'home' %}" class="btn btn-primary">Go to Dashboard</a>
+                <a href="{% url 'contact' %}" class="btn btn-secondary">Contact Support</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-section {
+        padding: 4rem 0;
+        background-color: var(--light-gray);
+    }
+    
+    .success-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 3rem 2rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+    }
+    
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: var(--success-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        font-size: 3rem;
+    }
+    
+    .success-container h1 {
+        font-size: 2.5rem;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .success-container > p {
+        font-size: 1.2rem;
+        color: var(--dark-gray);
+        margin-bottom: 3rem;
+    }
+    
+    .subscription-details {
+        background: var(--light-gray);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        text-align: left;
+    }
+    
+    .subscription-details h2 {
+        font-size: 1.5rem;
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+    }
+    
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .detail-item .label {
+        font-size: 0.9rem;
+        color: var(--dark-gray);
+    }
+    
+    .detail-item .value {
+        font-weight: bold;
+        color: var(--text-color);
+        font-size: 1.1rem;
+    }
+    
+    .next-steps {
+        margin-bottom: 3rem;
+    }
+    
+    .next-steps h2 {
+        font-size: 1.5rem;
+        color: var(--secondary-color);
+        margin-bottom: 2rem;
+    }
+    
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+    
+    .step-item {
+        text-align: center;
+    }
+    
+    .step-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.8rem;
+    }
+    
+    .step-item h3 {
+        font-size: 1.2rem;
+        color: var(--secondary-color);
+        margin-bottom: 0.8rem;
+    }
+    
+    .step-item p {
+        color: var(--dark-gray);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    @media (max-width: 768px) {
+        .success-container {
+            padding: 2rem 1.5rem;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.5rem;
+        }
+        
+        .success-container h1 {
+            font-size: 2rem;
+        }
+        
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .steps-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %} 
