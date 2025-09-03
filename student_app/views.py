@@ -1525,7 +1525,8 @@ def admin_manage_contributor_requests(request):
         'faculties': faculties,
     }
     return render(request, 'admin_manage_contributor_requests.html', context)
-
+def chatbot_view(request):
+    return render(request, 'chatbot.html')
 
 @login_required
 def admin_manage_contacts(request):
