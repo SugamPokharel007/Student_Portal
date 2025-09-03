@@ -800,7 +800,7 @@ def add_syllabus(request, subject_id):
             allowed_extensions = ['pdf', 'doc', 'docx', 'txt']
             file_extension = file.name.split('.')[-1].lower()
             if file_extension not in allowed_extensions:
-                messages.error(request, f'Invalid file type. Allowed types: {', '.join(allowed_extensions)}')
+                messages.error(request, f"Invalid file type. Allowed types: {', '.join(allowed_extensions)}")
                 return render(request, 'add_syllabus.html', {'subject': subject})
         
         try:
@@ -854,7 +854,7 @@ def add_question_bank(request, subject_id):
         allowed_extensions = ['pdf', 'doc', 'docx', 'txt']
         file_extension = file.name.split('.')[-1].lower()
         if file_extension not in allowed_extensions:
-            messages.error(request, f'Invalid file type. Allowed types: {', '.join(allowed_extensions)}')
+            messages.error(request, f"Invalid file type. Allowed types: {', '.join(allowed_extensions)}")
             return render(request, 'add_question_bank.html', {'subject': subject})
         
         try:
