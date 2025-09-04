@@ -205,28 +205,26 @@
       </div>
     </nav>
 
-    <!-- Main Content -->
-    <main style="margin-top: 80px">
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
       {% if messages %}
-      <div class="container mt-3">
         {% for message in messages %}
-        <div
-          class="alert alert-{{ message.tags }} alert-dismissible fade show"
-          role="alert"
-        >
-          <i
-            class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"
-          ></i>
-          {{ message }}
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-          ></button>
+        <div class="toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+              {{ message }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
         </div>
         {% endfor %}
-      </div>
-      {% endif %} {% block content %}{% endblock %}
+      {% endif %}
+    </div>
+
+    <!-- Main Content -->
+    <main style="margin-top: 80px">
+      {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
@@ -381,14 +379,22 @@
         }
       });
 
-      // Auto-hide alerts
+      // Initialize and auto-hide toasts
       document.addEventListener("DOMContentLoaded", function () {
-        const alerts = document.querySelectorAll(".alert");
-        alerts.forEach((alert) => {
+        const toasts = document.querySelectorAll(".toast");
+        toasts.forEach((toastElement) => {
+          const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 3000
+          });
+          toast.show();
+          
+          // Add slide-in animation
+          toastElement.style.transform = 'translateX(100%)';
+          toastElement.style.transition = 'transform 0.3s ease-in-out';
           setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-          }, 5000);
+            toastElement.style.transform = 'translateX(0)';
+          }, 100);
         });
       });
 

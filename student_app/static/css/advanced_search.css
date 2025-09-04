@@ -13,5 +13,3 @@
 .list-view .card-body { display: flex; align-items: center; justify-content: space-between; }
 .list-view .resource-info { flex: 1; }
 .list-view .resource-actions { flex-shrink: 0; margin-left: 1rem; }
-
-

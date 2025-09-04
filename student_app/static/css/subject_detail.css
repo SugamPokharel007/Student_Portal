@@ -17,5 +17,3 @@
 .view-more-button:hover { background: #1976D2; }
 .no-content { color: #666; text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 4px; flex: 1; display: flex; align-items: center; justify-content: center; }
 @media (max-width: 768px) { .content-sections { grid-template-columns: 1fr; } }
-
-
