@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">{{ subject.name }} - Notes</h1>
+    <a href="{% url 'subject_detail' subject.id %}" class="btn btn-outline-secondary rounded-pill"><i class="fas fa-arrow-left"></i> Back to Subject</a>
+  </div>
+  <div class="row g-4">
+    {% for note in notes %}
+    <div class="col-12 col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100 note-card">
+        <div class="card-body">
+          <h5 class="card-title mb-1">{{ note.title }}</h5>
+          <span class="badge bg-primary mb-2">{{ note.subject.faculty.name }}</span>
+          <div class="mb-2 small text-muted">Posted on: {{ note.created_at|date:"F d, Y" }}</div>
+          <div class="d-flex gap-2">
+            <a href="{{ note.file.url }}" class="btn btn-outline-info btn-sm rounded-pill" target="_blank" title="View PDF"><i class="fas fa-eye"></i> View</a>
+            <a href="{{ note.file.url }}" class="btn btn-outline-success btn-sm rounded-pill" download title="Download PDF"><i class="fas fa-download"></i> Download</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">No notes available for this subject.</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<style>
+.note-card { transition: transform 0.18s, box-shadow 0.18s; }
+.note-card:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 8px 32px rgba(0,188,212,0.15); }
+</style>
+{% endblock %} 

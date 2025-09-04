@@ -10,7 +10,7 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('year/', views.year, name='year'),
     path('contact/', views.contact_view, name='contact'),
-    
+    path('chatbot/',views.chatbot_view,name='chatbot'),
     # Authentication
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),

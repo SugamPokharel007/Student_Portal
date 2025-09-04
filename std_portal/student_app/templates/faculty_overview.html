@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ faculty.name }} Overview | Sikshya Kendra{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold text-gradient mb-2">{{ faculty.name }}</h1>
+                    <p class="text-muted mb-0">{{ faculty.description }}</p>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ faculty.get_academic_structure_display }} System - {{ faculty.total_levels }} {{ faculty.academic_structure }}s
+                    </p>
+                </div>
+                <div class="faculty-icon-large">
+                    {% if faculty.name == 'BSc CSIT' %}
+                        <i class="fas fa-laptop-code"></i>
+                    {% elif faculty.name == 'BBS' %}
+                        <i class="fas fa-chart-line"></i>
+                    {% elif faculty.name == 'BBA' %}
+                        <i class="fas fa-briefcase"></i>
+                    {% else %}
+                        <i class="fas fa-flask"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="level-navigation">
+                {% for level in levels %}
+                <a href="{% url 'faculty_subjects' faculty.slug level %}" class="level-btn">
+                    <i class="fas fa-star me-2"></i>{% if faculty.academic_structure == 'semester' %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects by Level -->
+    {% if subjects_by_level %}
+    <div class="row g-4">
+        {% for level, subjects in subjects_by_level.items %}
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+            <div class="level-card">
+                <div class="level-header">
+                    <h3 class="level-title">
+                        {% if level == 0 %}
+                            Uncategorized Subjects
+                        {% else %}
+                            {% if faculty.academic_structure == 'semester' %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                        {% endif %}
+                    </h3>
+                    <span class="subject-count">{{ subjects|length }} subjects</span>
+                </div>
+                
+                <div class="subjects-list">
+                    {% for subject in subjects %}
+                    <div class="subject-item">
+                        <div class="subject-info">
+                            <h5 class="subject-name">{{ subject.name }}</h5>
+                            <div class="subject-stats">
+                                <span class="stat">
+                                    <i class="fas fa-file-alt text-primary"></i>
+                                    {{ subject.syllabi.all|length }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-sticky-note text-success"></i>
+                                    {{ subject.notes.all|length }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-question-circle text-warning"></i>
+                                    {{ subject.question_banks.all|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <a href="{% url 'subject_detail' subject.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="level-footer">
+                    {% if level == 0 %}
+                        <a href="{% url 'faculty_subjects' faculty.slug 1 %}" class="btn btn-primary">
+                            View All Uncategorized Subjects
+                        </a>
+                    {% else %}
+                        <a href="{% url 'faculty_subjects' faculty.slug level %}" class="btn btn-primary">
+                            View All {% if faculty.academic_structure == 'semester' %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Year{% endif %} Subjects
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="empty-state text-center py-5">
+                <div class="empty-icon mb-4">
+                    <i class="fas fa-book-open fa-3x text-muted"></i>
+                </div>
+                <h3 class="text-muted mb-3">No Subjects Available</h3>
+                <p class="text-muted mb-4">There are no subjects available for {{ faculty.name }} yet.</p>
+                {% if user.is_superuser %}
+                <a href="{% url 'admin:index' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add Subject
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.faculty-icon-large {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+}
+
+.level-navigation {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.level-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #718096;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.level-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.level-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    border: 1px solid #e2e8f0;
+}
+
+.level-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.level-title {
+    color: #2d3748;
+    margin: 0;
+    font-weight: 600;
+}
+
+.subject-count {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.subjects-list {
+    margin-bottom: 1.5rem;
+}
+
+.subject-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.subject-item:hover {
+    background: #e2e8f0;
+    transform: translateX(5px);
+}
+
+.subject-name {
+    color: #2d3748;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.subject-stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+.stat i {
+    margin-right: 0.25rem;
+}
+
+.level-footer {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.empty-state {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon {
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .level-navigation {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .level-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .faculty-icon-large {
+        align-self: center;
+    }
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Contribute Resource | Sikshya Kendra{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>Contribute Resource
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="resourceForm">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Submit Resource
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const facultySelect = document.getElementById('id_faculty');
+    const subjectSelect = document.getElementById('id_subject');
+    
+    // Function to load subjects for selected faculty
+    function loadSubjects(facultyId) {
+        if (!facultyId) {
+            subjectSelect.innerHTML = '<option value="">Select Subject (choose faculty first)</option>';
+            return;
+        }
+        
+        // Show loading state
+        subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
+        
+        // Fetch subjects for the selected faculty
+        fetch(`/api/subjects/${facultyId}/`)
+            .then(response => response.json())
+            .then(data => {
+                subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                data.subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = `${subject.name} (${subject.level_name})`;
+                    subjectSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading subjects:', error);
+                subjectSelect.innerHTML = '<option value="">Error loading subjects</option>';
+            });
+    }
+    
+    // Event listener for faculty selection
+    facultySelect.addEventListener('change', function() {
+        loadSubjects(this.value);
+    });
+    
+    // Load subjects if faculty is pre-selected
+    if (facultySelect.value) {
+        loadSubjects(facultySelect.value);
+    }
+});
+</script>
+{% endblock %} 
