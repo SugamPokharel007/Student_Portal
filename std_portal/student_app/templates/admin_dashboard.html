@@ -1,0 +1,740 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Admin Dashboard | Sikshya Kendra{% endblock %}
+
+{% block extra_head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold text-gradient mb-2">Admin Dashboard</h1>
+                    <p class="text-muted mb-0">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+                </div>
+                <div class="admin-actions">
+                    <button onclick="forceRefresh()" class="btn btn-outline-info me-2">
+                        <i class="fas fa-sync-alt me-2"></i>Force Refresh
+                    </button>
+                    <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary me-2" target="_blank">
+                        <i class="fas fa-cog me-2"></i>Django Admin
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>View Site
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-primary text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_users }}</h3>
+                    <p class="stat-label">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-success text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_subjects }}</h3>
+                    <p class="stat-label">Total Subjects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-info text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_resources }}</h3>
+                    <p class="stat-label">Total Resources</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-warning text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_pending }}</h3>
+                    <p class="stat-label">Pending Approvals</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-purple text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ contributor_requests_count }}</h3>
+                    <p class="stat-label">Contributor Requests</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Breakdown -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt text-primary me-2"></i>Syllabus
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.syllabi.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.syllabi.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.syllabi.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-primary mt-3" target="_blank">
+                        Manage Syllabus
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sticky-note text-success me-2"></i>Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.notes.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.notes.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.notes.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-success mt-3" target="_blank">
+                        Manage Notes
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle text-warning me-2"></i>Question Banks
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.question_banks.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.question_banks.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.question_banks.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-warning mt-3" target="_blank">
+                        Manage Questions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contributor Requests Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-plus text-purple me-2"></i>Recent Contributor Requests
+                    </h5>
+                    <a href="{% url 'admin_manage_contributor_requests' %}" class="btn btn-sm btn-outline-purple">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if contributor_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Faculty</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in contributor_requests %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2">
+                                                    <i class="fas fa-user-circle fa-lg text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold">{{ request.user.get_full_name|default:request.user.username }}</div>
+                                                    <small class="text-muted">{{ request.user.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ request.faculty.name }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 200px;" title="{{ request.reason }}">
+                                                {{ request.reason|truncatechars:50 }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if request.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif request.status == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif request.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ request.submitted_at|date:"M d, Y" }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'admin_manage_contributor_requests' %}?action=approve&id={{ request.id }}" 
+                                                   class="btn btn-outline-success" 
+                                                   onclick="return confirm('Are you sure you want to approve this request?')">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{% url 'admin_manage_contributor_requests' %}?action=reject&id={{ request.id }}" 
+                                                   class="btn btn-outline-danger"
+                                                   onclick="return confirm('Are you sure you want to reject this request?')">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                                <a href="{% url 'admin_manage_contributor_requests' %}?action=view&id={{ request.id }}" 
+                                                   class="btn btn-outline-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No contributor requests found</h6>
+                            <p class="text-muted mb-0">All requests have been processed or no new requests are pending.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Faculty Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-university text-info me-2"></i>Faculty Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Faculty</th>
+                                    <th>Subjects</th>
+                                    <th>Syllabus</th>
+                                    <th>Notes</th>
+                                    <th>Questions</th>
+                                    <th>Total Resources</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in faculty_stats %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="faculty-icon me-2">
+                                                {% if stat.faculty.name == 'BSc CSIT' %}
+                                                    <i class="fas fa-laptop-code text-primary"></i>
+                                                {% elif stat.faculty.name == 'BBS' %}
+                                                    <i class="fas fa-chart-line text-success"></i>
+                                                {% elif stat.faculty.name == 'BBA' %}
+                                                    <i class="fas fa-briefcase text-info"></i>
+                                                {% else %}
+                                                    <i class="fas fa-flask text-warning"></i>
+                                                {% endif %}
+                                            </div>
+                                            <span class="fw-semibold">{{ stat.faculty.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-secondary">{{ stat.subjects }}</span></td>
+                                    <td><span class="badge bg-primary">{{ stat.syllabi }}</span></td>
+                                    <td><span class="badge bg-success">{{ stat.notes }}</span></td>
+                                    <td><span class="badge bg-warning">{{ stat.questions }}</span></td>
+                                    <td><span class="badge bg-info">{{ stat.total_resources }}</span></td>
+                                    <td>
+                                        <a href="{% url 'faculty_overview' stat.faculty.slug %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Pending Items -->
+    <div class="row g-4">
+        <!-- Recent Uploads -->
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-upload text-success me-2"></i>Recent Uploads
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_uploads %}
+                    <div class="activity-list">
+                        {% for resource in recent_uploads %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                {% if resource|class_name == 'Syllabus' %}
+                                    <i class="fas fa-file-alt text-primary"></i>
+                                {% elif resource|class_name == 'Note' %}
+                                    <i class="fas fa-sticky-note text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-question-circle text-warning"></i>
+                                {% endif %}
+                            </div>
+                            <div class="activity-content">
+                                <h6 class="activity-title">{{ resource.title }}</h6>
+                                <p class="activity-meta">
+                                    {{ resource|class_name }} • {{ resource.subject.name }} • 
+                                    {{ resource.created_at|date:"M d, Y H:i" }}
+                                </p>
+                            </div>
+                            <div class="activity-status">
+                                <span class="badge bg-{% if resource.status == 'approved' %}success{% elif resource.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                    {{ resource.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No recent uploads</p>
+                    {% endif %}
+                    
+                    <!-- Debug Info (only visible to superusers) -->
+                    {% if user.is_superuser %}
+                    <div class="mt-3 p-2 bg-light border rounded">
+                        <small class="text-muted">
+                            <strong>Debug:</strong> Total recent uploads: {{ recent_uploads|length }}<br>
+                            {% for resource in recent_uploads %}
+                                - {{ resource|class_name }}: {{ resource.title }} ({{ resource.created_at|date:"Y-m-d H:i:s" }})<br>
+                            {% endfor %}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approvals -->
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock text-warning me-2"></i>Pending Approvals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_approvals %}
+                    <div class="activity-list">
+                        {% for resource in pending_approvals %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                {% if resource|class_name == 'Syllabus' %}
+                                    <i class="fas fa-file-alt text-primary"></i>
+                                {% elif resource|class_name == 'Note' %}
+                                    <i class="fas fa-sticky-note text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-question-circle text-warning"></i>
+                                {% endif %}
+                            </div>
+                            <div class="activity-content">
+                                <h6 class="activity-title">{{ resource.title }}</h6>
+                                <p class="activity-meta">
+                                    {{ resource|class_name }} • {{ resource.subject.name }} • 
+                                    {{ resource.created_at|date:"M d, Y" }}
+                                </p>
+                            </div>
+                            <div class="activity-actions">
+                                {% if resource|class_name == 'Syllabus' %}
+                                    <a href="{% url 'admin:index' %}" 
+                                       class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% elif resource|class_name == 'Note' %}
+                                    <a href="{% url 'admin:index' %}" 
+                                       class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'admin:index' %}" 
+                                       class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No pending approvals</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mt-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_faculties' %}" class="btn btn-outline-dark w-100">
+                                <i class="fas fa-university me-2"></i>Manage Faculties
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_subjects' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-book me-2"></i>Manage Subjects
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_syllabus' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-alt me-2"></i>Manage Syllabus
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_notes' %}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-sticky-note me-2"></i>Manage Notes
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_question_banks' %}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-question-circle me-2"></i>Manage Q Banks
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_contributor_requests' %}" class="btn btn-outline-purple w-100">
+                                <i class="fas fa-user-plus me-2"></i>Manage Requests
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_contacts' %}" class="btn btn-outline-teal w-100">
+                                <i class="fas fa-envelope me-2"></i>Manage Contacts
+                            </a>
+                        </div>
+                        <div class="col-12">
+                            <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary w-100" target="_blank">
+                                <i class="fas fa-cog me-2"></i>Django Admin Panel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Force refresh function
+function forceRefresh() {
+    // Clear any cached data
+    if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_BACK_FORWARD) {
+        window.location.reload(true);
+    }
+    
+    // Add timestamp to prevent caching
+    const timestamp = new Date().getTime();
+    const currentUrl = window.location.href;
+    const separator = currentUrl.indexOf('?') !== -1 ? '&' : '?';
+    window.location.href = currentUrl + separator + '_t=' + timestamp;
+}
+
+// Auto-refresh every 30 seconds (optional)
+// setInterval(function() {
+//     location.reload();
+// }, 30000);
+</script>
+
+<style>
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card {
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.btn-outline-purple {
+    color: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.btn-outline-purple:hover {
+    color: white;
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.stat-label {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    height: 100%;
+}
+
+.card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    border-radius: 16px 16px 0 0;
+}
+
+.card-title {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.resource-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #64748b;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.faculty-icon {
+    width: 30px;
+    height: 30px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.3s ease;
+}
+
+.activity-item:hover {
+    background-color: #f8fafc;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.activity-meta {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.activity-status {
+    margin-left: 1rem;
+}
+
+.activity-actions {
+    margin-left: 1rem;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .admin-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %} 

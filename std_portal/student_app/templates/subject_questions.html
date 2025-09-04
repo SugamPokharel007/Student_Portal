@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">{{ subject.name }} - Important Questions</h1>
+    <a href="{% url 'subject_detail' subject.id %}" class="btn btn-outline-secondary rounded-pill"><i class="fas fa-arrow-left"></i> Back to Subject</a>
+  </div>
+  <div class="row g-4">
+    {% for qb in questions %}
+    <div class="col-12 col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 h-100 qb-card">
+        <div class="card-body">
+          <span class="badge bg-primary mb-2">{{ qb.subject.faculty.name }}</span>
+          <h5 class="card-title mb-1">{{ qb.title }}</h5>
+          <p class="card-text small text-muted">{{ qb.description }}</p>
+          <div class="d-flex gap-2">
+            <a href="{{ qb.file.url }}" class="btn btn-outline-info btn-sm rounded-pill" target="_blank"><i class="fas fa-eye"></i> View</a>
+            <a href="{{ qb.file.url }}" class="btn btn-outline-success btn-sm rounded-pill" download><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="mt-2 small text-muted">Added on: {{ qb.created_at|date:"F d, Y" }}</div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">No important questions available for this subject.</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<style>
+.qb-card { transition: transform 0.18s, box-shadow 0.18s; }
+.qb-card:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 8px 32px rgba(25,118,210,0.15); }
+</style>
+{% endblock %} 
