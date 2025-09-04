@@ -1,488 +1,432 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Student Portal - Home{% endblock %}
+{% block title %}Sikshya Kendra - Student Portal{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero fade-in">
-    <div class="container">
-        <div class="hero-content">
-            <h1>Welcome to Student Portal</h1>
-            <p>Your one-stop destination for academic resources, notices, and more</p>
-            {% if not user.is_authenticated %}
-            <div class="hero-buttons">
-                <a href="{% url 'login' %}" class="btn btn-primary">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
-                </a>
-                <a href="{% url 'register' %}" class="btn btn-secondary">
-                    <i class="fas fa-user-plus"></i>
-                    Register
-                </a>
+<section class="hero-section position-relative overflow-hidden" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 80vh; display: flex; align-items: center;">
+    <div class="container position-relative z-3">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h1 class="display-4 fw-bold text-white mb-4">
+                    Welcome to <span class="text-warning">Sikshya Kendra</span>
+                </h1>
+                <p class="lead text-white-50 mb-4">
+                    Your comprehensive student portal for accessing educational resources, study materials, and academic support across various faculties including BSc CSIT, BBS, BBA, and more.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                    <a href="{% url 'search' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-search me-2"></i>Explore Resources
+                    </a>
+                </div>
             </div>
-            {% endif %}
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="text-center">
+                    <div class="position-relative">
+                        <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 300px; height: 300px;">
+                            <i class="fas fa-graduation-cap text-white" style="font-size: 8rem;"></i>
+                        </div>
+                        <!-- Floating elements -->
+                        <div class="position-absolute top-0 start-0 bg-warning rounded-circle" style="width: 60px; height: 60px; animation: float 3s ease-in-out infinite;"></div>
+                        <div class="position-absolute top-25 end-0 bg-info rounded-circle" style="width: 40px; height: 40px; animation: float 3s ease-in-out infinite 1s;"></div>
+                        <div class="position-absolute bottom-0 start-25 bg-success rounded-circle" style="width: 50px; height: 50px; animation: float 3s ease-in-out infinite 2s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Background shapes -->
+    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden">
+        <div class="position-absolute top-0 start-0 bg-white bg-opacity-5" style="width: 200px; height: 200px; border-radius: 50%; transform: translate(-50%, -50%);"></div>
+        <div class="position-absolute top-50 end-0 bg-white bg-opacity-5" style="width: 300px; height: 300px; border-radius: 50%; transform: translate(50%, -50%);"></div>
+        <div class="position-absolute bottom-0 start-25 bg-white bg-opacity-5" style="width: 150px; height: 150px; border-radius: 50%; transform: translate(-50%, 50%);"></div>
+    </div>
+</section>
+
+
+
+<!-- Faculties Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Our Faculties</h2>
+                <p class="lead text-muted">Explore resources from different academic disciplines</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-laptop-code fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">BSc CSIT</h5>
+                        <p class="text-muted mb-3">Computer Science & Information Technology</p>
+                        <a href="{% url 'faculty_overview' 'bsccsit' %}" class="btn btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-chart-line fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">BBS</h5>
+                        <p class="text-muted mb-3">Bachelor of Business Studies</p>
+                        <a href="{% url 'faculty_overview' 'bbs' %}" class="btn btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-briefcase fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">BBA</h5>
+                        <p class="text-muted mb-3">Bachelor of Business Administration</p>
+                        <a href="{% url 'faculty_overview' 'bba' %}" class="btn btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-flask fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">BSc</h5>
+                        <p class="text-muted mb-3">Bachelor of Science</p>
+                        <a href="{% url 'faculty_overview' 'bsc' %}" class="btn btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Notices Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Latest Notices</h2>
+                <p class="lead text-muted">Stay updated with important announcements and news</p>
+            </div>
+        </div>
+        
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-bullhorn fa-lg text-warning"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Important Updates</h5>
+                                <p class="text-muted mb-0">New study materials and exam schedules</p>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-3">Check out the latest notices for exam schedules, new study materials, important announcements, and more updates from your faculty.</p>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'notices' %}" class="btn btn-warning">
+                                <i class="fas fa-eye me-2"></i>View All Notices
+                            </a>
+                            <a href="{% url 'notices' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-bell me-2"></i>Subscribe to Updates
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Features Section -->
-<section class="section features">
+<section class="py-5 bg-light">
     <div class="container">
-        <div class="section-header">
-            <h2>Portal Features</h2>
-            <p>Everything you need for your academic journey</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fas fa-book"></i>
-                </div>
-                <h3>Subject Materials</h3>
-                <p>Access course materials, syllabi, and study resources for all your subjects</p>
-            </div>
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fas fa-bullhorn"></i>
-                </div>
-                <h3>Notices</h3>
-                <p>Stay updated with the latest announcements and important information</p>
-            </div>
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <h3>Question Banks</h3>
-                <p>Practice with previous exam questions and prepare for your assessments</p>
-            </div>
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fas fa-sticky-note"></i>
-                </div>
-                <h3>Notes</h3>
-                <p>Access and share study notes to enhance your learning experience</p>
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Why Choose Sikshya Kendra?</h2>
+                <p class="lead text-muted">Comprehensive features designed for modern education</p>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- Latest Notices Section -->
-<section class="section latest-notices">
-    <div class="container">
-        <div class="section-header">
-            <h2>Latest Notices</h2>
-            <p>Stay informed with recent announcements</p>
-        </div>
-        <div class="notices-grid">
-            {% for notice in latest_notices %}
-            <div class="notice-card fade-in">
-                <div class="notice-header">
-                    <h3>{{ notice.title }}</h3>
-                    <span class="notice-date">{{ notice.created_at|date:"M d, Y" }}</span>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-search fa-lg text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Advanced Search</h5>
+                        <p class="text-muted mb-0">Find exactly what you need with our intelligent search system that filters by faculty, subject, and resource type.</p>
+                    </div>
                 </div>
-                <p>{{ notice.content|truncatewords:30 }}</p>
             </div>
-            {% empty %}
-            <div class="no-notices fade-in">
-                <i class="fas fa-info-circle"></i>
-                <p>No notices available at the moment.</p>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-users fa-lg text-success"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Community Driven</h5>
+                        <p class="text-muted mb-0">Contribute your own resources and help build a comprehensive knowledge base for fellow students.</p>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
-        </div>
-        <div class="text-center mt-4">
-            <a href="{% url 'notice_list' %}" class="btn btn-primary">
-                <i class="fas fa-list"></i>
-                View All Notices
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Year Selection Section -->
-<section class="section year-selection">
-    <div class="container">
-        <div class="section-header">
-            <h2>Select Your Year</h2>
-            <p>Access resources specific to your academic year</p>
-        </div>
-        <div class="year-grid">
-            <a href="{% url 'subjects' 'first' %}" class="year-card fade-in">
-                <div class="year-icon">
-                    <i class="fas fa-1"></i>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-mobile-alt fa-lg text-warning"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Mobile Friendly</h5>
+                        <p class="text-muted mb-0">Access your study materials anywhere, anytime with our responsive design that works on all devices.</p>
+                    </div>
                 </div>
-                <h3>First Year</h3>
-                <p>Foundation courses and introductory subjects</p>
-            </a>
-            <a href="{% url 'subjects' 'second' %}" class="year-card fade-in">
-                <div class="year-icon">
-                    <i class="fas fa-2"></i>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-shield-alt fa-lg text-info"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Quality Assured</h5>
+                        <p class="text-muted mb-0">All resources are reviewed and approved by our team to ensure high-quality educational content.</p>
+                    </div>
                 </div>
-                <h3>Second Year</h3>
-                <p>Core subjects and specialized topics</p>
-            </a>
-            <a href="{% url 'subjects' 'third' %}" class="year-card fade-in">
-                <div class="year-icon">
-                    <i class="fas fa-3"></i>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-chart-bar fa-lg text-danger"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Analytics Dashboard</h5>
+                        <p class="text-muted mb-0">Track your learning progress and discover trending subjects with our comprehensive analytics.</p>
+                    </div>
                 </div>
-                <h3>Third Year</h3>
-                <p>Advanced courses and practical applications</p>
-            </a>
-            <a href="{% url 'subjects' 'fourth' %}" class="year-card fade-in">
-                <div class="year-icon">
-                    <i class="fas fa-4"></i>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-headset fa-lg text-secondary"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">24/7 Support</h5>
+                        <p class="text-muted mb-0">Get help whenever you need it with our dedicated support team and comprehensive help resources.</p>
+                    </div>
                 </div>
-                <h3>Last Year</h3>
+                <h3>Fourth Year</h3>
                 <p>Final year projects and specialized studies</p>
             </a>
         </div>
     </div>
 </section>
 
-<!-- Contact Section -->
-<section class="section contact-section">
+
+
+<!-- Recent Resources Section -->
+{% if recent_resources %}
+<section class="py-5 bg-light">
     <div class="container">
-        <div class="section-header">
-            <h2>Get in Touch</h2>
-            <p>Have questions or need assistance?</p>
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold text-gradient mb-3">Recent Resources</h2>
+                <p class="lead text-muted">Latest study materials added by our community</p>
+            </div>
         </div>
-        <div class="contact-container fade-in">
-            <div class="contact-info">
-                <div class="contact-item">
-                    <i class="fas fa-envelope"></i>
-                    <div>
-                        <h3>Email Us</h3>
-                        <p>msss@studentportal.com</p>
-                    </div>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-phone"></i>
-                    <div>
-                        <h3>Call Us</h3>
-                        <p>+977-9800000000</p>
-                    </div>
-                </div>
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div>
-                        <h3>Visit Us</h3>
-                        <p>Prithivi Narayan Campus, Pokhara</p>
+        
+        <div class="row g-4">
+            {% for resource in recent_resources %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                <i class="fas fa-file-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ resource.title|truncatechars:40 }}</h6>
+                                <small class="text-muted">{{ resource.subject.name }}</small>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-3">{{ resource.description|truncatewords:15|default:"No description available" }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">{{ resource.created_at|date:"M d, Y" }}</small>
+                            <a href="{% url 'subject_detail' resource.subject.id %}" class="btn btn-outline-primary btn-sm">View</a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="contact-form-container">
-                <a href="{% url 'contact' %}" class="btn btn-primary">
-                    <i class="fas fa-envelope"></i>
-                    Contact Form
-                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-users fa-lg text-primary"></i>
+                        </div>
+                        <h3 class="fw-bold text-primary mb-2" id="studentCount">1000+</h3>
+                        <p class="text-muted mb-0">Active Students</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-book fa-lg text-success"></i>
+                        </div>
+                        <h3 class="fw-bold text-success mb-2" id="resourceCount">500+</h3>
+                        <p class="text-muted mb-0">Study Resources</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-university fa-lg text-warning"></i>
+                        </div>
+                        <h3 class="fw-bold text-warning mb-2" id="facultyCount">4</h3>
+                        <p class="text-muted mb-0">Faculties</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-download fa-lg text-info"></i>
+                        </div>
+                        <h3 class="fw-bold text-info mb-2" id="downloadCount">10K+</h3>
+                        <p class="text-muted mb-0">Downloads</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
-{% endblock %}
 
-{% block extra_css %}
+<!-- Call to Action Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h2 class="display-5 fw-bold text-white mb-4">Ready to Start Learning?</h2>
+                <p class="lead text-white-50 mb-4">Join thousands of students who are already using Sikshya Kendra to enhance their academic journey.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Join Now
+                    </a>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-envelope me-2"></i>Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <style>
-    /* Container */
-    .container {
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem;
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
     }
-
-    /* Hero Section */
-    .hero {
-        background: linear-gradient(rgba(74, 144, 226, 0.9), rgba(44, 62, 80, 0.9)), url('{% static "images/hero-bg.jpg" %}');
-        background-size: cover;
-        background-position: center;
-        color: white;
-        padding: 6rem 0;
-        text-align: center;
-        margin-top: -2rem;
-        margin-bottom: 3rem;
+    
+    .hero-section {
+        position: relative;
     }
-
-    .hero-content {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 1rem;
+    
+    .z-3 {
+        z-index: 3;
     }
-
-    .hero h1 {
-        font-size: clamp(2rem, 5vw, 3rem);
-        margin-bottom: 1rem;
-        font-weight: 700;
+    
+    .text-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
-
-    .hero p {
-        font-size: clamp(1rem, 2vw, 1.2rem);
-        margin-bottom: 2rem;
-        opacity: 0.9;
+    
+    .card {
+        transition: all 0.3s ease;
     }
-
-    .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    /* Section Styles */
-    .section {
-        padding: 4rem 0;
-    }
-
-    .section-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-
-    .section-header h2 {
-        font-size: clamp(1.8rem, 4vw, 2.5rem);
-        color: var(--secondary-color);
-        margin-bottom: 1rem;
-    }
-
-    .section-header p {
-        font-size: clamp(1rem, 2vw, 1.2rem);
-        color: var(--dark-gray);
-    }
-
-    /* Features Grid */
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        padding: 0 1rem;
-    }
-
-    .feature-card {
-        background: var(--white);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        text-align: center;
-        transition: var(--transition);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: var(--shadow);
-    }
-
-    .feature-icon {
-        width: 70px;
-        height: 70px;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 1.8rem;
-    }
-
-    .feature-card h3 {
-        margin-bottom: 1rem;
-        color: var(--secondary-color);
-        font-size: clamp(1.2rem, 2vw, 1.5rem);
-    }
-
-    .feature-card p {
-        color: var(--dark-gray);
-        font-size: clamp(0.9rem, 1.5vw, 1rem);
-    }
-
-    /* Notices Grid */
-    .notices-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        padding: 0 1rem;
-    }
-
-    .notice-card {
-        background: var(--white);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: var(--shadow);
-        transition: var(--transition);
-        height: 100%;
-    }
-
-    .notice-card:hover {
+    
+    .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .notice-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .notice-header h3 {
-        font-size: clamp(1.1rem, 2vw, 1.3rem);
-        color: var(--secondary-color);
-    }
-
-    .notice-date {
-        font-size: 0.9rem;
-        color: var(--dark-gray);
-    }
-
-    /* Year Grid */
-    .year-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        padding: 0 1rem;
-    }
-
-    .year-card {
-        background: var(--white);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        text-align: center;
-        text-decoration: none;
-        color: inherit;
-        transition: var(--transition);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .year-card:hover {
-        transform: translateY(-10px);
-        box-shadow: var(--shadow);
-    }
-
-    .year-icon {
-        width: 70px;
-        height: 70px;
-        background: var(--secondary-color);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 1.8rem;
-    }
-
-    .year-card h3 {
-        margin-bottom: 1rem;
-        color: var(--secondary-color);
-        font-size: clamp(1.2rem, 2vw, 1.5rem);
-    }
-
-    .year-card p {
-        color: var(--dark-gray);
-        font-size: clamp(0.9rem, 1.5vw, 1rem);
-    }
-
-    /* Contact Section */
-    .contact-container {
-        background: var(--white);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        box-shadow: var(--shadow);
-    }
-
-    .contact-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-    }
-
-    .contact-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .contact-item i {
-        font-size: 1.5rem;
-        color: var(--primary-color);
-    }
-
-    .contact-item h3 {
-        font-size: clamp(1rem, 1.5vw, 1.2rem);
-        margin-bottom: 0.5rem;
-        color: var(--secondary-color);
-    }
-
-    .contact-form-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 2rem;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .container {
-            padding: 0 2rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .hero {
-            padding: 4rem 0;
-        }
-
-        .section {
-            padding: 3rem 0;
-        }
-
-        .features-grid,
-        .notices-grid,
-        .year-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        .contact-info {
-            grid-template-columns: 1fr;
-        }
-
-        .hero-buttons {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .hero-buttons .btn {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .hero {
-            padding: 3rem 0;
-        }
-
-        .section {
-            padding: 2rem 0;
-        }
-
-        .feature-card,
-        .notice-card,
-        .year-card {
-            padding: 1.5rem;
-        }
-
-        .contact-container {
-            padding: 1.5rem;
-        }
     }
 </style>
+
+<script>
+    // Animate numbers on scroll
+    function animateNumbers() {
+        const counters = document.querySelectorAll('[id$="Count"]');
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent);
+            const increment = target / 100;
+            let current = 0;
+            
+            const updateCounter = () => {
+                if (current < target) {
+                    current += increment;
+                    counter.textContent = Math.ceil(current) + (counter.id === 'studentCount' || counter.id === 'downloadCount' ? '+' : '');
+                    setTimeout(updateCounter, 20);
+                } else {
+                    counter.textContent = target + (counter.id === 'studentCount' || counter.id === 'downloadCount' ? '+' : '');
+                }
+            };
+            
+            updateCounter();
+        });
+    }
+    
+    // Trigger animation when stats section is visible
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateNumbers();
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const statsSection = document.querySelector('.bg-light');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+    });
+</script>
 {% endblock %}
  

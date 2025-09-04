@@ -1,0 +1,153 @@
+/* Universal styles */
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+  }
+  
+
+  
+  /* Navbar styles */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #002855;
+    position: fixed;
+    top: 0px;
+    width: 100vw;
+    padding: 0 20px; 
+    opacity: 1;
+    z-index: 100;
+  }
+   /*login button of */
+  .login-button {
+    background-color: #11ea73b8;
+    color:black ;
+   border-radius: 20px;
+    height: 40px;
+    width: 80px;
+    padding: 10%;
+   }
+   .login-button:hover {
+    background-color: #46f90a;
+    color: white;
+  }
+  .link-login{
+    text-decoration: none;
+    font-size: medium;
+  }
+  
+  
+  
+  /* Navbar item container */
+.items-container ul {
+  list-style: none;
+}
+
+/* Navbar item styles */
+.items-container ul li {
+  display: inline;
+}
+
+/* Navbar link styles */
+.nav-items {
+  text-decoration: none;
+  color: white;
+  padding: 1rem;
+  display: inline-block;
+}
+
+/* Navbar link hover effect */
+.nav-items:hover {
+  background-color: rgb(10, 62, 250);
+}
+
+/* Year dropdown styles */
+.year {
+  width: 100px; 
+  text-align: center;
+  gap: 0px;
+}
+
+/* Dropdown menu styles */
+.dropdown {
+  position: relative;
+}
+
+.drop {
+  position: absolute;
+  right: 4px;
+  top: 34px;
+  text-align: center;
+  background-color: rgba(77, 102, 244, 0.521);
+  display: none;
+  max-width: 100px; 
+}
+.drop li a{
+  width: 100%;
+}
+
+
+.drop .nav-items:hover {
+  background-color: rgb(10, 62, 250);  
+  color: white;  
+}
+
+/* Show dropdown menu on hover */
+.dropdown:hover .drop {
+  display: block !important;
+}
+
+/* Icon styles */
+.fa {
+  padding-left: 12px;
+}
+
+/* styling of login and register button  */
+.logreg_buttons{
+color: white;
+text-decoration: none;
+}
+
+.logreg-button{
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+}
+.logreg-button:hover {
+  background-color: #0056b3;
+}
+
+  /* footer code */
+  
+.footer{
+  height: 150px;
+  width: 100vw;
+  background-color:#002a73;
+  display: flex;
+  justify-content: space-between;
+  color:white;
+  margin-top: 40px;
+
+}
+
+.footer-content{
+  padding: 10px 30px;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.social-media{
+  font-size: 1.5em;
+  width: 200px;
+  margin-right: 20px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+

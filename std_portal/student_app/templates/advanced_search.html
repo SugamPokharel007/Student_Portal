@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Advanced Search | Sikshya Kendra{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5" data-aos="fade-up">
+        <h1 class="display-5 fw-bold mb-3">Advanced Search</h1>
+        <p class="lead text-muted">Find exactly what you need with our intelligent search system</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card border-0 shadow-sm mb-5" data-aos="fade-up">
+        <div class="card-body p-4">
+            <form method="get" class="row g-3">
+                <!-- Search Query -->
+                <div class="col-12">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="query" class="form-control form-control-lg" 
+                               placeholder="Search for resources, subjects, or topics..." 
+                               value="{{ form.query.value|default:'' }}">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters Row -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-university me-2 text-primary"></i>Faculty
+                    </label>
+                    {{ form.faculty }}
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-book me-2 text-primary"></i>Subject
+                    </label>
+                    {{ form.subject }}
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-calendar me-2 text-primary"></i>Year
+                    </label>
+                    <div class="row g-2">
+                        {% for year in form.year %}
+                        <div class="col-6">
+                            <div class="form-check">
+                                {{ year }}
+                                <label class="form-check-label" for="{{ year.id_for_label }}">
+                                    {{ year.choice_label }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>Resource Type
+                    </label>
+                    <div class="row g-2">
+                        {% for type in form.resource_type %}
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ type }}
+                                <label class="form-check-label" for="{{ type.id_for_label }}">
+                                    {{ type.choice_label }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Sort Options -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-sort me-2 text-primary"></i>Sort By
+                    </label>
+                    {{ form.sort_by }}
+                </div>
+
+                <!-- Clear Filters -->
+                <div class="col-md-6 d-flex align-items-end">
+                    <a href="{% url 'advanced_search' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="row">
+        <!-- Results Header -->
+        <div class="col-12 mb-4" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold mb-1">Search Results</h4>
+                    <p class="text-muted mb-0">
+                        {% if form.query.value %}
+                            Found {{ results_count }} results for "{{ form.query.value }}"
+                        {% else %}
+                            Showing {{ results_count }} resources
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" id="gridView">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" id="listView">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Grid -->
+        <div class="col-12" id="resultsContainer" data-aos="fade-up">
+            {% if page_obj %}
+                <div class="row g-4" id="resultsGrid">
+                    {% for resource in page_obj %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card border-0 shadow-sm h-100 resource-card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-{% if resource|class_name == 'Syllabus' %}primary{% elif resource|class_name == 'Note' %}success{% else %}warning{% endif %} bg-opacity-10 rounded-circle p-2 me-3">
+                                        <i class="fas {% if resource|class_name == 'Syllabus' %}fa-file-alt{% elif resource|class_name == 'Note' %}fa-sticky-note{% else %}fa-question-circle{% endif %} text-{% if resource|class_name == 'Syllabus' %}primary{% elif resource|class_name == 'Note' %}success{% else %}warning{% endif %}"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ resource.title|truncatechars:40 }}</h6>
+                                        <small class="text-muted">{{ resource.subject.name }}</small>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-muted mb-3">
+                                    {{ resource.description|truncatewords:15|default:"No description available" }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex gap-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-download me-1"></i>{{ resource.download_count }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-eye me-1"></i>{{ resource.view_count }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-{% if resource|class_name == 'Syllabus' %}primary{% elif resource|class_name == 'Note' %}success{% else %}warning{% endif %}">
+                                        {{ resource|class_name }}
+                                    </span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ resource.created_at|date:"M d, Y" }}</small>
+                                    <a href="{% url 'subject_detail' resource.subject.id %}" class="btn btn-sm btn-outline-primary">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Search results pagination" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <!-- No Results -->
+                <div class="text-center py-5">
+                    <div class="bg-light rounded p-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted mb-2">No results found</h5>
+                        <p class="text-muted mb-4">
+                            {% if form.query.value %}
+                                We couldn't find any resources matching "{{ form.query.value }}". 
+                                Try adjusting your search terms or filters.
+                            {% else %}
+                                No resources match your current filters. Try broadening your search.
+                            {% endif %}
+                        </p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{% url 'advanced_search' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-search me-2"></i>New Search
+                            </a>
+                            <a href="{% url 'search' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i>Browse All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid var(--bs-border-color);
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .resource-card {
+        transition: all 0.3s ease;
+    }
+    
+    .resource-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .pagination .page-link {
+        border-radius: 0.5rem;
+        margin: 0 2px;
+        border: 1px solid var(--bs-border-color);
+    }
+    
+    .pagination .page-link:hover {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    /* List view styles */
+    .list-view .col-lg-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .list-view .resource-card {
+        flex-direction: row;
+    }
+    
+    .list-view .card-body {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .list-view .resource-info {
+        flex: 1;
+    }
+    
+    .list-view .resource-actions {
+        flex-shrink: 0;
+        margin-left: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // View toggle functionality
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsGrid = document.getElementById('resultsGrid');
+        
+        if (gridView && listView) {
+            gridView.addEventListener('click', function() {
+                resultsGrid.classList.remove('list-view');
+                gridView.classList.add('btn-primary');
+                gridView.classList.remove('btn-outline-primary');
+                listView.classList.add('btn-outline-primary');
+                listView.classList.remove('btn-primary');
+            });
+            
+            listView.addEventListener('click', function() {
+                resultsGrid.classList.add('list-view');
+                listView.classList.add('btn-primary');
+                listView.classList.remove('btn-outline-primary');
+                gridView.classList.add('btn-outline-primary');
+                gridView.classList.remove('btn-primary');
+            });
+        }
+        
+        // Auto-submit form when filters change
+        const filterInputs = document.querySelectorAll('select[name="faculty"], select[name="subject"], input[name="year"], input[name="resource_type"], select[name="sort_by"]');
+        filterInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        });
+        
+        // Search suggestions (you can implement this with AJAX)
+        const searchInput = document.querySelector('input[name="query"]');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    // You can add AJAX search suggestions here
+                    console.log('Searching for:', this.value);
+                }, 500);
+            });
+        }
+        
+        // Highlight search terms in results
+        const searchTerm = '{{ form.query.value|default:"" }}';
+        if (searchTerm) {
+            const resourceTitles = document.querySelectorAll('.resource-card h6');
+            resourceTitles.forEach(title => {
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                title.innerHTML = title.textContent.replace(regex, '<mark>$1</mark>');
+            });
+        }
+    });
+</script>
+{% endblock %} 
