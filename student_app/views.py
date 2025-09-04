@@ -97,7 +97,7 @@ def register_view(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            UserProfile.objects.create(user=user)
+            # UserProfile is automatically created by signal handler in models.py
             messages.success(request, "Registration successful! You can now log in.")
             return redirect('login')
         else:
