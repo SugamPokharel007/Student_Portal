@@ -1,0 +1,60 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+
+  
+}
+
+
+.content-outer {
+    margin-top: 50px;
+    height: 90vh;
+    width: 100vw;
+    display: flex;
+   
+    
+    
+}
+
+.left-contentinner {
+    width: 50%;
+    height: 80%; 
+    padding-top: 40px;
+   
+}
+
+.right-contentinner {
+    width: 50%;
+    height: 80%;
+    background-image: url('/static/images/rightcontainerimage.jpg');  /* Fixed static tag */
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 5px;
+    margin-top: 20px;
+  
+}
+
+.homepage_quote{
+  display: flex;
+  flex-direction: column; 
+  
+
+}
+
+.homepage_quotation{
+    font-size: 1.8rem; /* Increase text size */
+    font-weight: bold; /* Make it bold */
+    color: #FFD700; /* Gold color */
+    text-align: center; /* Center the text */
+    background: linear-gradient(to right, #002855, #004080); /* Gradient background */
+     padding: 20px;/* Add some padding */
+    border-left: 5px solid #FFD700; /* Left border highlight */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Soft shadow */
+    max-width: 70%; /* Limit width */
+    margin: 20px auto; /* Center the box */
+    font-family: 'Georgia', serif; /* Elegant font */
+
+}

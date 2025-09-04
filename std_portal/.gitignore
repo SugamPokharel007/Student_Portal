@@ -8,9 +8,8 @@ __pycache__/
 *.log
 *.pot
 *.pyc
-db.sqlite3
-media/
-static/
+
+
 
 # Virtual Environment
 myenv/
