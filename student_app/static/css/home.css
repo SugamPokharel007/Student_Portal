@@ -1,0 +1,29 @@
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+    
+.hero-section {
+    position: relative;
+}
+    
+.z-3 {
+    z-index: 3;
+}
+    
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+    
+.card {
+    transition: all 0.3s ease;
+}
+    
+.card:hover {
+    transform: translateY(-5px);
+}
+
+
