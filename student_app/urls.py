@@ -26,6 +26,7 @@ urlpatterns = [
     path('select-faculty/', views.select_faculty, name='select_faculty'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/', views.profile, name='profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
     
     # Admin dashboard
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),

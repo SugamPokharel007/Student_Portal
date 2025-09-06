@@ -77,7 +77,7 @@
                 <div class="profile-section" data-aos="fade-up">
                     <div class="section-header">
                         <h3><i class="fas fa-user-circle me-2"></i>Personal Information</h3>
-                        <button class="btn btn-outline-primary btn-sm" onclick="editProfile()">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                             <i class="fas fa-edit me-1"></i>Edit
                         </button>
                     </div>
@@ -250,7 +250,7 @@
                                 <span>Change Password</span>
                                 <i class="fas fa-chevron-right"></i>
                             </a>
-                            <a href="#" class="setting-item" onclick="editProfile()">
+                            <a href="#" class="setting-item" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                                 <i class="fas fa-user-edit"></i>
                                 <span>Edit Profile</span>
                                 <i class="fas fa-chevron-right"></i>
@@ -266,6 +266,31 @@
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">
+                    <i class="fas fa-user-edit me-2"></i>Edit Profile
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="profileEditFormContainer">
+                    <!-- Form will be loaded here via AJAX -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading form...</p>
                     </div>
                 </div>
             </div>
@@ -678,9 +703,181 @@
 </style>
 
 <script>
-function editProfile() {
-    // Implement profile editing functionality
-    alert('Profile editing feature coming soon!');
+// Profile Edit Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const editProfileModal = document.getElementById('editProfileModal');
+    const formContainer = document.getElementById('profileEditFormContainer');
+    
+    // Load form when modal is shown
+    editProfileModal.addEventListener('show.bs.modal', function() {
+        loadProfileEditForm();
+    });
+    
+    // Handle form submission
+    document.addEventListener('submit', function(e) {
+        if (e.target.id === 'profileEditForm') {
+            e.preventDefault();
+            submitProfileForm(e.target);
+        }
+    });
+});
+
+function loadProfileEditForm() {
+    const formContainer = document.getElementById('profileEditFormContainer');
+    
+    fetch('{% url "edit_profile" %}', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.form_html) {
+            formContainer.innerHTML = data.form_html;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading form:', error);
+        formContainer.innerHTML = '<div class="alert alert-danger">Error loading form. Please try again.</div>';
+    });
+}
+
+function submitProfileForm(form) {
+    const formData = new FormData(form);
+    const submitBtn = document.getElementById('saveProfileBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+    submitBtn.disabled = true;
+    
+    fetch(form.dataset.url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update profile information on the page
+            updateProfileDisplay(data);
+            
+            // Show success message
+            showAlert('success', data.message);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+            modal.hide();
+        } else {
+            // Show form errors
+            showFormErrors(data.errors);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred. Please try again.');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function updateProfileDisplay(data) {
+    // Update profile name
+    const profileName = document.querySelector('.profile-name');
+    if (profileName && data.user_name) {
+        profileName.textContent = data.user_name;
+    }
+    
+    // Update email
+    const emailValue = document.querySelector('.info-value');
+    if (emailValue && data.user_email) {
+        // Find email field and update it
+        const emailField = Array.from(document.querySelectorAll('.info-item')).find(item => 
+            item.querySelector('.info-label').textContent.includes('Email')
+        );
+        if (emailField) {
+            emailField.querySelector('.info-value').textContent = data.user_email;
+        }
+    }
+    
+    // Update faculty
+    if (data.faculty_name) {
+        const facultyField = Array.from(document.querySelectorAll('.info-item')).find(item => 
+            item.querySelector('.info-label').textContent.includes('Faculty')
+        );
+        if (facultyField) {
+            facultyField.querySelector('.info-value').textContent = data.faculty_name;
+        }
+    }
+    
+    // Update bio
+    const profileBio = document.querySelector('.profile-bio');
+    if (profileBio && data.bio) {
+        profileBio.textContent = data.bio;
+    }
+    
+    // Update avatar
+    if (data.avatar_url) {
+        const avatarImg = document.querySelector('.avatar-img');
+        if (avatarImg) {
+            avatarImg.src = data.avatar_url;
+        } else {
+            // Replace placeholder with image
+            const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+            if (avatarPlaceholder) {
+                const img = document.createElement('img');
+                img.src = data.avatar_url;
+                img.alt = 'Profile Picture';
+                img.className = 'avatar-img';
+                avatarPlaceholder.parentNode.replaceChild(img, avatarPlaceholder);
+            }
+        }
+    }
+}
+
+function showFormErrors(errors) {
+    // Clear previous errors
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    
+    // Show new errors
+    Object.keys(errors).forEach(field => {
+        const fieldElement = document.querySelector(`[name="${field}"]`);
+        if (fieldElement) {
+            fieldElement.classList.add('is-invalid');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback';
+            errorDiv.textContent = errors[field][0];
+            fieldElement.parentNode.appendChild(errorDiv);
+        }
+    });
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at the top of the page
+    const container = document.querySelector('.profile-container .container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 
 function changePassword() {

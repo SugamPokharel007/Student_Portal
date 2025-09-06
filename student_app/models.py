@@ -345,6 +345,7 @@ class UserProfile(models.Model):
     contributor_since = models.DateTimeField(null=True, blank=True)
     total_uploads = models.PositiveIntegerField(default=0)
     total_downloads = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.user.username
@@ -358,11 +359,11 @@ class UserProfile(models.Model):
 
     def increment_uploads(self):
         self.total_uploads += 1
-        self.save(update_fields=['total_uploads'])
+        self.save(update_fields=['total_uploads', 'updated_at'])
 
     def increment_downloads(self):
         self.total_downloads += 1
-        self.save(update_fields=['total_downloads'])
+        self.save(update_fields=['total_downloads', 'updated_at'])
 
 
 class DownloadLog(models.Model):
