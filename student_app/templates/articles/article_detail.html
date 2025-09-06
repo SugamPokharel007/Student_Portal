@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }} | Sikshya Kendra{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/articles.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<!-- Article Header -->
+<div class="article-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'articles' %}" class="text-decoration-none">
+                                <i class="fas fa-newspaper me-1"></i>Articles
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'articles' %}?category={{ article.category }}" class="text-decoration-none">
+                                {{ article.get_category_display }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ article.title|truncatewords:5 }}</li>
+                    </ol>
+                </nav>
+                
+                <div class="article-meta">
+                    <span class="category-badge">{{ article.get_category_display }}</span>
+                    <span class="reading-time">
+                        <i class="fas fa-clock"></i>
+                        {% widthratio article.content|wordcount 200 1 %} min read
+                    </span>
+                </div>
+                
+                <h1 class="article-title">{{ article.title }}</h1>
+                
+                <div class="article-author-info">
+                    <div class="author-avatar">
+                        {% if article.author.userprofile.avatar %}
+                        <img src="{{ article.author.userprofile.avatar.url }}" alt="{{ article.author.get_full_name|default:article.author.username }}">
+                        {% else %}
+                        <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <div class="author-details">
+                        <h6 class="author-name">{{ article.author.get_full_name|default:article.author.username }}</h6>
+                        <p class="author-role">{{ article.author.userprofile.get_role_display_name }}</p>
+                        <span class="publish-date">
+                            <i class="fas fa-calendar"></i>
+                            Published {{ article.published_at|date:"F d, Y" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Image -->
+{% if article.featured_image %}
+<div class="article-featured-image">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Article Content -->
+<div class="article-content-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="article-body">
+                    <div class="article-excerpt">
+                        <p>{{ article.excerpt }}</p>
+                    </div>
+                    
+                    <div class="article-text">
+                        {{ article.content|safe|linebreaks }}
+                    </div>
+                    
+                    <!-- Article Tags -->
+                    {% if article.tags.all %}
+                    <div class="article-tags">
+                        <h6>Tags:</h6>
+                        {% for tag in article.tags.all %}
+                        <span class="tag">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Article Actions -->
+                <div class="article-actions">
+                    <button class="btn btn-outline-primary like-btn" data-article-id="{{ article.id }}">
+                        <i class="fas fa-heart"></i>
+                        <span class="like-count">{{ article.like_count }}</span>
+                    </button>
+                    <button class="btn btn-outline-secondary share-btn" onclick="shareArticle()">
+                        <i class="fas fa-share"></i>
+                        Share
+                    </button>
+                    <button class="btn btn-outline-secondary bookmark-btn">
+                        <i class="far fa-bookmark"></i>
+                        Save
+                    </button>
+                </div>
+                
+                <!-- Comments Section -->
+                <div class="comments-section">
+                    <h4>Comments ({{ article.comment_count }})</h4>
+                    
+                    {% if user.is_authenticated %}
+                    <div class="comment-form">
+                        <form id="comment-form" data-article-id="{{ article.id }}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <textarea name="content" class="form-control" rows="3" placeholder="Write a comment..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Post Comment
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="login-prompt">
+                        <p>Please <a href="{% url 'login' %}">login</a> to post comments.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="comments-list" id="comments-list">
+                        {% for comment in comments %}
+                        <div class="comment-item">
+                            <div class="comment-avatar">
+                                {% if comment.author.userprofile.avatar %}
+                                <img src="{{ comment.author.userprofile.avatar.url }}" alt="{{ comment.author.get_full_name|default:comment.author.username }}">
+                                {% else %}
+                                <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <h6 class="comment-author">{{ comment.author.get_full_name|default:comment.author.username }}</h6>
+                                    <span class="comment-date">{{ comment.created_at|date:"M d, Y" }}</span>
+                                </div>
+                                <p class="comment-text">{{ comment.content|linebreaks }}</p>
+                                <div class="comment-actions">
+                                    <button class="btn btn-sm btn-outline-primary reply-btn" data-comment-id="{{ comment.id }}">
+                                        <i class="fas fa-reply"></i> Reply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="article-sidebar">
+                    <!-- Article Stats -->
+                    <div class="sidebar-card">
+                        <h6>Article Stats</h6>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <i class="fas fa-eye"></i>
+                                <span>{{ article.view_count }} views</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-heart"></i>
+                                <span>{{ article.like_count }} likes</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-comment"></i>
+                                <span>{{ article.comment_count }} comments</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Related Articles -->
+                    {% if related_articles %}
+                    <div class="sidebar-card">
+                        <h6>Related Articles</h6>
+                        <div class="related-articles">
+                            {% for related in related_articles %}
+                            <div class="related-item">
+                                <h6><a href="{% url 'article_detail' related.slug %}">{{ related.title|truncatewords:8 }}</a></h6>
+                                <p class="text-muted">{{ related.published_at|date:"M d, Y" }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Author Info -->
+                    <div class="sidebar-card">
+                        <h6>About Author</h6>
+                        <div class="author-card">
+                            <div class="author-avatar">
+                                {% if article.author.userprofile.avatar %}
+                                <img src="{{ article.author.userprofile.avatar.url }}" alt="{{ article.author.get_full_name|default:article.author.username }}">
+                                {% else %}
+                                <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div class="author-info">
+                                <h6>{{ article.author.get_full_name|default:article.author.username }}</h6>
+                                <p class="text-muted">{{ article.author.userprofile.get_role_display_name }}</p>
+                                {% if article.author.userprofile.bio %}
+                                <p class="bio">{{ article.author.userprofile.bio|truncatewords:20 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Like functionality
+document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const articleId = this.dataset.articleId;
+        const likeCount = this.querySelector('.like-count');
+        
+        fetch(`/articles/like/${articleId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            likeCount.textContent = data.like_count;
+            if (data.liked) {
+                this.classList.add('liked');
+                this.querySelector('i').classList.remove('far');
+                this.querySelector('i').classList.add('fas');
+            } else {
+                this.classList.remove('liked');
+                this.querySelector('i').classList.remove('fas');
+                this.querySelector('i').classList.add('far');
+            }
+        });
+    });
+});
+
+// Comment functionality
+document.getElementById('comment-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const articleId = this.dataset.articleId;
+    const content = this.querySelector('textarea[name="content"]').value;
+    
+    fetch(`/articles/comment/${articleId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `content=${encodeURIComponent(content)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add comment to the list
+            const commentsList = document.getElementById('comments-list');
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-item';
+            newComment.innerHTML = `
+                <div class="comment-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <h6 class="comment-author">${data.author}</h6>
+                        <span class="comment-date">${data.created_at}</span>
+                    </div>
+                    <p class="comment-text">${data.content}</p>
+                </div>
+            `;
+            commentsList.appendChild(newComment);
+            
+            // Clear form
+            this.querySelector('textarea[name="content"]').value = '';
+        }
+    });
+});
+
+// Share functionality
+function shareArticle() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ article.title }}',
+            text: '{{ article.excerpt }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link copied to clipboard!');
+        });
+    }
+}
+</script>
+
+{% endblock %}

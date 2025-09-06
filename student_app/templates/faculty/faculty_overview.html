@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ faculty.name }} Overview | Sikshya Kendra{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/faculty_overview.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    
+
+    <!-- Faculty Information -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="faculty-info-card text-center py-5" data-aos="fade-up">
+                <div class="info-content">
+                    <h3 class="text-gradient mb-3">Welcome to {{ faculty.name }}</h3>
+                    <p class="text-muted mb-4">Select a {{ faculty.academic_structure }} to explore available subjects and resources.</p>
+                    <div class="faculty-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                            <span>{{ faculty.total_levels }} {{ faculty.academic_structure }}s</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-graduation-cap text-success"></i>
+                            <span>{{ faculty.get_academic_structure_display }} </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="level-navigation">
+                {% for level in levels %}
+                <a href="{% url 'faculty_subjects' faculty.slug level %}" class="level-btn">
+                    <i class="fas fa-star me-2"></i>{% if faculty.academic_structure == 'semester' %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ level }}{% if level == 1 %}st{% elif level == 2 %}nd{% elif level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+ 
+{% endblock %} 

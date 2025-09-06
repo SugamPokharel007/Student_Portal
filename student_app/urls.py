@@ -8,7 +8,7 @@ urlpatterns = [
     # Basic pages
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
-    path('year/', views.year, name='year'),
+    path('year/', views.year, name='year'),  # Redirects to home
     path('contact/', views.contact_view, name='contact'),
     
     # Authentication
@@ -31,13 +31,15 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     
     # Academic content
-    # Subject-related URLs
-    path('subjects/<str:faculty_slug>/<int:level>/', views.faculty_subjects, name='faculty_subjects'),
-    path('subjects/<str:faculty_slug>/', views.faculty_overview, name='faculty_overview'),
+    # Faculty-related URLs
+    path('faculty/<str:faculty_slug>/<int:level>/', views.faculty_subjects, name='faculty_subjects'),
+    path('faculty/<str:faculty_slug>/', views.faculty_overview, name='faculty_overview'),
     path('subject/<int:subject_id>/', views.subject_detail, name='subject_detail'),
     path('subject/<int:subject_id>/syllabus/', views.subject_syllabus, name='subject_syllabus'),
     path('subject/<int:subject_id>/notes/', views.subject_notes, name='subject_notes'),
     path('subject/<int:subject_id>/questions/', views.subject_questions, name='subject_questions'),
+    path('subject/<int:subject_id>/chapter/<int:chapter_id>/', views.chapter_detail, name='chapter_detail'),
+    path('download/chapter/<int:chapter_id>/', views.download_chapter, name='download_chapter'),
     
     # Resource management
     path('subject/<int:subject_id>/add-syllabus/', views.add_syllabus, name='add_syllabus'),
@@ -74,6 +76,15 @@ urlpatterns = [
     path('notes/', views.notes_redirect, name='notes'),
     path('question-bank/', views.question_bank_redirect, name='question_bank'),
 
+    # Article system
+    path('articles/', views.articles, name='articles'),
+    path('articles/submit/', views.submit_article, name='submit_article'),
+    path('articles/my-articles/', views.my_articles, name='my_articles'),
+    path('articles/edit/<int:article_id>/', views.edit_article, name='edit_article'),
+    path('articles/like/<int:article_id>/', views.like_article, name='like_article'),
+    path('articles/comment/<int:article_id>/', views.add_comment, name='add_comment'),
+    path('articles/<str:slug>/', views.article_detail, name='article_detail'),
+
     # Admin management URLs
     path('admin-manage-subjects/', views.admin_manage_subjects, name='admin_manage_subjects'),
     path('admin-manage-faculties/', views.admin_manage_faculties, name='admin_manage_faculties'),
@@ -82,5 +93,7 @@ urlpatterns = [
     path('admin-manage-question-banks/', views.admin_manage_question_banks, name='admin_manage_question_banks'),
     path('admin-manage-contributor-requests/', views.admin_manage_contributor_requests, name='admin_manage_contributor_requests'),
     path('admin-manage-contacts/', views.admin_manage_contacts, name='admin_manage_contacts'),
+    path('admin-manage-chapters/', views.admin_manage_chapters, name='admin_manage_chapters'),
+    path('admin-manage-articles/', views.admin_manage_articles, name='admin_manage_articles'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

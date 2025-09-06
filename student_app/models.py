@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
 from datetime import timedelta
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
@@ -243,6 +244,45 @@ class Note(models.Model):
         self.save(update_fields=['view_count'])
 
 
+class Chapter(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='chapters')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    chapter_number = models.PositiveIntegerField(help_text="Chapter number (1, 2, 3, etc.)")
+    file = models.FileField(
+        upload_to='chapters/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx'])]
+    )
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='chapters')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = TaggableManager(blank=True)
+    download_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
+    student_count = models.PositiveIntegerField(default=0, help_text="Number of students who accessed this chapter")
+    question_count = models.PositiveIntegerField(default=0, help_text="Number of questions available for this chapter")
+
+    def __str__(self):
+        return f"{self.subject.name} - Chapter {self.chapter_number}: {self.title}"
+
+    def increment_download(self):
+        self.download_count += 1
+        self.save(update_fields=['download_count'])
+
+    def increment_view(self):
+        self.view_count += 1
+        self.save(update_fields=['view_count'])
+
+    def increment_student(self):
+        self.student_count += 1
+        self.save(update_fields=['student_count'])
+
+    class Meta:
+        ordering = ['chapter_number']
+        unique_together = ['subject', 'chapter_number']
+
+
 class Subscription(models.Model):
     SUBSCRIPTION_TYPES = (
         ('monthly', 'Monthly'),
@@ -374,5 +414,104 @@ def handle_contributor_approval(sender, instance, **kwargs):
         profile.is_contributor_approved = True
         profile.contributor_since = timezone.now()
         profile.save()
+
+# Article Models
+class Article(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('academic', 'Academic'),
+        ('technology', 'Technology'),
+        ('general', 'General'),
+        ('tutorial', 'Tutorial'),
+        ('news', 'News'),
+        ('opinion', 'Opinion'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    content = models.TextField()
+    excerpt = models.TextField(max_length=500, blank=True, help_text="Short description of the article")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='general')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='articles')
+    featured_image = models.ImageField(upload_to='articles/images/', null=True, blank=True)
+    tags = TaggableManager(blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_articles')
+    admin_notes = models.TextField(blank=True, help_text="Admin notes for approval/rejection")
+    view_count = models.PositiveIntegerField(default=0)
+    like_count = models.PositiveIntegerField(default=0)
+    comment_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Article'
+        verbose_name_plural = 'Articles'
+    
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return reverse('article_detail', kwargs={'slug': self.slug})
+    
+    def is_published(self):
+        return self.status == 'approved' and self.published_at is not None
+    
+    def can_edit(self, user):
+        return user == self.author or user.is_superuser
+    
+    def can_delete(self, user):
+        return user == self.author or user.is_superuser
+
+
+class ArticleComment(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    is_approved = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'Article Comment'
+        verbose_name_plural = 'Article Comments'
+    
+    def __str__(self):
+        return f"Comment by {self.author.username} on {self.article.title}"
+    
+    def is_reply(self):
+        return self.parent is not None
+
+
+class ArticleLike(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['article', 'user']
+        verbose_name = 'Article Like'
+        verbose_name_plural = 'Article Likes'
+    
+    def __str__(self):
+        return f"{self.user.username} likes {self.article.title}"
+
 
 # NOTE: After these changes, run 'python manage.py makemigrations student_app' and 'python manage.py migrate' to apply the new models and fields.

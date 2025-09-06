@@ -33,6 +33,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg fixed-top">
       <div class="container">
+        <!-- Logo Section - Left -->
         <a class="navbar-brand" href="{% url 'home' %}">
           <i class="fas fa-graduation-cap me-2"></i>Sikshya Kendra
         </a>
@@ -47,7 +48,8 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
+          <!-- Navigation Links - Center -->
+          <ul class="navbar-nav mx-auto">
             <li class="nav-item">
               <a class="nav-link" href="{% url 'home' %}">
                 <i class="fas fa-home me-1"></i>Home
@@ -60,70 +62,41 @@
                 role="button"
                 data-bs-toggle="dropdown"
               >
-                <i class="fas fa-book me-1"></i>Cources
+                <i class="fas fa-university me-1"></i>Faculties <i class="fas fa-chevron-down ms-1"></i>
               </a>
               <ul class="dropdown-menu">
-                {% if user.is_authenticated and user.userprofile.faculty %}
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{% url 'faculty_overview' user.userprofile.faculty.slug %}"
+                    href="{% url 'faculty_overview' 'bsccsit' %}"
                   >
-                    <i class="fas fa-university me-2"></i>{{
-                    user.userprofile.faculty.name }} Overview
-                  </a>
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{% url 'advanced_search' %}?faculty={{ user.userprofile.faculty.id }}&resource_type=syllabus"
-                  >
-                    <i class="fas fa-file-alt me-2"></i>Syllabus
+                    <i class="fas fa-laptop-code me-2"></i>B.Sc. CSIT
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{% url 'advanced_search' %}?faculty={{ user.userprofile.faculty.id }}&resource_type=notes"
+                    href="{% url 'faculty_overview' 'bbs' %}"
                   >
-                    <i class="fas fa-sticky-note me-2"></i>Notes
+                    <i class="fas fa-briefcase me-2"></i>BBS
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{% url 'advanced_search' %}?faculty={{ user.userprofile.faculty.id }}&resource_type=question_bank"
+                    href="{% url 'faculty_overview' 'bba' %}"
                   >
-                    <i class="fas fa-question-circle me-2"></i>Question Banks
-                  </a>
-                </li>
-                {% else %}
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{% url 'advanced_search' %}?resource_type=syllabus"
-                  >
-                    <i class="fas fa-file-alt me-2"></i>Syllabus
+                    <i class="fas fa-chart-line me-2"></i>BBA
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{% url 'advanced_search' %}?resource_type=notes"
+                    href="{% url 'faculty_overview' 'bsc' %}"
                   >
-                    <i class="fas fa-sticky-note me-2"></i>Notes
+                    <i class="fas fa-flask me-2"></i>B.Sc.
                   </a>
                 </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{% url 'advanced_search' %}?resource_type=question_bank"
-                  >
-                    <i class="fas fa-question-circle me-2"></i>Question Banks
-                  </a>
-                </li>
-                {% endif %}
               </ul>
             </li>
             <li class="nav-item">
@@ -136,6 +109,11 @@
                 <i class="fas fa-bullhorn me-1"></i>Notices
               </a>
             </li>
+                    <li class="nav-item">
+          <a class="nav-link" href="{% url 'articles' %}">
+            <i class="fas fa-newspaper me-1"></i>Articles
+          </a>
+        </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'contact' %}">
                 <i class="fas fa-envelope me-1"></i>Contact
@@ -148,6 +126,7 @@
             </li>
           </ul>
 
+          <!-- User Actions - Right -->
           <ul class="navbar-nav">
             {% if user.is_authenticated %}
             <li class="nav-item dropdown">
@@ -158,8 +137,12 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <i class="fas fa-user me-2"></i>{{
-                user.get_full_name|default:user.username }}
+                <i class="fas fa-user me-2"></i>
+                {% if user.get_full_name %}
+                  {{ user.get_full_name }}
+                {% else %}
+                  {{ user.username }}
+                {% endif %}
               </a>
               <ul class="dropdown-menu">
                 {% if user.is_superuser %}
@@ -288,39 +271,7 @@
               </li>
             </ul>
           </div>
-          <div class="col-lg-3 col-md-6 mb-4">
-            <h6 class="mb-3">Resources</h6>
-            <ul class="list-unstyled">
-              <li>
-                <a
-                  href="{% url 'syllabus' %}"
-                  class="text-white-50 text-decoration-none"
-                  >Syllabus</a
-                >
-              </li>
-              <li>
-                <a
-                  href="{% url 'notes' %}"
-                  class="text-white-50 text-decoration-none"
-                  >Notes</a
-                >
-              </li>
-              <li>
-                <a
-                  href="{% url 'question_bank' %}"
-                  class="text-white-50 text-decoration-none"
-                  >Question Banks</a
-                >
-              </li>
-              <li>
-                <a
-                  href="{% url 'contributor_request' %}"
-                  class="text-white-50 text-decoration-none"
-                  >Become Contributor</a
-                >
-              </li>
-            </ul>
-          </div>
+          
           <div class="col-lg-3 mb-4">
             <h6 class="mb-3">Contact Info</h6>
             <ul class="list-unstyled">

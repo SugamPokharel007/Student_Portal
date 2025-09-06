@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Articles | Sikshya Kendra{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/articles.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="articles-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="articles-badge">Articles</div>
+                <h1 class="articles-title">Knowledge Hub</h1>
+                <p class="articles-description">Discover insightful articles, tutorials, and academic content shared by our community.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="articles-illustration">
+                    <div class="illustration-bg">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter and Search Section -->
+<div class="filter-section">
+    <div class="container">
+        <form method="GET" class="search-form">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search articles..." value="{{ search_query }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="category-filter">
+                        <select name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            {% for value, label in categories %}
+                            <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Articles Grid -->
+<div class="container py-5">
+    {% if articles %}
+    <div class="articles-grid">
+        {% for article in articles %}
+        <a href="{% url 'article_detail' article.slug %}" class="article-card-link">
+            <div class="article-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                {% if article.featured_image %}
+                <div class="article-image">
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+                    <div class="article-category">{{ article.get_category_display }}</div>
+                </div>
+                {% else %}
+                <div class="article-image-placeholder">
+                    <i class="fas fa-newspaper"></i>
+                    <div class="article-category">{{ article.get_category_display }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="article-content">
+                    <div class="article-meta">
+                        <span class="author">
+                            <i class="fas fa-user"></i>
+                            {{ article.author.get_full_name|default:article.author.username }}
+                        </span>
+                        <span class="date">
+                            <i class="fas fa-calendar"></i>
+                            {{ article.published_at|date:"M d, Y" }}
+                        </span>
+                        <span class="reading-time">
+                            <i class="fas fa-clock"></i>
+                            {% widthratio article.content|wordcount 200 1 %} min read
+                        </span>
+                    </div>
+                    
+                    <h3 class="article-title">
+                        {{ article.title }}
+                    </h3>
+                    
+                    <p class="article-excerpt">{{ article.excerpt|truncatewords:25 }}</p>
+                    
+                    <div class="article-tags">
+                        {% for tag in article.tags.all %}
+                        <span class="tag">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="article-stats">
+                        <span class="stat">
+                            <i class="fas fa-eye"></i>
+                            {{ article.view_count }}
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-heart"></i>
+                            {{ article.like_count }}
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-comment"></i>
+                            {{ article.comment_count }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if articles.has_other_pages %}
+    <nav aria-label="Articles pagination" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if articles.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in articles.paginator.page_range %}
+            {% if articles.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > articles.number|add:'-3' and num < articles.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if articles.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-newspaper fa-3x"></i>
+        </div>
+        <h4>No Articles Found</h4>
+        <p>{% if search_query %}No articles match your search criteria.{% else %}No articles are available at the moment.{% endif %}</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'submit_article' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Write First Article
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Call to Action -->
+{% if user.is_authenticated %}
+<div class="cta-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h3>Share Your Knowledge</h3>
+                <p>Have something interesting to share? Write an article and help others learn.</p>
+                <a href="{% url 'submit_article' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-pen me-2"></i>Write Article
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

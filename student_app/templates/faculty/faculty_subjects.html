@@ -26,46 +26,32 @@
                     <h1 class="fw-bold text-gradient mb-2">{{ faculty.name }} - {{ level_name }}</h1>
                     <p class="text-muted mb-0">{{ faculty.description }}</p>
                 </div>
-                {% if user.is_superuser %}
                 <div class="dropdown">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-university me-2"></i>{{ faculty.name }}
+                        <i class="fas fa-calendar-alt me-2"></i>{{ level_name }}
                     </button>
                     <ul class="dropdown-menu">
-                        {% for other_faculty in faculties %}
+                        {% for level_num in levels %}
                         <li>
-                            <a class="dropdown-item" href="{% url 'faculty_overview' other_faculty.slug %}">
-                                <i class="fas fa-university me-2"></i>{{ other_faculty.name }}
+                            <a class="dropdown-item {% if level_num == level %}active{% endif %}" 
+                               href="{% url 'faculty_subjects' faculty.slug level_num %}">
+                                <i class="fas fa-star me-2"></i>{% if faculty.academic_structure == 'semester' %}{{ level_num }}{% if level_num == 1 %}st{% elif level_num == 2 %}nd{% elif level_num == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ level_num }}{% if level_num == 1 %}st{% elif level_num == 2 %}nd{% elif level_num == 3 %}rd{% else %}th{% endif %} Year{% endif %}
                             </a>
                         </li>
                         {% endfor %}
                     </ul>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Level Navigation -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="level-navigation">
-                {% for level_num in levels %}
-                <a href="{% url 'faculty_subjects' faculty.slug level_num %}" 
-                   class="level-btn {% if level_num == level %}active{% endif %}">
-                    <i class="fas fa-star me-2"></i>{% if faculty.academic_structure == 'semester' %}{{ level_num }}{% if level_num == 1 %}st{% elif level_num == 2 %}nd{% elif level_num == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ level_num }}{% if level_num == 1 %}st{% elif level_num == 2 %}nd{% elif level_num == 3 %}rd{% else %}th{% endif %} Year{% endif %}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
 
     <!-- Subjects Grid -->
     {% if subjects %}
     <div class="row g-4">
         {% for subject in subjects %}
         <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
-            <div class="subject-card">
+            <div class="subject-card" onclick="window.location.href='{% url 'subject_detail' subject.id %}'">
                 <div class="subject-header">
                     <div class="subject-icon">
                         <i class="fas fa-book"></i>
@@ -76,26 +62,9 @@
                     </div>
                 </div>
                 
-                <div class="subject-content">
-                    <div class="resource-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-file-alt text-primary"></i>
-                            <span>Syllabus ({{ subject.syllabi.all|length }})</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-sticky-note text-success"></i>
-                            <span>Notes ({{ subject.notes.all|length }})</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-question-circle text-warning"></i>
-                            <span>Questions ({{ subject.question_banks.all|length }})</span>
-                        </div>
-                    </div>
-                </div>
-                
                 <div class="subject-actions">
                     <a href="{% url 'subject_detail' subject.id %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-eye me-1"></i>View Details
+                        <i class="fas fa-arrow-right"></i>Explore Chapters
                     </a>
                 </div>
             </div>
@@ -107,14 +76,33 @@
         <div class="col-12">
             <div class="empty-state text-center py-5">
                 <div class="empty-icon mb-4">
-                    <i class="fas fa-book-open fa-3x text-muted"></i>
+                    <i class="fas fa-hourglass-half fa-3x text-muted"></i>
                 </div>
-                <h3 class="text-muted mb-3">No Subjects Available</h3>
-                <p class="text-muted mb-4">There are no subjects available for {{ faculty.name }} {{ level_name }} yet.</p>
+                <h3 class="text-muted mb-3">Coming Soon</h3>
+                <p class="text-muted mb-4">Subjects for {{ faculty.name }} {{ level_name }} are being prepared and will be available soon.</p>
+                <div class="coming-soon-features">
+                    <div class="feature-item">
+                        <i class="fas fa-book text-primary me-2"></i>
+                        <span>Comprehensive Study Materials</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-file-alt text-success me-2"></i>
+                        <span>Syllabus & Question Banks</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-video text-warning me-2"></i>
+                        <span>Interactive Learning Resources</span>
+                    </div>
+                </div>
                 {% if user.is_superuser %}
-                <a href="{% url 'admin:index' %}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Add Subject
-                </a>
+                <div class="mt-4 d-flex gap-3 justify-content-center">
+                    <a href="{% url 'admin_manage_subjects' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-tools me-2"></i>Manage Subjects
+                    </a>
+                    <a href="{% url 'contribute_resource' %}" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-2"></i>Add Resources
+                    </a>
+                </div>
                 {% endif %}
             </div>
         </div>

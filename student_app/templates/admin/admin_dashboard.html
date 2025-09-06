@@ -182,6 +182,38 @@
         </div>
     </div>
 
+    <!-- Chapter Management Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list text-secondary me-2"></i>Chapters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.chapters.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.chapters.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.chapters.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_manage_chapters' %}" class="btn btn-sm btn-outline-secondary mt-3">
+                        Manage Chapters
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Contributor Requests Section -->
     <div class="row g-4 mb-4">
         <div class="col-12">
@@ -339,6 +371,122 @@
         </div>
     </div>
 
+    <!-- Articles Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-newspaper text-info me-2"></i>Recent Articles
+                    </h5>
+                    <a href="{% url 'admin_manage_articles' %}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-eye me-1"></i>Manage Articles
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_articles %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Views</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in recent_articles %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2">
+                                                    {% if article.featured_image %}
+                                                        <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" 
+                                                             class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                             style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-newspaper text-muted"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold">{{ article.title|truncatechars:50 }}</div>
+                                                    <small class="text-muted">{{ article.excerpt|truncatechars:30 }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2">
+                                                    <i class="fas fa-user-circle fa-lg text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold">{{ article.author.get_full_name|default:article.author.username }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ article.get_category_display }}</span>
+                                        </td>
+                                        <td>
+                                            {% if article.status == 'draft' %}
+                                                <span class="badge bg-secondary">Draft</span>
+                                            {% elif article.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif article.status == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif article.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ article.view_count }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ article.created_at|date:"M d, Y" }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                {% if article.status == 'pending' %}
+                                                    <a href="{% url 'admin_manage_articles' %}?action=approve&id={{ article.id }}" 
+                                                       class="btn btn-outline-success" 
+                                                       onclick="return confirm('Are you sure you want to approve this article?')">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                    <a href="{% url 'admin_manage_articles' %}?action=reject&id={{ article.id }}" 
+                                                       class="btn btn-outline-danger"
+                                                       onclick="return confirm('Are you sure you want to reject this article?')">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'admin_manage_articles' %}?action=view&id={{ article.id }}" 
+                                                   class="btn btn-outline-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No articles found</h6>
+                            <p class="text-muted mb-0">Articles submitted by users will appear here.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Activity & Pending Items -->
     <div class="row g-4">
         <!-- Recent Uploads -->
@@ -489,6 +637,11 @@
                         <div class="col-md-6">
                             <a href="{% url 'admin_manage_question_banks' %}" class="btn btn-outline-warning w-100">
                                 <i class="fas fa-question-circle me-2"></i>Manage Q Banks
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_chapters' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-list me-2"></i>Manage Chapters
                             </a>
                         </div>
                         <div class="col-md-6">

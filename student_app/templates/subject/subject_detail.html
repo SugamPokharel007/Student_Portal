@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ subject.name }} | Sikshya Kendra{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/subject_detail.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="subject-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'faculty_overview' subject.faculty.slug %}" class="text-decoration-none">
+                                <i class="fas fa-university me-1"></i>{{ subject.faculty.name }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'faculty_subjects' subject.faculty.slug subject.level %}" class="text-decoration-none">
+                                {% if subject.faculty.academic_structure == 'semester' %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ subject.name }}</li>
+                    </ol>
+                </nav>
+                <div class="subject-badge">Subject</div>
+                <h1 class="subject-title">{{ subject.name }}</h1>
+                <p class="subject-description">{{ subject.description }}</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="subject-illustration">
+                    <!-- Modern illustration placeholder -->
+                    <div class="illustration-bg">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Navigation -->
+<div class="secondary-nav sticky-top">
+    <div class="container">
+        <div class="nav-wrapper">
+            <ul class="nav nav-pills" id="subject-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#chapters" data-bs-toggle="pill">
+                        <i class="fas fa-list me-2"></i>Chapters
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#syllabus" data-bs-toggle="pill">
+                        <i class="fas fa-book me-2"></i>Syllabus
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#question-banks" data-bs-toggle="pill">
+                        <i class="fas fa-question-circle me-2"></i>Question Banks
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#questions" data-bs-toggle="pill">
+                        <i class="fas fa-clipboard-question me-2"></i>Questions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#textbook" data-bs-toggle="pill">
+                        <i class="fas fa-book-reader me-2"></i>Text Book
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#practical" data-bs-toggle="pill">
+                        <i class="fas fa-flask me-2"></i>Practical
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#viva" data-bs-toggle="pill">
+                        <i class="fas fa-microphone me-2"></i>Viva
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Content Container -->
+<div class="container py-5">
+    <div class="tab-content" id="subject-content">
+
+        <!-- Chapters Tab -->
+        <div class="tab-pane fade show active" id="chapters" role="tabpanel">
+            {% if user.is_superuser %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Chapters</h3>
+                        <a href="{% url 'admin_manage_chapters' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Chapters
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if chapters %}
+            <div class="chapters-grid">
+                {% for chapter in chapters %}
+                <div class="chapter-card" onclick="window.location.href='{% url 'chapter_detail' subject.id chapter.id %}'">
+                    <div class="chapter-header">
+                        <div class="chapter-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="chapter-info">
+                            <h4>{{ chapter.title }}</h4>
+                            <p>{{ chapter.description|truncatewords:20 }}</p>
+                        </div>
+                    </div>
+                    <div class="chapter-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-users"></i>
+                            <span>{{ chapter.student_count }}+ Students</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Questions: {{ chapter.question_count }}+</span>
+                        </div>
+                    </div>
+                    <div class="chapter-actions">
+                        <button class="btn-favorite" onclick="event.stopPropagation();">
+                            <i class="far fa-star"></i>
+                        </button>
+                        <button class="btn-read" onclick="event.stopPropagation(); window.location.href='{% url 'chapter_detail' subject.id chapter.id %}'">
+                            Read Note <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="content-card">
+                <div class="card-body">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-list fa-3x"></i>
+                        </div>
+                        <h4>No Chapters Available</h4>
+                        <p>Chapter-wise content for this subject is not yet available.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Syllabus Tab -->
+        <div class="tab-pane fade" id="syllabus" role="tabpanel">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-book me-2"></i>Syllabus</h3>
+                    {% if syllabus %}
+                    <a href="{% url 'subject_syllabus' subject.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-external-link-alt me-1"></i>View Full
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if syllabus %}
+                        <div class="syllabus-preview">
+                            <h4>{{ syllabus.title }}</h4>
+                            <p class="text-muted">{{ syllabus.content|truncatewords:50 }}</p>
+                            <div class="action-buttons">
+                                <a href="{% url 'subject_syllabus' subject.id %}" class="btn btn-primary">
+                                    <i class="fas fa-eye me-2"></i>View Complete Syllabus
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-book fa-3x"></i>
+                            </div>
+                            <h4>No Syllabus Available</h4>
+                            <p>Syllabus for this subject is not yet available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Banks Tab -->
+        <div class="tab-pane fade" id="question-banks" role="tabpanel">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-question-circle me-2"></i>Question Banks</h3>
+                    {% if question_banks %}
+                    <span class="badge bg-success">{{ question_banks.count }} Available</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if question_banks %}
+                        <div class="question-banks-grid">
+                            {% for qb in question_banks %}
+                            <div class="resource-item">
+                                <div class="resource-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <div class="resource-info">
+                                    <h5>{{ qb.title }}</h5>
+                                    <p class="text-muted">{{ qb.description|truncatewords:15 }}</p>
+                                </div>
+                                <div class="resource-actions">
+                                    <a href="{% url 'download_resource' 'question_bank' qb.id %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="action-buttons">
+                            <a href="{% url 'subject_questions' subject.id %}" class="btn btn-primary">
+                                <i class="fas fa-eye me-2"></i>View All Question Banks
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-question-circle fa-3x"></i>
+                            </div>
+                            <h4>No Question Banks Available</h4>
+                            <p>Question banks for this subject are not yet available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Tab -->
+        <div class="tab-pane fade" id="questions" role="tabpanel">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-clipboard-question me-2"></i>Questions</h3>
+                    <span class="badge bg-primary">Interactive</span>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-clipboard-question fa-3x"></i>
+                        </div>
+                        <h4>Interactive Questions</h4>
+                        <p>Practice questions and quizzes will be available here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Book Tab -->
+        <div class="tab-pane fade" id="textbook" role="tabpanel">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-book-reader me-2"></i>Text Book</h3>
+                    <span class="badge bg-info">Reference</span>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-book-reader fa-3x"></i>
+                        </div>
+                        <h4>Reference Books</h4>
+                        <p>Recommended textbooks and reading materials will be listed here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practical Tab -->
+        <div class="tab-pane fade" id="practical" role="tabpanel">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-flask me-2"></i>Practical</h3>
+                    <span class="badge bg-warning">Lab Work</span>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-flask fa-3x"></i>
+                        </div>
+                        <h4>Practical Exercises</h4>
+                        <p>Lab manuals, practical exercises, and assignments will be available here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Viva Tab -->
+        <div class="tab-pane fade" id="viva" role="tabpanel">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-microphone me-2"></i>Viva</h3>
+                    <span class="badge bg-danger">Oral Exam</span>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-microphone fa-3x"></i>
+                        </div>
+                        <h4>Viva Questions</h4>
+                        <p>Common viva questions and preparation materials will be available here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

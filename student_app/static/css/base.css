@@ -60,6 +60,10 @@ h6 {
 .dropdown-item { padding: 0.75rem 1.5rem; color: var(--text-primary); transition: all 0.3s ease; }
 .dropdown-item:hover { background: var(--primary-color); color: white; }
 
+/* Hover dropdown functionality */
+.navbar .dropdown:hover .dropdown-menu { display: block; }
+.navbar .dropdown .dropdown-menu { margin-top: 0; }
+
 .btn { font-weight: 500; border-radius: 8px; padding: 0.5rem 1.5rem; transition: all 0.3s ease; border: none; }
 .btn-primary { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; }
 .btn-primary:hover { background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%); transform: translateY(-2px); box-shadow: var(--shadow-lg); }

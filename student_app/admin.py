@@ -7,8 +7,8 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import (
     Faculty, Subject, Notice, ContactMessage, RegisteredUser, 
-    Syllabus, QuestionBank, Note, Subscription, UserProfile,
-    ContributorRequest, DownloadLog, ViewLog
+    Syllabus, QuestionBank, Note, Chapter, Subscription, UserProfile,
+    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike
 )
 
 @admin.register(Faculty)
@@ -149,6 +149,37 @@ class NoteAdmin(ResourceAdmin):
     readonly_fields = ['download_count', 'view_count', 'created_at', 'updated_at']
 
 
+@admin.register(Chapter)
+class ChapterAdmin(ResourceAdmin):
+    list_display = ['title', 'subject', 'subject__faculty', 'subject__level', 'chapter_number', 'status', 'uploaded_by', 'student_count', 'question_count', 'created_at']
+    list_filter = ['status', 'subject__faculty', 'subject__level', 'chapter_number', 'created_at']
+    search_fields = ['title', 'description', 'subject__name', 'subject__faculty__name']
+    ordering = ['subject', 'chapter_number']
+    autocomplete_fields = ['subject', 'uploaded_by']
+    readonly_fields = ['download_count', 'view_count', 'student_count', 'question_count', 'created_at', 'updated_at']
+    list_editable = ['chapter_number', 'status']
+    
+    fieldsets = (
+        ('Chapter Information', {
+            'fields': ('subject', 'title', 'description', 'chapter_number')
+        }),
+        ('File Upload', {
+            'fields': ('file',)
+        }),
+        ('Status & Statistics', {
+            'fields': ('status', 'uploaded_by', 'student_count', 'question_count')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+        ('Download/View Stats', {
+            'fields': ('download_count', 'view_count'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ['user', 'subscription_type', 'start_date', 'end_date', 'is_active', 'days_remaining']
@@ -237,12 +268,103 @@ class AnalyticsAdmin(admin.ModelAdmin):
         extra_context['total_resources'] = (
             Syllabus.objects.filter(status='approved').count() +
             Note.objects.filter(status='approved').count() +
-            QuestionBank.objects.filter(status='approved').count()
+            QuestionBank.objects.filter(status='approved').count() +
+            Chapter.objects.filter(status='approved').count()
         )
         extra_context['pending_approvals'] = (
             Syllabus.objects.filter(status='pending').count() +
             Note.objects.filter(status='pending').count() +
-            QuestionBank.objects.filter(status='pending').count()
+            QuestionBank.objects.filter(status='pending').count() +
+            Chapter.objects.filter(status='pending').count()
         )
         
         return super().changelist_view(request, extra_context)
+
+
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    list_display = ['title', 'author', 'category', 'status', 'view_count', 'like_count', 'comment_count', 'created_at', 'published_at']
+    list_filter = ['status', 'category', 'created_at', 'published_at', 'author']
+    search_fields = ['title', 'content', 'excerpt', 'author__username', 'author__first_name', 'author__last_name']
+    list_editable = ['status']
+    ordering = ['-created_at']
+    autocomplete_fields = ['author', 'reviewed_by']
+    readonly_fields = ['view_count', 'like_count', 'comment_count', 'created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    actions = ['approve_articles', 'reject_articles', 'unpublish_articles']
+    
+    fieldsets = (
+        ('Article Information', {
+            'fields': ('title', 'slug', 'excerpt', 'content', 'category', 'featured_image', 'tags')
+        }),
+        ('Author & Status', {
+            'fields': ('author', 'status', 'submitted_at', 'published_at')
+        }),
+        ('Review Information', {
+            'fields': ('reviewed_at', 'reviewed_by', 'admin_notes'),
+            'classes': ('collapse',)
+        }),
+        ('Engagement Metrics', {
+            'fields': ('view_count', 'like_count', 'comment_count'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def approve_articles(self, request, queryset):
+        for article in queryset.filter(status='pending'):
+            article.status = 'approved'
+            article.published_at = timezone.now()
+            article.reviewed_at = timezone.now()
+            article.reviewed_by = request.user
+            article.save()
+    approve_articles.short_description = "Approve selected articles"
+    
+    def reject_articles(self, request, queryset):
+        for article in queryset.filter(status='pending'):
+            article.status = 'rejected'
+            article.reviewed_at = timezone.now()
+            article.reviewed_by = request.user
+            article.save()
+    reject_articles.short_description = "Reject selected articles"
+    
+    def unpublish_articles(self, request, queryset):
+        for article in queryset.filter(status='approved'):
+            article.published_at = None
+            article.save()
+    unpublish_articles.short_description = "Unpublish selected articles"
+
+
+@admin.register(ArticleComment)
+class ArticleCommentAdmin(admin.ModelAdmin):
+    list_display = ['article', 'author', 'is_approved', 'created_at']
+    list_filter = ['is_approved', 'created_at', 'article__status']
+    search_fields = ['content', 'author__username', 'article__title']
+    list_editable = ['is_approved']
+    ordering = ['-created_at']
+    autocomplete_fields = ['article', 'author', 'parent']
+    readonly_fields = ['created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    actions = ['approve_comments', 'disapprove_comments']
+    
+    def approve_comments(self, request, queryset):
+        queryset.update(is_approved=True)
+    approve_comments.short_description = "Approve selected comments"
+    
+    def disapprove_comments(self, request, queryset):
+        queryset.update(is_approved=False)
+    disapprove_comments.short_description = "Disapprove selected comments"
+
+
+@admin.register(ArticleLike)
+class ArticleLikeAdmin(admin.ModelAdmin):
+    list_display = ['article', 'user', 'created_at']
+    list_filter = ['created_at', 'article__status']
+    search_fields = ['article__title', 'user__username']
+    ordering = ['-created_at']
+    autocomplete_fields = ['article', 'user']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'

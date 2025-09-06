@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Article | Sikshya Kendra{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/articles.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="submit-article-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="submit-badge">Write Article</div>
+                <h1 class="submit-title">Share Your Knowledge</h1>
+                <p class="submit-description">Write an engaging article and help others learn something new.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="submit-form-card">
+                <div class="card-header">
+                    <h4><i class="fas fa-pen me-2"></i>Article Details</h4>
+                    <p class="text-muted">Fill in the details below to create your article</p>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="article-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="title" class="form-label">Article Title *</label>
+                            <input type="text" name="title" id="title" class="form-control" required 
+                                   placeholder="Enter a compelling title for your article">
+                            <div class="form-text">Make it descriptive and engaging</div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="excerpt" class="form-label">Article Excerpt *</label>
+                            <textarea name="excerpt" id="excerpt" class="form-control" rows="3" required 
+                                      placeholder="Write a brief summary of your article (max 500 characters)"></textarea>
+                            <div class="form-text">This will be shown in article previews</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label for="category" class="form-label">Category *</label>
+                                    <select name="category" id="category" class="form-select" required>
+                                        <option value="">Select a category</option>
+                                        {% for value, label in categories %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label for="featured_image" class="form-label">Featured Image</label>
+                                    <input type="file" name="featured_image" id="featured_image" class="form-control" 
+                                           accept="image/*">
+                                    <div class="form-text">Optional: Add a cover image for your article</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" name="tags" id="tags" class="form-control" 
+                                   placeholder="Enter tags separated by commas (e.g., programming, tutorial, tips)">
+                            <div class="form-text">Help others find your article with relevant tags</div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="content" class="form-label">Article Content *</label>
+                            <textarea name="content" id="content" class="form-control" rows="15" required 
+                                      placeholder="Write your article content here..."></textarea>
+                            <div class="form-text">Use clear formatting and structure your content well</div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Create Article
+                            </button>
+                            <a href="{% url 'articles' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Writing Tips -->
+            <div class="writing-tips-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Writing Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Content Guidelines</h6>
+                            <ul class="tips-list">
+                                <li>Write clear and engaging content</li>
+                                <li>Use proper headings and structure</li>
+                                <li>Include relevant examples</li>
+                                <li>Proofread before submitting</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Best Practices</h6>
+                            <ul class="tips-list">
+                                <li>Choose descriptive titles</li>
+                                <li>Write compelling excerpts</li>
+                                <li>Use relevant tags</li>
+                                <li>Add images when helpful</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Character counter for excerpt
+document.getElementById('excerpt').addEventListener('input', function() {
+    const maxLength = 500;
+    const currentLength = this.value.length;
+    const remaining = maxLength - currentLength;
+    
+    let counter = document.getElementById('excerpt-counter');
+    if (!counter) {
+        counter = document.createElement('div');
+        counter.id = 'excerpt-counter';
+        counter.className = 'form-text text-end';
+        this.parentNode.appendChild(counter);
+    }
+    
+    counter.textContent = `${currentLength}/${maxLength} characters`;
+    
+    if (remaining < 0) {
+        counter.classList.add('text-danger');
+        this.value = this.value.substring(0, maxLength);
+    } else {
+        counter.classList.remove('text-danger');
+    }
+});
+
+// Form validation
+document.getElementById('article-form').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    const excerpt = document.getElementById('excerpt').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const category = document.getElementById('category').value;
+    
+    if (!title || !excerpt || !content || !category) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    if (excerpt.length > 500) {
+        e.preventDefault();
+        alert('Excerpt must be 500 characters or less.');
+        return;
+    }
+    
+    if (content.length < 100) {
+        e.preventDefault();
+        alert('Article content must be at least 100 characters long.');
+        return;
+    }
+});
+
+// Auto-save draft (optional feature)
+let autoSaveTimeout;
+document.querySelectorAll('input, textarea, select').forEach(element => {
+    element.addEventListener('input', function() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            // Auto-save functionality can be implemented here
+            console.log('Auto-saving draft...');
+        }, 5000);
+    });
+});
+</script>
+
+{% endblock %}

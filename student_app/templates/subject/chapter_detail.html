@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ chapter.title }} | {{ subject.name }} | Sikshya Kendra{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/chapter_detail.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="chapter-container">
+    <div class="chapter-layout">
+        <!-- Left Sidebar -->
+        <div class="chapter-sidebar">
+            <div class="sidebar-header">
+                <h3>{{ subject.name }}</h3>
+                <p>Chapters</p>
+            </div>
+            <div class="chapter-list">
+                {% for ch in chapters %}
+                <a href="{% url 'chapter_detail' subject.id ch.id %}" 
+                   class="chapter-link {% if ch.id == chapter.id %}active{% endif %}">
+                    <div class="chapter-link-content">
+                        <div class="chapter-number">{{ ch.chapter_number }}</div>
+                        <div class="chapter-title">{{ ch.title }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="chapter-main">
+            <div class="chapter-header">
+                <div class="breadcrumb-nav">
+                    <a href="{% url 'faculty_overview' subject.faculty.slug %}">{{ subject.faculty.name }}</a>
+                    <span>></span>
+                    <a href="{% url 'faculty_subjects' subject.faculty.slug subject.level %}">
+                        {% if subject.faculty.academic_structure == 'semester' %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                    </a>
+                    <span>></span>
+                    <a href="{% url 'subject_detail' subject.id %}">{{ subject.name }}</a>
+                    <span>></span>
+                    <span>{{ chapter.title }}</span>
+                </div>
+                
+                <div class="chapter-title-section">
+                    <h1>{{ chapter.title }}</h1>
+                    <div class="chapter-meta">
+                        <span class="chapter-number-badge">Chapter {{ chapter.chapter_number }}</span>
+                        <span class="view-count">{{ chapter.view_count }} views</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-content">
+                <div class="pdf-viewer">
+                    <iframe src="{{ chapter.file.url }}" 
+                            width="100%" 
+                            height="600px" 
+                            frameborder="0">
+                        <p>Your browser does not support PDFs. 
+                           <a href="{{ chapter.file.url }}" target="_blank">Download the PDF</a>.
+                        </p>
+                    </iframe>
+                </div>
+                
+                <div class="chapter-actions">
+                    <a href="{% url 'download_chapter' chapter.id %}" class="btn-download">
+                        <i class="fas fa-download"></i> Download PDF
+                    </a>
+                    <a href="{{ chapter.file.url }}" target="_blank" class="btn-view">
+                        <i class="fas fa-external-link-alt"></i> Open in New Tab
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer Navigation -->
+<div class="chapter-footer">
+    <div class="footer-nav">
+        <div class="footer-links">
+            <a href="#" class="footer-link">Questions</a>
+            <a href="#" class="footer-link">Ask Question</a>
+            <a href="#" class="footer-link">Contribute</a>
+            <a href="#" class="footer-link">Notices</a>
+        </div>
+        <div class="footer-copyright">
+            <span>Copyright 2025 | All Right Reserved</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

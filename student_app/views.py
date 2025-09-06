@@ -19,9 +19,9 @@ from collections import Counter
 import math
 
 from .models import (
-    Subject, Notice, Syllabus, QuestionBank, Note, Subscription, 
+    Subject, Notice, Syllabus, QuestionBank, Note, Chapter, Subscription, 
     Faculty, UserProfile, ContactMessage, ContributorRequest,
-    DownloadLog, ViewLog
+    DownloadLog, ViewLog, Article, ArticleComment, ArticleLike
 )
 from .forms import (
     ContributeResourceForm, ContributorRequestForm, EnhancedContactForm,
@@ -65,7 +65,7 @@ def home(request):
         'trending_subjects': trending_subjects,
         'recent_resources': recent_resources,
     }
-    return render(request, 'home.html', context)
+    return render(request, 'general/home.html', context)
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -90,7 +90,7 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password!")
             return redirect('login')
-    return render(request, 'login.html')
+    return render(request, 'auth/login.html')
 
 def register_view(request):
     if request.method == "POST":
@@ -106,7 +106,7 @@ def register_view(request):
                     messages.error(request, f"{field}: {error}")
     else:
         form = UserRegistrationForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'auth/register.html', {'form': form})
 
 def logout_view(request):
     logout(request)
@@ -135,11 +135,8 @@ def dashboard(request):
     # Get user's recent downloads
     recent_downloads = DownloadLog.objects.filter(user=request.user).order_by('-downloaded_at')[:5]
     
-    # Get subscription info
-    try:
-        subscription = Subscription.objects.get(user=request.user, is_active=True)
-    except Subscription.DoesNotExist:
-        subscription = None
+    # Subscription system removed
+    subscription = None
     
     context = {
         'user_profile': user_profile,
@@ -147,7 +144,7 @@ def dashboard(request):
         'recent_downloads': recent_downloads,
         'subscription': subscription,
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'general/dashboard.html', context)
 
 @login_required
 def profile(request):
@@ -165,7 +162,7 @@ def profile(request):
         'faculties': faculties,
     }
     
-    return render(request, 'profile.html', context)
+    return render(request, 'general/profile.html', context)
 
 @login_required
 def select_faculty(request):
@@ -189,7 +186,7 @@ def select_faculty(request):
                 return redirect('dashboard')
         messages.error(request, 'Select a valid faculty.')
     
-    return render(request, 'faculty_selection.html', {'faculties': faculties})
+    return render(request, 'faculty/faculty_selection.html', {'faculties': faculties})
 
 def faculty_overview(request, faculty_slug):
     """Show overview of a faculty with all levels"""
@@ -221,7 +218,7 @@ def faculty_overview(request, faculty_slug):
         'all_subjects': all_subjects,  # Add all subjects for debugging
     }
     
-    return render(request, 'faculty_overview.html', context)
+    return render(request, 'faculty/faculty_overview.html', context)
 
 
 def faculty_subjects(request, faculty_slug, level):
@@ -257,7 +254,7 @@ def faculty_subjects(request, faculty_slug, level):
         'levels': range(1, faculty.total_levels + 1),
     }
     
-    return render(request, 'faculty_subjects.html', context)
+    return render(request, 'faculty/faculty_subjects.html', context)
 
 def subject_detail(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id, is_active=True, faculty__isnull=False)
@@ -275,13 +272,15 @@ def subject_detail(request, subject_id):
     syllabus = Syllabus.objects.filter(subject=subject, status='approved').first()
     question_banks = QuestionBank.objects.filter(subject=subject, status='approved')
     notes = Note.objects.filter(subject=subject, status='approved')
+    chapters = Chapter.objects.filter(subject=subject, status='approved').order_by('chapter_number')
     
-    return render(request, 'subject_detail.html', {
+    return render(request, 'subject/subject_detail.html', {
         'subject': subject,
         'notices': notices,
         'syllabus': syllabus,
         'question_banks': question_banks,
-        'notes': notes
+        'notes': notes,
+        'chapters': chapters
     })
 
 @login_required
@@ -298,7 +297,7 @@ def subject_syllabus(request, subject_id):
         user_profile = UserProfile.objects.select_related('faculty').get(user=request.user)
         syllabi = Syllabus.objects.filter(subject=subject, status='approved', subject__faculty=user_profile.faculty).select_related('subject', 'uploaded_by')
     
-    return render(request, 'subject_syllabus.html', {'subject': subject, 'syllabi': syllabi})
+    return render(request, 'subject/subject_syllabus.html', {'subject': subject, 'syllabi': syllabi})
 
 @login_required
 def subject_questions(request, subject_id):
@@ -314,7 +313,7 @@ def subject_questions(request, subject_id):
         user_profile = UserProfile.objects.select_related('faculty').get(user=request.user)
         questions = QuestionBank.objects.filter(subject=subject, status='approved', subject__faculty=user_profile.faculty).select_related('subject', 'uploaded_by')
     
-    return render(request, 'subject_questions.html', {'subject': subject, 'questions': questions})
+    return render(request, 'subject/subject_questions.html', {'subject': subject, 'questions': questions})
 
 @login_required
 def subject_notes(request, subject_id):
@@ -330,7 +329,7 @@ def subject_notes(request, subject_id):
         user_profile = UserProfile.objects.select_related('faculty').get(user=request.user)
         notes = Note.objects.filter(subject=subject, status='approved', subject__faculty=user_profile.faculty).select_related('subject', 'uploaded_by')
     
-    return render(request, 'subject_notes.html', {'subject': subject, 'notes': notes})
+    return render(request, 'subject/subject_notes.html', {'subject': subject, 'notes': notes})
 
 @login_required
 def contribute_resource(request):
@@ -354,7 +353,7 @@ def contribute_resource(request):
             # Verify subject belongs to selected faculty
             if subject.faculty != faculty:
                 messages.error(request, 'Selected subject does not belong to the selected faculty.')
-                return render(request, 'contribute_resource.html', {'form': form})
+                return render(request, 'general/contribute_resource.html', {'form': form})
             
             if resource_type == 'note':
                 resource = Note.objects.create(
@@ -399,7 +398,7 @@ def contribute_resource(request):
             initial_data['faculty'] = user_profile.faculty
         form = ContributeResourceForm(initial=initial_data)
     
-    return render(request, 'contribute_resource.html', {'form': form})
+    return render(request, 'general/contribute_resource.html', {'form': form})
 
 @login_required
 def contributor_request(request):
@@ -425,7 +424,7 @@ def contributor_request(request):
     else:
         form = ContributorRequestForm()
     
-    return render(request, 'contributor_request.html', {'form': form})
+    return render(request, 'general/contributor_request.html', {'form': form})
 
 def contact_view(request):
     if request.method == "POST":
@@ -437,35 +436,36 @@ def contact_view(request):
     else:
         form = EnhancedContactForm()
     
-    return render(request, 'contact.html', {'form': form})
+    return render(request, 'general/contact.html', {'form': form})
 
 def notice_list(request):
     general_notices = Notice.objects.filter(is_general=True).order_by('-created_at')
-    return render(request, 'notices.html', {'notices': general_notices})
+    return render(request, 'general/notices.html', {'notices': general_notices})
 
 def notice_detail(request, notice_id):
     """Display individual notice details"""
     try:
         notice = Notice.objects.get(id=notice_id)
-        return render(request, 'notice_detail.html', {'notice': notice})
+        return render(request, 'general/notice_detail.html', {'notice': notice})
     except Notice.DoesNotExist:
         messages.error(request, 'Notice not found.')
         return redirect('notice_list')
 
 def about(request):
-    return render(request, 'about.html')
+    return render(request, 'general/about.html')
 
 def year(request):
-    return render(request, 'year.html')
+    """Year selection page removed - redirect to home"""
+    return redirect('home')
 
 def contact(request):
-    return render(request, 'contact.html')
+    return render(request, 'general/contact.html')
 
 def register(request):
-    return render(request, 'register.html')
+    return render(request, 'auth/register.html')
 
 def login_page(request):
-    return render(request, 'login.html')
+    return render(request, 'auth/login.html')
 
 
 def calculate_tf_idf(query, documents):
@@ -588,7 +588,7 @@ def advanced_search(request):
         'page_obj': page_obj,
         'results_count': len(results),
     }
-    return render(request, 'advanced_search.html', context)
+    return render(request, 'general/advanced_search.html', context)
 
 @login_required
 def search(request):
@@ -638,7 +638,7 @@ def search(request):
     faculties = Faculty.objects.filter(is_active=True)
     subjects = Subject.objects.filter(is_active=True)
     
-    return render(request, 'search.html', {
+    return render(request, 'general/search.html', {
         'page_obj': page_obj,
         'faculties': faculties,
         'subjects': subjects,
@@ -695,74 +695,26 @@ def download_resource(request, content_type, content_id):
 
 
 def subscription_view(request):
-    """View for the subscription page with pricing packages"""
-    if not request.user.is_authenticated:
-        messages.info(request, 'Please log in to view subscription options.')
-        return redirect('login')
-    return render(request, 'subscription.html')
+    """Subscription system removed"""
+    messages.info(request, 'Subscription system is currently unavailable.')
+    return redirect('dashboard')
 
 @login_required
 def subscribe(request, subscription_type):
-    """View for the subscription form"""
-    if subscription_type not in ['monthly', 'semi_yearly', 'yearly']:
-        messages.error(request, 'Invalid subscription type')
-        return redirect('subscription')
-    
-    # Check if user already has an active subscription
-    try:
-        existing_subscription = Subscription.objects.get(user=request.user, is_active=True)
-        if existing_subscription:
-            messages.info(request, 'You already have an active subscription')
-            return redirect('home')
-    except Subscription.DoesNotExist:
-        pass
-    
-    if request.method == 'POST':
-        try:
-            # Create a new subscription
-            subscription = Subscription.objects.create(
-                user=request.user,
-                subscription_type=subscription_type,
-                start_date=timezone.now(),
-                is_active=True
-            )
-            
-            # Redirect to success page
-            return redirect('subscription_success')
-        except Exception as e:
-            messages.error(request, f'Error creating subscription: {str(e)}')
-            return redirect('subscription')
-    
-    return render(request, 'subscribe.html', {'subscription_type': subscription_type})
+    """Subscription system removed"""
+    messages.info(request, 'Subscription system is currently unavailable.')
+    return redirect('dashboard')
 
 @login_required
 def subscription_success(request):
-    """View for the subscription success page"""
-    try:
-        subscription = Subscription.objects.get(user=request.user, is_active=True)
-        return render(request, 'subscription_success.html', {'subscription': subscription})
-    except Subscription.DoesNotExist:
-        messages.error(request, 'No active subscription found')
-        return redirect('subscription')
+    """Subscription system removed"""
+    messages.info(request, 'Subscription system is currently unavailable.')
+    return redirect('dashboard')
 
 
 def subscription_required(view_func):
-    def wrapper(request, *args, **kwargs):
-        try:
-            subscription = Subscription.objects.get(user=request.user, is_active=True)
-            if timezone.now() > subscription.end_date:
-                subscription.is_active = False
-                subscription.save()
-                messages.error(request, 'Your subscription has expired. Please renew to access premium content.')
-                return redirect('subscription')
-            return view_func(request, *args, **kwargs)
-        except Subscription.DoesNotExist:
-            messages.error(request, 'You need an active subscription to access this content.')
-            return redirect('subscription')
-        except Exception as e:
-            messages.error(request, f'Error checking subscription: {str(e)}')
-            return redirect('home')
-    return wrapper
+    """Subscription system removed - decorator disabled"""
+    return view_func
 
 
 @login_required
@@ -783,25 +735,25 @@ def add_syllabus(request, subject_id):
         # Validate required fields
         if not title:
             messages.error(request, 'Title is required.')
-            return render(request, 'add_syllabus.html', {'subject': subject})
+            return render(request, 'subject/add_syllabus.html', {'subject': subject})
         
         if not content:
             messages.error(request, 'Content is required.')
-            return render(request, 'add_syllabus.html', {'subject': subject})
+            return render(request, 'subject/add_syllabus.html', {'subject': subject})
         
         # Validate file if provided
         if file:
             # Check file size (10MB limit)
             if file.size > 10 * 1024 * 1024:
                 messages.error(request, 'File size must be under 10MB.')
-                return render(request, 'add_syllabus.html', {'subject': subject})
+                return render(request, 'subject/add_syllabus.html', {'subject': subject})
             
             # Check file extension
             allowed_extensions = ['pdf', 'doc', 'docx', 'txt']
             file_extension = file.name.split('.')[-1].lower()
             if file_extension not in allowed_extensions:
                 messages.error(request, f'Invalid file type. Allowed types: {', '.join(allowed_extensions)}')
-                return render(request, 'add_syllabus.html', {'subject': subject})
+                return render(request, 'subject/add_syllabus.html', {'subject': subject})
         
         try:
             Syllabus.objects.create(
@@ -816,9 +768,9 @@ def add_syllabus(request, subject_id):
             return redirect('subject_detail', subject_id=subject_id)
         except Exception as e:
             messages.error(request, f'Error adding syllabus: {str(e)}')
-            return render(request, 'add_syllabus.html', {'subject': subject})
+            return render(request, 'subject/add_syllabus.html', {'subject': subject})
     
-    return render(request, 'add_syllabus.html', {'subject': subject})
+    return render(request, 'subject/add_syllabus.html', {'subject': subject})
 
 @login_required
 def add_question_bank(request, subject_id):
@@ -838,24 +790,24 @@ def add_question_bank(request, subject_id):
         # Validate required fields
         if not title:
             messages.error(request, 'Title is required.')
-            return render(request, 'add_question_bank.html', {'subject': subject})
+            return render(request, 'subject/add_question_bank.html', {'subject': subject})
         
         if not file:
             messages.error(request, 'File is required for question banks.')
-            return render(request, 'add_question_bank.html', {'subject': subject})
+            return render(request, 'subject/add_question_bank.html', {'subject': subject})
         
         # Validate file
         # Check file size (10MB limit)
         if file.size > 10 * 1024 * 1024:
             messages.error(request, 'File size must be under 10MB.')
-            return render(request, 'add_question_bank.html', {'subject': subject})
+            return render(request, 'subject/add_question_bank.html', {'subject': subject})
         
         # Check file extension
         allowed_extensions = ['pdf', 'doc', 'docx', 'txt']
         file_extension = file.name.split('.')[-1].lower()
         if file_extension not in allowed_extensions:
             messages.error(request, f'Invalid file type. Allowed types: {', '.join(allowed_extensions)}')
-            return render(request, 'add_question_bank.html', {'subject': subject})
+            return render(request, 'subject/add_question_bank.html', {'subject': subject})
         
         try:
             QuestionBank.objects.create(
@@ -870,9 +822,9 @@ def add_question_bank(request, subject_id):
             return redirect('subject_detail', subject_id=subject_id)
         except Exception as e:
             messages.error(request, f'Error adding question bank: {str(e)}')
-            return render(request, 'add_question_bank.html', {'subject': subject})
+            return render(request, 'subject/add_question_bank.html', {'subject': subject})
     
-    return render(request, 'add_question_bank.html', {'subject': subject})
+    return render(request, 'subject/add_question_bank.html', {'subject': subject})
 
 @login_required
 def add_subject_notice(request, subject_id):
@@ -890,7 +842,7 @@ def add_subject_notice(request, subject_id):
         messages.success(request, 'Notice added successfully!')
         return redirect('subject_detail', subject_id=subject_id)
     
-    return render(request, 'add_subject_notice.html', {'subject': subject})
+    return render(request, 'subject/add_subject_notice.html', {'subject': subject})
 
 # API views for AJAX requests
 @login_required
@@ -1009,18 +961,21 @@ def admin_dashboard(request):
     total_syllabi = Syllabus.objects.count()
     total_notes = Note.objects.count()
     total_question_banks = QuestionBank.objects.count()
-    total_resources = total_syllabi + total_notes + total_question_banks
+    total_chapters = Chapter.objects.count()
+    total_resources = total_syllabi + total_notes + total_question_banks + total_chapters
     
     # Approval statistics
     pending_syllabi = Syllabus.objects.filter(status='pending').count()
     pending_notes = Note.objects.filter(status='pending').count()
     pending_question_banks = QuestionBank.objects.filter(status='pending').count()
-    total_pending = pending_syllabi + pending_notes + pending_question_banks
+    pending_chapters = Chapter.objects.filter(status='pending').count()
+    total_pending = pending_syllabi + pending_notes + pending_question_banks + pending_chapters
     
     approved_syllabi = Syllabus.objects.filter(status='approved').count()
     approved_notes = Note.objects.filter(status='approved').count()
     approved_question_banks = QuestionBank.objects.filter(status='approved').count()
-    total_approved = approved_syllabi + approved_notes + approved_question_banks
+    approved_chapters = Chapter.objects.filter(status='approved').count()
+    total_approved = approved_syllabi + approved_notes + approved_question_banks + approved_chapters
     
     # Faculty-wise statistics
     faculty_stats = []
@@ -1044,6 +999,7 @@ def admin_dashboard(request):
     recent_uploads.extend(list(Syllabus.objects.all().order_by('-created_at')[:5]))
     recent_uploads.extend(list(Note.objects.all().order_by('-created_at')[:5]))
     recent_uploads.extend(list(QuestionBank.objects.all().order_by('-created_at')[:5]))
+    recent_uploads.extend(list(Chapter.objects.all().order_by('-created_at')[:5]))
     recent_uploads.sort(key=lambda x: x.created_at, reverse=True)
     recent_uploads = recent_uploads[:10]
     
@@ -1057,6 +1013,7 @@ def admin_dashboard(request):
     pending_approvals.extend(list(Syllabus.objects.filter(status='pending').order_by('-created_at')[:5]))
     pending_approvals.extend(list(Note.objects.filter(status='pending').order_by('-created_at')[:5]))
     pending_approvals.extend(list(QuestionBank.objects.filter(status='pending').order_by('-created_at')[:5]))
+    pending_approvals.extend(list(Chapter.objects.filter(status='pending').order_by('-created_at')[:5]))
     pending_approvals.sort(key=lambda x: x.created_at, reverse=True)
     pending_approvals = pending_approvals[:10]
     
@@ -1084,10 +1041,11 @@ def admin_dashboard(request):
             'syllabi': {'total': total_syllabi, 'pending': pending_syllabi, 'approved': approved_syllabi},
             'notes': {'total': total_notes, 'pending': pending_notes, 'approved': approved_notes},
             'question_banks': {'total': total_question_banks, 'pending': pending_question_banks, 'approved': approved_question_banks},
+            'chapters': {'total': total_chapters, 'pending': pending_chapters, 'approved': approved_chapters},
         }
     }
     
-    return render(request, 'admin_dashboard.html', context)
+    return render(request, 'admin/admin_dashboard.html', context)
 
 @login_required
 def admin_manage_subjects(request):
@@ -1156,7 +1114,7 @@ def admin_manage_subjects(request):
         'faculties': faculties,
         'subjects': subjects,
     }
-    return render(request, 'admin_manage_subjects.html', context)
+    return render(request, 'admin/admin_manage_subjects.html', context)
 
 
 @login_required
@@ -1233,7 +1191,7 @@ def admin_manage_syllabus(request):
         'syllabi': syllabi,
         'subjects': subjects,
     }
-    return render(request, 'admin_manage_syllabus.html', context)
+    return render(request, 'admin/admin_manage_syllabus.html', context)
 
 
 @login_required
@@ -1310,7 +1268,7 @@ def admin_manage_notes(request):
         'notes': notes,
         'subjects': subjects,
     }
-    return render(request, 'admin_manage_notes.html', context)
+    return render(request, 'admin/admin_manage_notes.html', context)
 
 
 @login_required
@@ -1387,7 +1345,7 @@ def admin_manage_question_banks(request):
         'question_banks': question_banks,
         'subjects': subjects,
     }
-    return render(request, 'admin_manage_question_banks.html', context)
+    return render(request, 'admin/admin_manage_question_banks.html', context)
 
 @login_required
 def admin_manage_faculties(request):
@@ -1461,7 +1419,7 @@ def admin_manage_faculties(request):
     context = {
         'faculties': faculties,
     }
-    return render(request, 'admin_manage_faculties.html', context)
+    return render(request, 'admin/admin_manage_faculties.html', context)
 
 @login_required
 def admin_manage_contributor_requests(request):
@@ -1524,7 +1482,7 @@ def admin_manage_contributor_requests(request):
         'requests': requests,
         'faculties': faculties,
     }
-    return render(request, 'admin_manage_contributor_requests.html', context)
+    return render(request, 'admin/admin_manage_contributor_requests.html', context)
 
 
 @login_required
@@ -1569,4 +1527,365 @@ def admin_manage_contacts(request):
     context = {
         'contacts': contacts,
     }
-    return render(request, 'admin_manage_contacts.html', context)
+    return render(request, 'admin/admin_manage_contacts.html', context)
+
+
+def chapter_detail(request, subject_id, chapter_id):
+    """Chapter detail view with PDF viewer and sidebar navigation"""
+    subject = get_object_or_404(Subject, id=subject_id)
+    chapter = get_object_or_404(Chapter, id=chapter_id, subject=subject, status='approved')
+    chapters = Chapter.objects.filter(subject=subject, status='approved').order_by('chapter_number')
+    
+    # Increment view count
+    chapter.increment_view()
+    
+    context = {
+        'subject': subject,
+        'chapter': chapter,
+        'chapters': chapters,
+    }
+    return render(request, 'subject/chapter_detail.html', context)
+
+
+def download_chapter(request, chapter_id):
+    """Download chapter file"""
+    chapter = get_object_or_404(Chapter, id=chapter_id, status='approved')
+    
+    # Increment download count
+    chapter.increment_download()
+    
+    # Log download
+    if request.user.is_authenticated:
+        DownloadLog.objects.create(
+            user=request.user,
+            content_type='chapter',
+            content_id=chapter.id,
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+    
+    response = FileResponse(chapter.file, as_attachment=True, filename=f"{chapter.title}.pdf")
+    return response
+
+
+@login_required
+def admin_manage_chapters(request):
+    """Admin view to manage chapters"""
+    if not request.user.is_superuser:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('dashboard')
+    
+    chapters = Chapter.objects.all().order_by('-created_at')
+    subjects = Subject.objects.all().order_by('faculty', 'level', 'name')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'approve_chapter':
+            chapter_id = request.POST.get('chapter_id')
+            try:
+                chapter = Chapter.objects.get(id=chapter_id)
+                chapter.status = 'approved'
+                chapter.save()
+                messages.success(request, f'Chapter "{chapter.title}" approved successfully.')
+            except Chapter.DoesNotExist:
+                messages.error(request, 'Chapter not found.')
+        
+        elif action == 'reject_chapter':
+            chapter_id = request.POST.get('chapter_id')
+            try:
+                chapter = Chapter.objects.get(id=chapter_id)
+                chapter.status = 'rejected'
+                chapter.save()
+                messages.success(request, f'Chapter "{chapter.title}" rejected.')
+            except Chapter.DoesNotExist:
+                messages.error(request, 'Chapter not found.')
+        
+        elif action == 'delete_chapter':
+            chapter_id = request.POST.get('chapter_id')
+            try:
+                chapter = Chapter.objects.get(id=chapter_id)
+                chapter.delete()
+                messages.success(request, 'Chapter deleted successfully.')
+            except Chapter.DoesNotExist:
+                messages.error(request, 'Chapter not found.')
+        
+        return redirect('admin_manage_chapters')
+    
+    context = {
+        'chapters': chapters,
+        'subjects': subjects,
+    }
+    return render(request, 'admin/admin_manage_chapters.html', context)
+
+
+# Article Views
+def articles(request):
+    """Display all published articles"""
+    articles_list = Article.objects.filter(status='approved').select_related('author').prefetch_related('likes', 'comments').order_by('-created_at')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    category_filter = request.GET.get('category', '')
+    
+    if search_query:
+        articles_list = articles_list.filter(
+            Q(title__icontains=search_query) | 
+            Q(content__icontains=search_query) |
+            Q(excerpt__icontains=search_query)
+        )
+    
+    if category_filter:
+        articles_list = articles_list.filter(category=category_filter)
+    
+    # Pagination
+    paginator = Paginator(articles_list, 12)  # 12 articles per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get categories for filter dropdown
+    categories = Article.CATEGORY_CHOICES
+    
+    context = {
+        'page_obj': page_obj,
+        'articles': page_obj,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'categories': categories,
+    }
+    
+    return render(request, 'articles/article_list.html', context)
+
+
+def article_detail(request, slug):
+    """Display individual article"""
+    try:
+        article = Article.objects.select_related('author').prefetch_related('likes', 'comments__author').get(slug=slug, status='approved')
+        
+        # Increment view count
+        article.view_count += 1
+        article.save(update_fields=['view_count'])
+        
+        # Get related articles (same category, excluding current)
+        related_articles = Article.objects.filter(
+            category=article.category, 
+            status='approved'
+        ).exclude(id=article.id).select_related('author')[:4]
+        
+        # Check if user has liked this article
+        user_liked = False
+        if request.user.is_authenticated:
+            user_liked = ArticleLike.objects.filter(article=article, user=request.user).exists()
+        
+        context = {
+            'article': article,
+            'related_articles': related_articles,
+            'user_liked': user_liked,
+            'like_count': article.likes.count(),
+        }
+        
+        return render(request, 'articles/article_detail.html', context)
+        
+    except Article.DoesNotExist:
+        messages.error(request, 'Article not found.')
+        return redirect('articles')
+
+
+@login_required
+def submit_article(request):
+    """Submit new article"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        excerpt = request.POST.get('excerpt')
+        category = request.POST.get('category')
+        tags = request.POST.get('tags', '')
+        
+        if title and content and category:
+            # Create slug from title
+            from django.utils.text import slugify
+            base_slug = slugify(title)
+            slug = base_slug
+            counter = 1
+            while Article.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            article = Article.objects.create(
+                title=title,
+                slug=slug,
+                content=content,
+                excerpt=excerpt,
+                category=category,
+                tags=tags,
+                author=request.user,
+                status='pending'  # Requires admin approval
+            )
+            
+            messages.success(request, 'Article submitted successfully! It will be reviewed before publication.')
+            return redirect('my_articles')
+        else:
+            messages.error(request, 'Please fill in all required fields.')
+    
+    categories = Article.CATEGORY_CHOICES
+    return render(request, 'articles/submit_article.html', {'categories': categories})
+
+
+@login_required
+def edit_article(request, article_id):
+    """Edit existing article"""
+    try:
+        article = Article.objects.get(id=article_id, author=request.user)
+        
+        if request.method == 'POST':
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            excerpt = request.POST.get('excerpt')
+            category = request.POST.get('category')
+            tags = request.POST.get('tags', '')
+            
+            if title and content and category:
+                article.title = title
+                article.content = content
+                article.excerpt = excerpt
+                article.category = category
+                article.tags = tags
+                article.status = 'pending'  # Reset to pending after edit
+                article.save()
+                
+                messages.success(request, 'Article updated successfully! It will be reviewed again before publication.')
+                return redirect('my_articles')
+            else:
+                messages.error(request, 'Please fill in all required fields.')
+        
+        categories = Article.CATEGORY_CHOICES
+        return render(request, 'articles/edit_article.html', {'article': article, 'categories': categories})
+        
+    except Article.DoesNotExist:
+        messages.error(request, 'Article not found or you do not have permission to edit it.')
+        return redirect('my_articles')
+
+
+@login_required
+def my_articles(request):
+    """Display user's articles"""
+    status_filter = request.GET.get('status', '')
+    
+    articles = Article.objects.filter(author=request.user).order_by('-created_at')
+    
+    if status_filter:
+        articles = articles.filter(status=status_filter)
+    
+    # Pagination
+    paginator = Paginator(articles, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'articles': page_obj,
+        'page_obj': page_obj,
+        'current_status': status_filter,
+        'status_choices': Article.STATUS_CHOICES,
+    }
+    
+    return render(request, 'articles/my_articles.html', context)
+
+
+@login_required
+@require_POST
+def like_article(request, article_id):
+    """Like/unlike article"""
+    try:
+        article = Article.objects.get(id=article_id, status='approved')
+        like, created = ArticleLike.objects.get_or_create(article=article, user=request.user)
+        
+        if not created:
+            like.delete()
+            liked = False
+        else:
+            liked = True
+        
+        like_count = article.likes.count()
+        
+        return JsonResponse({
+            'liked': liked,
+            'like_count': like_count
+        })
+        
+    except Article.DoesNotExist:
+        return JsonResponse({'error': 'Article not found'}, status=404)
+
+
+@login_required
+@require_POST
+def add_comment(request, article_id):
+    """Add comment to article"""
+    try:
+        article = Article.objects.get(id=article_id, status='approved')
+        content = request.POST.get('content', '').strip()
+        parent_id = request.POST.get('parent_id')
+        
+        if not content:
+            return JsonResponse({'error': 'Comment content is required'}, status=400)
+        
+        parent_comment = None
+        if parent_id:
+            try:
+                parent_comment = ArticleComment.objects.get(id=parent_id, article=article)
+            except ArticleComment.DoesNotExist:
+                return JsonResponse({'error': 'Parent comment not found'}, status=400)
+        
+        comment = ArticleComment.objects.create(
+            article=article,
+            author=request.user,
+            content=content,
+            parent=parent_comment
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'comment_id': comment.id,
+            'author': comment.author.username,
+            'content': comment.content,
+            'created_at': comment.created_at.strftime('%B %d, %Y at %I:%M %p'),
+            'is_reply': comment.is_reply()
+        })
+        
+    except Article.DoesNotExist:
+        return JsonResponse({'error': 'Article not found'}, status=404)
+
+
+@login_required
+def admin_manage_articles(request):
+    """Admin view to manage articles"""
+    if not request.user.is_superuser:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('dashboard')
+    
+    status_filter = request.GET.get('status', '')
+    search_query = request.GET.get('search', '')
+    
+    articles = Article.objects.select_related('author').order_by('-created_at')
+    
+    if status_filter:
+        articles = articles.filter(status=status_filter)
+    
+    if search_query:
+        articles = articles.filter(
+            Q(title__icontains=search_query) | 
+            Q(author__username__icontains=search_query)
+        )
+    
+    # Pagination
+    paginator = Paginator(articles, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'articles': page_obj,
+        'page_obj': page_obj,
+        'current_status': status_filter,
+        'search_query': search_query,
+        'status_choices': Article.STATUS_CHOICES,
+    }
+    
+    return render(request, 'admin/admin_manage_articles.html', context)
