@@ -53,6 +53,7 @@
             </div>
 
             <div class="chapter-content">
+                {% if chapter.file %}
                 <div class="pdf-viewer">
                     <iframe src="{{ chapter.file.url }}" 
                             width="100%" 
@@ -72,6 +73,13 @@
                         <i class="fas fa-external-link-alt"></i> Open in New Tab
                     </a>
                 </div>
+                {% else %}
+                <div class="no-file-message">
+                    <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                    <h4>No PDF Available</h4>
+                    <p>This chapter doesn't have a PDF file uploaded yet.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -178,6 +178,10 @@ class UserRegistrationForm(UserCreationForm):
 
 
 class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+    email = forms.EmailField(required=True)
+    
     class Meta:
         model = UserProfile
         fields = ['faculty', 'bio', 'avatar']
@@ -188,6 +192,20 @@ class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['faculty'].queryset = self.fields['faculty'].queryset.filter(is_active=True)
+        
+        # Set initial values for user fields
+        if self.instance and self.instance.user:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+            self.fields['email'].initial = self.instance.user.email
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if self.instance and self.instance.user:
+            # Check if email is being changed and if it's already taken
+            if email != self.instance.user.email and User.objects.filter(email=email).exists():
+                raise forms.ValidationError("This email address is already registered.")
+        return email
 
 
 class AdminResponseForm(forms.ModelForm):

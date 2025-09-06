@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -153,6 +154,14 @@ def profile(request):
     # Get recent downloads
     recent_downloads = DownloadLog.objects.filter(user=request.user).order_by('-downloaded_at')[:5]
     
+    # Refresh user_profile from database to get latest values
+    user_profile.refresh_from_db()
+    
+    # Always use the current values from the database
+    # The increment_downloads() and increment_uploads() methods already update the database
+    total_downloads = user_profile.total_downloads
+    total_uploads = user_profile.total_uploads
+    
     # Get all faculties for the faculty explorer
     faculties = Faculty.objects.filter(is_active=True)
     
@@ -160,9 +169,66 @@ def profile(request):
         'user_profile': user_profile,
         'recent_downloads': recent_downloads,
         'faculties': faculties,
+        'total_downloads': total_downloads,
+        'total_uploads': total_uploads,
     }
     
     return render(request, 'general/profile.html', context)
+
+@login_required
+def edit_profile(request):
+    """Edit user profile with AJAX support"""
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            # Save profile first
+            form.save()
+            
+            # Update user's basic information
+            user = request.user
+            user.first_name = form.cleaned_data.get('first_name', '')
+            user.last_name = form.cleaned_data.get('last_name', '')
+            user.email = form.cleaned_data.get('email', '')
+            user.save()
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Profile updated successfully!',
+                    'user_name': request.user.get_full_name(),
+                    'user_email': request.user.email,
+                    'faculty_name': user_profile.faculty.name if user_profile.faculty else 'Not selected',
+                    'bio': user_profile.bio,
+                    'avatar_url': user_profile.avatar.url if user_profile.avatar else None
+                })
+            else:
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('profile')
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                })
+            else:
+                messages.error(request, 'Please correct the errors below.')
+    else:
+        form = UserProfileForm(instance=user_profile)
+    
+    # For AJAX requests, return form HTML
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        form_html = render_to_string('general/profile_edit_form.html', {
+            'form': form,
+            'user': request.user
+        }, request=request)
+        return JsonResponse({'form_html': form_html})
+    
+    return render(request, 'general/profile_edit.html', {
+        'form': form,
+        'user_profile': user_profile
+    })
 
 @login_required
 def select_faculty(request):
@@ -675,8 +741,15 @@ def download_resource(request, content_type, content_id):
         resource.increment_download()
         
         # Increment user's download count
-        user_profile = UserProfile.objects.get(user=request.user)
-        user_profile.increment_downloads()
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            user_profile.increment_downloads()
+        except UserProfile.DoesNotExist:
+            # Create user profile if it doesn't exist
+            user_profile = UserProfile.objects.create(user=request.user)
+            user_profile.increment_downloads()
+        except Exception as e:
+            print(f"Error incrementing download count: {str(e)}")
         
         # Return file for download
         try:
@@ -1147,6 +1220,9 @@ def admin_manage_syllabus(request):
                         uploaded_by=request.user,
                         status='approved'  # Auto-approve admin uploads
                     )
+                    # Increment admin's upload count
+                    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+                    user_profile.increment_uploads()
                     messages.success(request, f'Syllabus "{title}" added successfully.')
                 except Subject.DoesNotExist:
                     messages.error(request, 'Selected subject not found.')
@@ -1224,6 +1300,9 @@ def admin_manage_notes(request):
                         uploaded_by=request.user,
                         status='approved'  # Auto-approve admin uploads
                     )
+                    # Increment admin's upload count
+                    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+                    user_profile.increment_uploads()
                     messages.success(request, f'Note "{title}" added successfully.')
                 except Subject.DoesNotExist:
                     messages.error(request, 'Selected subject not found.')
@@ -1301,6 +1380,9 @@ def admin_manage_question_banks(request):
                         uploaded_by=request.user,
                         status='approved'  # Auto-approve admin uploads
                     )
+                    # Increment admin's upload count
+                    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+                    user_profile.increment_uploads()
                     messages.success(request, f'Question Bank "{title}" added successfully.')
                 except Subject.DoesNotExist:
                     messages.error(request, 'Selected subject not found.')
@@ -1562,6 +1644,12 @@ def download_chapter(request, chapter_id):
             content_id=chapter.id,
             ip_address=request.META.get('REMOTE_ADDR')
         )
+        # Increment user's download count
+        try:
+            user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+            user_profile.increment_downloads()
+        except Exception as e:
+            print(f"Error incrementing download count: {str(e)}")
     
     response = FileResponse(chapter.file, as_attachment=True, filename=f"{chapter.title}.pdf")
     return response
