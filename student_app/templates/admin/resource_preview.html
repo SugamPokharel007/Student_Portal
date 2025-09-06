@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preview {{ resource_type|title }} | Admin | Sikshya Kendra{% endblock %}
+
+{% block extra_css %}
+<style>
+.preview-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.preview-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+
+.resource-info {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.resource-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pdf-viewer {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.file-info {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="preview-container">
+    <!-- Header -->
+    <div class="preview-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-{% if resource_type == 'syllabus' %}file-alt{% elif resource_type == 'note' %}sticky-note{% elif resource_type == 'question_bank' %}question-circle{% elif resource_type == 'chapter' %}book{% endif %} me-2"></i>
+                    Preview {{ resource_type|title }}
+                </h1>
+                <p class="mb-0">{{ resource.title }}</p>
+            </div>
+            <div>
+                <span class="status-badge status-{{ resource.status }}">
+                    {{ resource.status|title }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Information -->
+    <div class="resource-info">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="mb-3">Resource Details</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Title:</strong></td>
+                        <td>{{ resource.title }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Subject:</strong></td>
+                        <td>{{ resource.subject.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Faculty:</strong></td>
+                        <td>{{ resource.subject.faculty.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Level:</strong></td>
+                        <td>{{ resource.subject.level }}{% if resource.subject.faculty.academic_structure == 'semester' %}st Semester{% else %}st Year{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uploaded By:</strong></td>
+                        <td>{{ resource.uploaded_by.get_full_name|default:resource.uploaded_by.username }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Upload Date:</strong></td>
+                        <td>{{ resource.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5 class="mb-3">File Information</h5>
+                {% if resource.file %}
+                <div class="file-info">
+                    <p><strong>File:</strong> {{ resource.file.name|slice:"-50:" }}</p>
+                    <p><strong>Size:</strong> {{ resource.file.size|filesizeformat }}</p>
+                    <p><strong>Type:</strong> {{ resource.file.name|slice:"-4:"|upper }}</p>
+                </div>
+                {% else %}
+                <div class="file-info">
+                    <p class="text-muted">No file attached</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Content -->
+    <div class="resource-content">
+        <h5 class="mb-3">Content Preview</h5>
+        
+        {% if resource_type == 'syllabus' %}
+            <div class="syllabus-preview">
+                <h6>Description:</h6>
+                <p>{{ resource.content|linebreaks }}</p>
+            </div>
+        {% elif resource_type == 'note' %}
+            <div class="note-preview">
+                <h6>Description:</h6>
+                <p>{{ resource.description|linebreaks }}</p>
+                {% if resource.file %}
+                <div class="mt-3">
+                    <h6>File Preview:</h6>
+                    <iframe src="{{ resource.file.url }}#toolbar=1&navpanes=1&scrollbar=1" 
+                            class="pdf-viewer" 
+                            frameborder="0"
+                            type="application/pdf">
+                        <p>Your browser does not support PDFs. 
+                           <a href="{{ resource.file.url }}" target="_blank">Download the PDF</a>.
+                        </p>
+                    </iframe>
+                </div>
+                {% endif %}
+            </div>
+        {% elif resource_type == 'question_bank' %}
+            <div class="question-bank-preview">
+                <h6>Description:</h6>
+                <p>{{ resource.description|linebreaks }}</p>
+                {% if resource.file %}
+                <div class="mt-3">
+                    <h6>File Preview:</h6>
+                    <iframe src="{{ resource.file.url }}#toolbar=1&navpanes=1&scrollbar=1" 
+                            class="pdf-viewer" 
+                            frameborder="0"
+                            type="application/pdf">
+                        <p>Your browser does not support PDFs. 
+                           <a href="{{ resource.file.url }}" target="_blank">Download the PDF</a>.
+                        </p>
+                    </iframe>
+                </div>
+                {% endif %}
+            </div>
+        {% elif resource_type == 'chapter' %}
+            <div class="chapter-preview">
+                <h6>Description:</h6>
+                <p>{{ resource.description|linebreaks }}</p>
+                {% if resource.file %}
+                <div class="mt-3">
+                    <h6>File Preview:</h6>
+                    <iframe src="{{ resource.file.url }}#toolbar=1&navpanes=1&scrollbar=1" 
+                            class="pdf-viewer" 
+                            frameborder="0"
+                            type="application/pdf">
+                        <p>Your browser does not support PDFs. 
+                           <a href="{{ resource.file.url }}" target="_blank">Download the PDF</a>.
+                        </p>
+                    </iframe>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <form method="post" action="{% url 'admin_approve_resource' %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="resource_type" value="{{ resource_type }}">
+            <input type="hidden" name="resource_id" value="{{ resource.id }}">
+            <button type="submit" class="btn btn-success btn-lg" 
+                    onclick="return confirm('Are you sure you want to approve this {{ resource_type }}?')">
+                <i class="fas fa-check me-2"></i>Approve
+            </button>
+        </form>
+        
+        <form method="post" action="{% url 'admin_reject_resource' %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="resource_type" value="{{ resource_type }}">
+            <input type="hidden" name="resource_id" value="{{ resource.id }}">
+            <input type="hidden" name="rejection_reason" value="Rejected by admin after review">
+            <button type="submit" class="btn btn-danger btn-lg" 
+                    onclick="return confirm('Are you sure you want to reject this {{ resource_type }}?')">
+                <i class="fas fa-times me-2"></i>Reject
+            </button>
+        </form>
+        
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -118,7 +118,7 @@
                             <span class="stat-value text-warning">{{ resource_breakdown.syllabi.pending }}</span>
                         </div>
                     </div>
-                    <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-primary mt-3" target="_blank">
+                    <a href="{% url 'admin_manage_syllabus' %}" class="btn btn-sm btn-outline-primary mt-3">
                         Manage Syllabus
                     </a>
                 </div>
@@ -146,7 +146,7 @@
                             <span class="stat-value text-warning">{{ resource_breakdown.notes.pending }}</span>
                         </div>
                     </div>
-                    <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-success mt-3" target="_blank">
+                    <a href="{% url 'admin_manage_notes' %}" class="btn btn-sm btn-outline-success mt-3">
                         Manage Notes
                     </a>
                 </div>
@@ -174,7 +174,7 @@
                             <span class="stat-value text-warning">{{ resource_breakdown.question_banks.pending }}</span>
                         </div>
                     </div>
-                    <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-warning mt-3" target="_blank">
+                    <a href="{% url 'admin_manage_question_banks' %}" class="btn btn-sm btn-outline-warning mt-3">
                         Manage Questions
                     </a>
                 </div>
@@ -575,22 +575,31 @@
                                 </p>
                             </div>
                             <div class="activity-actions">
-                                {% if resource|class_name == 'Syllabus' %}
-                                    <a href="{% url 'admin:index' %}" 
-                                       class="btn btn-sm btn-outline-primary" target="_blank">
-                                        <i class="fas fa-edit"></i>
+                                <div class="btn-group btn-group-sm">
+                                    <form method="post" action="{% url 'admin_approve_resource' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="resource_type" value="{% if resource|class_name == 'Syllabus' %}syllabus{% elif resource|class_name == 'Note' %}note{% elif resource|class_name == 'QuestionBank' %}question_bank{% elif resource|class_name == 'Chapter' %}chapter{% endif %}">
+                                        <input type="hidden" name="resource_id" value="{{ resource.id }}">
+                                        <button type="submit" class="btn btn-outline-success" 
+                                                onclick="return confirm('Are you sure you want to approve this {{ resource|class_name|lower }}?')">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'admin_reject_resource' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="resource_type" value="{% if resource|class_name == 'Syllabus' %}syllabus{% elif resource|class_name == 'Note' %}note{% elif resource|class_name == 'QuestionBank' %}question_bank{% elif resource|class_name == 'Chapter' %}chapter{% endif %}">
+                                        <input type="hidden" name="resource_id" value="{{ resource.id }}">
+                                        <input type="hidden" name="rejection_reason" value="Rejected by admin">
+                                        <button type="submit" class="btn btn-outline-danger" 
+                                                onclick="return confirm('Are you sure you want to reject this {{ resource|class_name|lower }}?')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'admin_preview_resource' %}?type={% if resource|class_name == 'Syllabus' %}syllabus{% elif resource|class_name == 'Note' %}note{% elif resource|class_name == 'QuestionBank' %}question_bank{% elif resource|class_name == 'Chapter' %}chapter{% endif %}&id={{ resource.id }}" 
+                                       class="btn btn-outline-info" target="_blank">
+                                        <i class="fas fa-eye"></i>
                                     </a>
-                                {% elif resource|class_name == 'Note' %}
-                                    <a href="{% url 'admin:index' %}" 
-                                       class="btn btn-sm btn-outline-primary" target="_blank">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                {% else %}
-                                    <a href="{% url 'admin:index' %}" 
-                                       class="btn btn-sm btn-outline-primary" target="_blank">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                {% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}

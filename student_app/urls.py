@@ -41,6 +41,8 @@ urlpatterns = [
     path('subject/<int:subject_id>/questions/', views.subject_questions, name='subject_questions'),
     path('subject/<int:subject_id>/chapter/<int:chapter_id>/', views.chapter_detail, name='chapter_detail'),
     path('download/chapter/<int:chapter_id>/', views.download_chapter, name='download_chapter'),
+    path('subject/<int:subject_id>/question-bank/<int:question_bank_id>/', views.question_bank_detail, name='question_bank_detail'),
+    path('subject/<int:subject_id>/syllabus/<int:syllabus_id>/', views.syllabus_detail, name='syllabus_detail'),
     
     # Resource management
     path('subject/<int:subject_id>/add-syllabus/', views.add_syllabus, name='add_syllabus'),
@@ -96,5 +98,10 @@ urlpatterns = [
     path('admin-manage-contacts/', views.admin_manage_contacts, name='admin_manage_contacts'),
     path('admin-manage-chapters/', views.admin_manage_chapters, name='admin_manage_chapters'),
     path('admin-manage-articles/', views.admin_manage_articles, name='admin_manage_articles'),
+    
+    # Admin approval actions
+    path('admin-approve-resource/', views.admin_approve_resource, name='admin_approve_resource'),
+    path('admin-reject-resource/', views.admin_reject_resource, name='admin_reject_resource'),
+    path('admin-preview-resource/', views.admin_preview_resource, name='admin_preview_resource'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -363,7 +363,14 @@ def subject_syllabus(request, subject_id):
         user_profile = UserProfile.objects.select_related('faculty').get(user=request.user)
         syllabi = Syllabus.objects.filter(subject=subject, status='approved', subject__faculty=user_profile.faculty).select_related('subject', 'uploaded_by')
     
-    return render(request, 'subject/subject_syllabus.html', {'subject': subject, 'syllabi': syllabi})
+    # Get the first approved syllabus for display
+    syllabus = syllabi.first() if syllabi.exists() else None
+    
+    return render(request, 'subject/subject_syllabus.html', {
+        'subject': subject, 
+        'syllabi': syllabi,
+        'syllabus': syllabus
+    })
 
 @login_required
 def subject_questions(request, subject_id):
@@ -1121,6 +1128,108 @@ def admin_dashboard(request):
     return render(request, 'admin/admin_dashboard.html', context)
 
 @login_required
+def admin_approve_resource(request):
+    """Admin function to approve pending resources"""
+    if not request.user.is_superuser:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        resource_type = request.POST.get('resource_type')
+        resource_id = request.POST.get('resource_id')
+        
+        try:
+            if resource_type == 'syllabus':
+                resource = Syllabus.objects.get(id=resource_id)
+            elif resource_type == 'note':
+                resource = Note.objects.get(id=resource_id)
+            elif resource_type == 'question_bank':
+                resource = QuestionBank.objects.get(id=resource_id)
+            elif resource_type == 'chapter':
+                resource = Chapter.objects.get(id=resource_id)
+            else:
+                messages.error(request, 'Invalid resource type.')
+                return redirect('admin_dashboard')
+            
+            resource.status = 'approved'
+            resource.save()
+            messages.success(request, f'{resource_type.title()} "{resource.title}" approved successfully.')
+            
+        except Exception as e:
+            messages.error(request, f'Error approving resource: {str(e)}')
+    
+    return redirect('admin_dashboard')
+
+@login_required
+def admin_reject_resource(request):
+    """Admin function to reject pending resources"""
+    if not request.user.is_superuser:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        resource_type = request.POST.get('resource_type')
+        resource_id = request.POST.get('resource_id')
+        rejection_reason = request.POST.get('rejection_reason', 'No reason provided')
+        
+        try:
+            if resource_type == 'syllabus':
+                resource = Syllabus.objects.get(id=resource_id)
+            elif resource_type == 'note':
+                resource = Note.objects.get(id=resource_id)
+            elif resource_type == 'question_bank':
+                resource = QuestionBank.objects.get(id=resource_id)
+            elif resource_type == 'chapter':
+                resource = Chapter.objects.get(id=resource_id)
+            else:
+                messages.error(request, 'Invalid resource type.')
+                return redirect('admin_dashboard')
+            
+            resource.status = 'rejected'
+            resource.save()
+            messages.success(request, f'{resource_type.title()} "{resource.title}" rejected successfully.')
+            
+        except Exception as e:
+            messages.error(request, f'Error rejecting resource: {str(e)}')
+    
+    return redirect('admin_dashboard')
+
+@login_required
+def admin_preview_resource(request):
+    """Admin function to preview pending resources before approval"""
+    if not request.user.is_superuser:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('dashboard')
+    
+    resource_type = request.GET.get('type')
+    resource_id = request.GET.get('id')
+    
+    try:
+        if resource_type == 'syllabus':
+            resource = Syllabus.objects.get(id=resource_id)
+        elif resource_type == 'note':
+            resource = Note.objects.get(id=resource_id)
+        elif resource_type == 'question_bank':
+            resource = QuestionBank.objects.get(id=resource_id)
+        elif resource_type == 'chapter':
+            resource = Chapter.objects.get(id=resource_id)
+        else:
+            messages.error(request, 'Invalid resource type.')
+            return redirect('admin_dashboard')
+        
+        context = {
+            'resource': resource,
+            'resource_type': resource_type,
+            'subject': resource.subject,
+        }
+        
+        return render(request, 'admin/resource_preview.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error loading resource: {str(e)}')
+        return redirect('admin_dashboard')
+
+@login_required
 def admin_manage_subjects(request):
     """Admin view to manage subjects"""
     if not request.user.is_superuser:
@@ -1653,6 +1762,62 @@ def download_chapter(request, chapter_id):
     
     response = FileResponse(chapter.file, as_attachment=True, filename=f"{chapter.title}.pdf")
     return response
+
+@login_required
+def question_bank_detail(request, subject_id, question_bank_id):
+    """Question bank detail view with preview"""
+    subject = get_object_or_404(Subject, id=subject_id, is_active=True)
+    question_bank = get_object_or_404(QuestionBank, id=question_bank_id, subject=subject, status='approved')
+    
+    # Get all question banks for this subject
+    question_banks = QuestionBank.objects.filter(subject=subject, status='approved').order_by('-created_at')
+    
+    # Increment view count
+    question_bank.increment_view()
+    
+    # Log view
+    if request.user.is_authenticated:
+        ViewLog.objects.create(
+            user=request.user,
+            content_type='question_bank',
+            content_id=question_bank.id,
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+    
+    context = {
+        'subject': subject,
+        'question_bank': question_bank,
+        'question_banks': question_banks,
+    }
+    return render(request, 'subject/question_bank_detail.html', context)
+
+@login_required
+def syllabus_detail(request, subject_id, syllabus_id):
+    """Syllabus detail view with preview"""
+    subject = get_object_or_404(Subject, id=subject_id, is_active=True)
+    syllabus = get_object_or_404(Syllabus, id=syllabus_id, subject=subject, status='approved')
+    
+    # Get all syllabi for this subject
+    syllabi = Syllabus.objects.filter(subject=subject, status='approved').order_by('-created_at')
+    
+    # Increment view count
+    syllabus.increment_view()
+    
+    # Log view
+    if request.user.is_authenticated:
+        ViewLog.objects.create(
+            user=request.user,
+            content_type='syllabus',
+            content_id=syllabus.id,
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+    
+    context = {
+        'subject': subject,
+        'syllabus': syllabus,
+        'syllabi': syllabi,
+    }
+    return render(request, 'subject/syllabus_detail.html', context)
 
 
 @login_required

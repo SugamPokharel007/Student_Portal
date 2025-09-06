@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ question_bank.title }} | {{ subject.name }} | Sikshya Kendra{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/chapter_detail.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="chapter-container">
+    <div class="chapter-layout">
+        <!-- Left Sidebar -->
+        <div class="chapter-sidebar">
+            <div class="sidebar-header">
+                <h3>{{ subject.name }}</h3>
+                <p>Question Banks</p>
+            </div>
+            <div class="chapter-list">
+                {% for qb in question_banks %}
+                <a href="{% url 'question_bank_detail' subject.id qb.id %}" 
+                   class="chapter-link {% if qb.id == question_bank.id %}active{% endif %}">
+                    <div class="chapter-link-content">
+                        <div class="chapter-number">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="chapter-title">{{ qb.title }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="chapter-main">
+            <div class="chapter-header">
+                <div class="breadcrumb-nav">
+                    <a href="{% url 'faculty_overview' subject.faculty.slug %}">{{ subject.faculty.name }}</a>
+                    <span>></span>
+                    <a href="{% url 'faculty_subjects' subject.faculty.slug subject.level %}">
+                        {% if subject.faculty.academic_structure == 'semester' %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                    </a>
+                    <span>></span>
+                    <a href="{% url 'subject_detail' subject.id %}">{{ subject.name }}</a>
+                    <span>></span>
+                    <span>{{ question_bank.title }}</span>
+                </div>
+                
+                <div class="chapter-title-section">
+                    <h1>{{ question_bank.title }}</h1>
+                    <div class="chapter-meta">
+                        <span class="chapter-number-badge">Question Bank</span>
+                        <span class="view-count">{{ question_bank.view_count }} views</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-content">
+                {% if question_bank.file %}
+                <div class="pdf-viewer">
+                    <iframe src="{{ question_bank.file.url }}#toolbar=0&navpanes=0&scrollbar=1&zoom=FitH" 
+                            width="100%" 
+                            height="700px" 
+                            frameborder="0"
+                            style="border: none; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    </iframe>
+                </div>
+                
+                <div class="pdf-actions mt-3 text-center">
+                    <a href="{% url 'download_resource' 'questionbank' question_bank.id %}" class="btn btn-primary me-2">
+                        <i class="fas fa-download me-1"></i> Download PDF
+                    </a>
+                    <a href="{{ question_bank.file.url }}" target="_blank" class="btn btn-outline-primary">
+                        <i class="fas fa-external-link-alt me-1"></i> Open in New Tab
+                    </a>
+                </div>
+                {% else %}
+                <div class="no-file-message">
+                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                    <h4>No PDF Available</h4>
+                    <p>This question bank doesn't have a PDF file uploaded yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
