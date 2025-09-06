@@ -449,7 +449,7 @@ def notice_detail(request, notice_id):
         return render(request, 'general/notice_detail.html', {'notice': notice})
     except Notice.DoesNotExist:
         messages.error(request, 'Notice not found.')
-        return redirect('notice_list')
+        return redirect('notices')
 
 def about(request):
     return render(request, 'general/about.html')

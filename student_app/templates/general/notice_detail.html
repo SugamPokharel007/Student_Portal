@@ -11,7 +11,7 @@
             <nav aria-label="breadcrumb" class="mb-4">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'notice_list' %}">Notices</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'notices' %}">Notices</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ notice.title|truncatechars:30 }}</li>
                 </ol>
             </nav>
@@ -46,7 +46,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <a href="{% url 'notice_list' %}" class="btn btn-outline-light btn-sm">
+                        <a href="{% url 'notices' %}" class="btn btn-outline-light btn-sm">
                             <i class="fas fa-arrow-left me-1"></i>
                             Back to Notices
                         </a>
