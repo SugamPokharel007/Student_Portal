@@ -175,6 +175,7 @@ class Syllabus(models.Model):
     tags = TaggableManager(blank=True)
     download_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text="Last time this resource was viewed")
 
     def __str__(self):
         return f"{self.subject.name} - {self.title}"
@@ -185,7 +186,8 @@ class Syllabus(models.Model):
 
     def increment_view(self):
         self.view_count += 1
-        self.save(update_fields=['view_count'])
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
 
 
 class QuestionBank(models.Model):
@@ -203,6 +205,7 @@ class QuestionBank(models.Model):
     tags = TaggableManager(blank=True)
     download_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text="Last time this resource was viewed")
 
     def __str__(self):
         return f"{self.subject.name} - {self.title}"
@@ -213,7 +216,8 @@ class QuestionBank(models.Model):
 
     def increment_view(self):
         self.view_count += 1
-        self.save(update_fields=['view_count'])
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
 
 
 class Note(models.Model):
@@ -231,6 +235,7 @@ class Note(models.Model):
     tags = TaggableManager(blank=True)
     download_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text="Last time this resource was viewed")
 
     def __str__(self):
         return f"{self.subject.name} - {self.title}"
@@ -241,7 +246,8 @@ class Note(models.Model):
 
     def increment_view(self):
         self.view_count += 1
-        self.save(update_fields=['view_count'])
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
 
 
 class Chapter(models.Model):
@@ -272,7 +278,8 @@ class Chapter(models.Model):
 
     def increment_view(self):
         self.view_count += 1
-        self.save(update_fields=['view_count'])
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
 
     def increment_student(self):
         self.student_count += 1

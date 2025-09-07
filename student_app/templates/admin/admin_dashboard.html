@@ -24,9 +24,6 @@
                     <button onclick="forceRefresh()" class="btn btn-outline-info me-2">
                         <i class="fas fa-sync-alt me-2"></i>Force Refresh
                     </button>
-                    <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary me-2" target="_blank">
-                        <i class="fas fa-cog me-2"></i>Django Admin
-                    </a>
                     <a href="{% url 'home' %}" class="btn btn-primary">
                         <i class="fas fa-home me-2"></i>View Site
                     </a>
@@ -44,7 +41,7 @@
                 </div>
                 <div class="stat-content">
                     <h3 class="stat-number">{{ total_users }}</h3>
-                    <p class="stat-label">Total Users</p>
+                    <p class="stat-label stat-label-white">Total Users</p>
                 </div>
             </div>
         </div>
@@ -55,7 +52,7 @@
                 </div>
                 <div class="stat-content">
                     <h3 class="stat-number">{{ total_subjects }}</h3>
-                    <p class="stat-label">Total Subjects</p>
+                    <p class="stat-label stat-label-white">Total Subjects</p>
                 </div>
             </div>
         </div>
@@ -66,7 +63,7 @@
                 </div>
                 <div class="stat-content">
                     <h3 class="stat-number">{{ total_resources }}</h3>
-                    <p class="stat-label">Total Resources</p>
+                    <p class="stat-label stat-label-white">Total Resources</p>
                 </div>
             </div>
         </div>
@@ -77,7 +74,7 @@
                 </div>
                 <div class="stat-content">
                     <h3 class="stat-number">{{ total_pending }}</h3>
-                    <p class="stat-label">Pending Approvals</p>
+                    <p class="stat-label stat-label-white">Pending Approvals</p>
                 </div>
             </div>
         </div>
@@ -88,127 +85,7 @@
                 </div>
                 <div class="stat-content">
                     <h3 class="stat-number">{{ contributor_requests_count }}</h3>
-                    <p class="stat-label">Contributor Requests</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Resource Breakdown -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-4">
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-file-alt text-primary me-2"></i>Syllabus
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="resource-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Total:</span>
-                            <span class="stat-value">{{ resource_breakdown.syllabi.total }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Approved:</span>
-                            <span class="stat-value text-success">{{ resource_breakdown.syllabi.approved }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Pending:</span>
-                            <span class="stat-value text-warning">{{ resource_breakdown.syllabi.pending }}</span>
-                        </div>
-                    </div>
-                    <a href="{% url 'admin_manage_syllabus' %}" class="btn btn-sm btn-outline-primary mt-3">
-                        Manage Syllabus
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-sticky-note text-success me-2"></i>Notes
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="resource-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Total:</span>
-                            <span class="stat-value">{{ resource_breakdown.notes.total }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Approved:</span>
-                            <span class="stat-value text-success">{{ resource_breakdown.notes.approved }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Pending:</span>
-                            <span class="stat-value text-warning">{{ resource_breakdown.notes.pending }}</span>
-                        </div>
-                    </div>
-                    <a href="{% url 'admin_manage_notes' %}" class="btn btn-sm btn-outline-success mt-3">
-                        Manage Notes
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-question-circle text-warning me-2"></i>Question Banks
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="resource-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Total:</span>
-                            <span class="stat-value">{{ resource_breakdown.question_banks.total }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Approved:</span>
-                            <span class="stat-value text-success">{{ resource_breakdown.question_banks.approved }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Pending:</span>
-                            <span class="stat-value text-warning">{{ resource_breakdown.question_banks.pending }}</span>
-                        </div>
-                    </div>
-                    <a href="{% url 'admin_manage_question_banks' %}" class="btn btn-sm btn-outline-warning mt-3">
-                        Manage Questions
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chapter Management Section -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-4">
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-list text-secondary me-2"></i>Chapters
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="resource-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Total:</span>
-                            <span class="stat-value">{{ resource_breakdown.chapters.total }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Approved:</span>
-                            <span class="stat-value text-success">{{ resource_breakdown.chapters.approved }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Pending:</span>
-                            <span class="stat-value text-warning">{{ resource_breakdown.chapters.pending }}</span>
-                        </div>
-                    </div>
-                    <a href="{% url 'admin_manage_chapters' %}" class="btn btn-sm btn-outline-secondary mt-3">
-                        Manage Chapters
-                    </a>
+                    <p class="stat-label stat-label-white">Contributor Requests</p>
                 </div>
             </div>
         </div>
@@ -258,6 +135,122 @@
                         </div>
                         {% endfor %}
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Management Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt text-primary me-2"></i>Syllabus
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.syllabi.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.syllabi.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.syllabi.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_manage_syllabus' %}" class="btn btn-sm btn-outline-primary mt-3">
+                        Manage Syllabus
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sticky-note text-success me-2"></i>Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.notes.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.notes.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.notes.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_manage_notes' %}" class="btn btn-sm btn-outline-success mt-3">
+                        Manage Notes
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle text-warning me-2"></i>Question Banks
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.question_banks.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.question_banks.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.question_banks.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_manage_question_banks' %}" class="btn btn-sm btn-outline-warning mt-3">
+                        Manage Questions
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list text-secondary me-2"></i>Chapters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ resource_breakdown.chapters.total }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Approved:</span>
+                            <span class="stat-value text-success">{{ resource_breakdown.chapters.approved }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pending:</span>
+                            <span class="stat-value text-warning">{{ resource_breakdown.chapters.pending }}</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'admin_manage_chapters' %}" class="btn btn-sm btn-outline-secondary mt-3">
+                        Manage Chapters
+                    </a>
                 </div>
             </div>
         </div>
@@ -753,96 +746,6 @@ function forceRefresh() {
     background-clip: text;
 }
 
-/* Faculty Management Cards */
-.faculty-card-compact {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid #e9ecef;
-    transition: all 0.3s ease;
-    height: 100%;
-}
-
-.faculty-card-compact:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
-
-.faculty-card-header {
-    display: flex;
-    align-items: center;
-    padding: 1.25rem;
-    border-bottom: 1px solid #f8f9fa;
-}
-
-.faculty-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-    color: white;
-    font-size: 1.2rem;
-}
-
-.faculty-info {
-    flex: 1;
-}
-
-.faculty-name {
-    font-weight: 600;
-    color: #2d3748;
-    margin: 0 0 0.25rem 0;
-    font-size: 1.1rem;
-}
-
-.faculty-system {
-    color: #718096;
-    margin: 0;
-    font-size: 0.9rem;
-}
-
-.faculty-card-body {
-    padding: 1.25rem;
-}
-
-.faculty-stats {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-label {
-    display: block;
-    color: #718096;
-    font-size: 0.8rem;
-    margin-bottom: 0.25rem;
-}
-
-.stat-value {
-    display: block;
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 1.1rem;
-}
-
-.faculty-actions {
-    text-align: center;
-}
-
-.faculty-actions .btn {
-    width: 100%;
-    border-radius: 8px;
-    font-weight: 500;
-}
-
 .stat-card {
     border-radius: 16px;
     padding: 1.5rem;
@@ -895,7 +798,15 @@ function forceRefresh() {
 
 .stat-label {
     margin: 0;
-    opacity: 0.9;
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-shadow: none;
+}
+
+.stat-label-white {
+    color: white !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .dashboard-card {
@@ -942,8 +853,93 @@ function forceRefresh() {
 }
 
 .stat-value {
+    font-weight: 700;
+    color: #1a202c;
+    font-size: 1rem;
+}
+
+.faculty-card-compact {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.faculty-card-compact:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.faculty-card-header {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.faculty-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    margin-right: 1rem;
+}
+
+.faculty-name {
+    margin: 0;
     font-weight: 600;
-    color: #1e293b;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.faculty-system {
+    color: #718096;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.faculty-card-body {
+    padding: 1.25rem;
+}
+
+.faculty-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    color: #718096;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.faculty-actions {
+    text-align: center;
+}
+
+.faculty-actions .btn {
+    width: 100%;
+    border-radius: 8px;
+    font-weight: 500;
 }
 
 .faculty-icon {
@@ -1038,4 +1034,4 @@ function forceRefresh() {
     }
 }
 </style>
-{% endblock %} 
+{% endblock %}

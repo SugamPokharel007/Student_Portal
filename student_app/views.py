@@ -640,6 +640,21 @@ def search(request):
     faculties = Faculty.objects.filter(is_active=True)
     subjects = Subject.objects.filter(is_active=True)
     
+    # Group results by type for template
+    search_results = {
+        'notes': [item for item in results if item.__class__.__name__ == 'Note'],
+        'syllabi': [item for item in results if item.__class__.__name__ == 'Syllabus'],
+        'question_banks': [item for item in results if item.__class__.__name__ == 'QuestionBank']
+    }
+    
+    # Calculate search statistics
+    search_stats = {
+        'total_results': len(results),
+        'notes_count': len(search_results['notes']),
+        'syllabi_count': len(search_results['syllabi']),
+        'question_banks_count': len(search_results['question_banks'])
+    }
+    
     return render(request, 'general/search.html', {
         'page_obj': page_obj,
         'faculties': faculties,
@@ -648,7 +663,9 @@ def search(request):
         'faculty_id': faculty_id,
         'subject_id': subject_id,
         'resource_type': resource_type,
-        'level': level
+        'level': level,
+        'search_results': search_results,
+        'search_stats': search_stats
     })
 
 
@@ -1113,10 +1130,9 @@ def syllabus_detail(request, subject_id, syllabus_id):
     # Log view
     ViewLog.objects.create(
         user=request.user,
-        content_type=ContentType.objects.get_for_model(Syllabus),
-        object_id=syllabus.id,
-        ip_address=request.META.get('REMOTE_ADDR'),
-        user_agent=request.META.get('HTTP_USER_AGENT', '')
+        content_type='syllabus',
+        content_id=syllabus.id,
+        ip_address=request.META.get('REMOTE_ADDR')
     )
     
     # Get related syllabi
@@ -1149,10 +1165,9 @@ def question_bank_detail(request, subject_id, question_bank_id):
     # Log view
     ViewLog.objects.create(
         user=request.user,
-        content_type=ContentType.objects.get_for_model(QuestionBank),
-        object_id=question_bank.id,
-        ip_address=request.META.get('REMOTE_ADDR'),
-        user_agent=request.META.get('HTTP_USER_AGENT', '')
+        content_type='questionbank',
+        content_id=question_bank.id,
+        ip_address=request.META.get('REMOTE_ADDR')
     )
     
     # Get related question banks
