@@ -23,7 +23,7 @@ from .models import (
     Faculty, UserProfile, ContactMessage, ContributorRequest,
     DownloadLog, ViewLog
 )
-from .forms import (un
+from .forms import (
     ContributeResourceForm, ContributorRequestForm, EnhancedContactForm,
     UserRegistrationForm, UserProfileForm, AdminResponseForm,
     ResourceFilterForm, AdvancedSearchForm
@@ -640,7 +640,7 @@ def search(request):
     faculties = Faculty.objects.filter(is_active=True)
     subjects = Subject.objects.filter(is_active=True)
     
-    return render(request, 'search.html', {
+    return render(request, 'general/search.html', {
         'page_obj': page_obj,
         'faculties': faculties,
         'subjects': subjects,
@@ -1816,7 +1816,7 @@ def chapter_detail(request, subject_id, chapter_id):
         'chapter': chapter,
         'chapters': chapters,
     }
-    return render(request, 'chapter_detail.html', context)
+    return render(request, 'subject/chapter_detail.html', context)
 
 
 def download_chapter(request, chapter_id):
