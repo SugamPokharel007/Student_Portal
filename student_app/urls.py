@@ -103,5 +103,11 @@ urlpatterns = [
     path('admin-approve-resource/', views.admin_approve_resource, name='admin_approve_resource'),
     path('admin-reject-resource/', views.admin_reject_resource, name='admin_reject_resource'),
     path('admin-preview-resource/', views.admin_preview_resource, name='admin_preview_resource'),
+    
+    # Faculty-wise Resource Management URLs
+    path('admin-faculty-management/', views.admin_faculty_management, name='admin_faculty_management'),
+    path('admin-faculty-levels/<str:faculty_slug>/', views.admin_faculty_levels, name='admin_faculty_levels'),
+    path('admin-faculty-subjects/<str:faculty_slug>/<int:level>/', views.admin_faculty_subjects, name='admin_faculty_subjects'),
+    path('admin-subject-resources/<int:subject_id>/', views.admin_subject_resources_management, name='admin_subject_resources_management'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

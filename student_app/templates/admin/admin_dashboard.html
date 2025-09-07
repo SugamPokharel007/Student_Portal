@@ -214,6 +214,55 @@
         </div>
     </div>
 
+    <!-- Faculty-wise Resource Management Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-university me-2"></i>Faculty-wise Resource Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for faculty in faculties %}
+                        <div class="col-xl-6 col-lg-6 col-md-6">
+                            <div class="faculty-card-compact">
+                                <div class="faculty-card-header">
+                                    <div class="faculty-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="faculty-info">
+                                        <h6 class="faculty-name">{{ faculty.name }}</h6>
+                                        <p class="faculty-system">{{ faculty.get_academic_structure_display }}</p>
+                                    </div>
+                                </div>
+                                <div class="faculty-card-body">
+                                    <div class="faculty-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Subjects:</span>
+                                            <span class="stat-value">{{ faculty.subject_count }}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Resources:</span>
+                                            <span class="stat-value">{{ faculty.resource_count }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="faculty-actions">
+                                        <a href="{% url 'admin_faculty_levels' faculty.slug %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-cog me-1"></i>Manage Resources
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Contributor Requests Section -->
     <div class="row g-4 mb-4">
         <div class="col-12">
@@ -702,6 +751,96 @@ function forceRefresh() {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+/* Faculty Management Cards */
+.faculty-card-compact {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.faculty-card-compact:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.faculty-card-header {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.faculty-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.faculty-info {
+    flex: 1;
+}
+
+.faculty-name {
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.faculty-system {
+    color: #718096;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.faculty-card-body {
+    padding: 1.25rem;
+}
+
+.faculty-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    color: #718096;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.1rem;
+}
+
+.faculty-actions {
+    text-align: center;
+}
+
+.faculty-actions .btn {
+    width: 100%;
+    border-radius: 8px;
+    font-weight: 500;
 }
 
 .stat-card {

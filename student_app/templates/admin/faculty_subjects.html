@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ faculty.name }} - {{ level_name }} | Sikshya Kendra{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold text-gradient mb-2">
+                        <i class="fas fa-book me-2"></i>{{ faculty.name }} - {{ level_name }}
+                    </h1>
+                    <p class="text-muted mb-0">Manage subjects and their resources for {{ level_name }}.</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_faculty_levels' faculty.slug %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Levels
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>Add New Subject
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_subject">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Subject Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Subject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects List -->
+    <div class="row g-4">
+        {% for subject in subjects %}
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="subject-card">
+                <div class="subject-card-header">
+                    <div class="subject-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="subject-info">
+                        <h5 class="subject-name">{{ subject.name }}</h5>
+                        <p class="subject-description">{{ subject.description|default:"No description" }}</p>
+                    </div>
+                    <div class="subject-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <button class="dropdown-item" onclick="editSubject({{ subject.id }}, '{{ subject.name }}', '{{ subject.description|default:"" }}')">
+                                        <i class="fas fa-edit me-2"></i>Edit
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item text-danger" onclick="deleteSubject({{ subject.id }}, '{{ subject.name }}')">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="subject-card-body">
+                    <div class="subject-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-file-alt text-primary"></i>
+                            <span>{{ subject.syllabi.count }} Syllabus</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-sticky-note text-success"></i>
+                            <span>{{ subject.notes.count }} Notes</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-question-circle text-warning"></i>
+                            <span>{{ subject.question_banks.count }} Questions</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-list text-info"></i>
+                            <span>{{ subject.chapters.count }} Chapters</span>
+                        </div>
+                    </div>
+                    <div class="subject-actions">
+                        <a href="{% url 'admin_subject_resources_management' subject.id %}" class="btn btn-primary w-100">
+                            <i class="fas fa-cog me-2"></i>Manage Resources
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No subjects found</h5>
+                <p class="text-muted">Add subjects for {{ level_name }} to get started.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Edit Subject Modal -->
+<div class="modal fade" id="editSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="editSubjectForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_subject">
+                <input type="hidden" name="subject_id" id="editSubjectId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Subject Name *</label>
+                        <input type="text" class="form-control" id="editName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="editDescription" name="description">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Subject Modal -->
+<div class="modal fade" id="deleteSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="deleteSubjectForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_subject">
+                <input type="hidden" name="subject_id" id="deleteSubjectId">
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the subject <strong id="deleteSubjectName"></strong>?</p>
+                    <p class="text-danger">This action cannot be undone and will delete all associated resources.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subject-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.subject-card-header {
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.subject-icon {
+    width: 50px;
+    height: 50px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.subject-info {
+    flex: 1;
+}
+
+.subject-name {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.subject-description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.subject-actions {
+    margin-left: auto;
+}
+
+.subject-card-body {
+    padding: 1.5rem;
+}
+
+.subject-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.stat-item i {
+    font-size: 1rem;
+}
+
+.stat-item span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.subject-actions {
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .subject-card-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .subject-icon {
+        margin: 0 auto;
+    }
+    
+    .subject-stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function editSubject(id, name, description) {
+    document.getElementById('editSubjectId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editDescription').value = description;
+    new bootstrap.Modal(document.getElementById('editSubjectModal')).show();
+}
+
+function deleteSubject(id, name) {
+    document.getElementById('deleteSubjectId').value = id;
+    document.getElementById('deleteSubjectName').textContent = name;
+    new bootstrap.Modal(document.getElementById('deleteSubjectModal')).show();
+}
+</script>
+{% endblock %}
