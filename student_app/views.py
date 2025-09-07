@@ -665,21 +665,38 @@ def advanced_search(request):
 
 @login_required
 def search(request):
-    query = request.GET.get('q', '')
+    """
+    Enhanced search view using TF-IDF and Cosine Similarity
+    
+    This view implements:
+    - Advanced text preprocessing
+    - TF-IDF vectorization for better relevance
+    - Cosine similarity for ranking
+    - Grouped results by resource type
+    - Top 10 results per category
+    """
+    from .search_utils import perform_enhanced_search, get_search_statistics
+    
+    query = request.GET.get('q', '').strip()
     faculty_id = request.GET.get('faculty')
     subject_id = request.GET.get('subject')
     resource_type = request.GET.get('type')
     level = request.GET.get('level')
     
+    # Initialize results
+    search_results = {
+        'notes': [],
+        'syllabi': [],
+        'question_banks': [],
+        'notices': []
+    }
+    
+    # Get all approved resources with related data
     notes = Note.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     syllabi = Syllabus.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     questionbanks = QuestionBank.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     
-    if query:
-        notes = notes.filter(Q(title__icontains=query) | Q(description__icontains=query))
-        syllabi = syllabi.filter(Q(title__icontains=query) | Q(content__icontains=query))
-        questionbanks = questionbanks.filter(Q(title__icontains=query) | Q(description__icontains=query))
-    
+    # Apply filters
     if faculty_id:
         notes = notes.filter(subject__faculty_id=faculty_id)
         syllabi = syllabi.filter(subject__faculty_id=faculty_id)
@@ -695,24 +712,31 @@ def search(request):
         syllabi = syllabi.filter(subject__level=level)
         questionbanks = questionbanks.filter(subject__level=level)
     
-    results = []
-    if not resource_type or resource_type == 'note':
-        results += list(notes)
-    if not resource_type or resource_type == 'syllabus':
-        results += list(syllabi)
-    if not resource_type or resource_type == 'questionbank':
-        results += list(questionbanks)
+    # If no query, return empty results
+    if not query:
+        search_results = {
+            'notes': [],
+            'syllabi': [],
+            'question_banks': [],
+            'notices': []
+        }
+    else:
+        # Combine all resources for enhanced search
+        all_resources = list(notes) + list(syllabi) + list(questionbanks)
+        
+        # Perform enhanced search using TF-IDF and Cosine Similarity
+        search_results = perform_enhanced_search(query, all_resources, limit=10)
     
-    results = sorted(results, key=lambda x: x.title.lower())
-    paginator = Paginator(results, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # Get search statistics
+    search_stats = get_search_statistics(query, search_results)
     
+    # Get filter options
     faculties = Faculty.objects.filter(is_active=True)
     subjects = Subject.objects.filter(is_active=True)
     
     return render(request, 'general/search.html', {
-        'page_obj': page_obj,
+        'search_results': search_results,
+        'search_stats': search_stats,
         'faculties': faculties,
         'subjects': subjects,
         'query': query,

@@ -663,7 +663,7 @@
     content: "✓";
     position: absolute;
     left: 0;
-    color: var(--success-color);
+    color: #667eea;
     font-weight: bold;
 }
 

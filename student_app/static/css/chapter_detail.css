@@ -58,14 +58,14 @@
 
 .chapter-link:hover {
     background: #f7fafc;
-    color: #20b2aa;
+    color: #667eea;
     text-decoration: none;
 }
 
 .chapter-link.active {
     background: #e6fffa;
-    color: #20b2aa;
-    border-left-color: #20b2aa;
+    color: #667eea;
+    border-left-color: #667eea;
     font-weight: 600;
 }
 
@@ -78,7 +78,7 @@
 .chapter-number {
     width: 24px;
     height: 24px;
-    background: #20b2aa;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -90,7 +90,7 @@
 }
 
 .chapter-link.active .chapter-number {
-    background: #1a9b94;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 .chapter-title {
@@ -123,13 +123,13 @@
 }
 
 .breadcrumb-nav a {
-    color: #20b2aa;
+    color: #667eea;
     text-decoration: none;
     transition: color 0.2s ease;
 }
 
 .breadcrumb-nav a:hover {
-    color: #1a9b94;
+    color: #764ba2;
     text-decoration: none;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .chapter-number-badge {
-    background: #20b2aa;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
@@ -204,12 +204,12 @@
 }
 
 .btn-download {
-    background: #20b2aa;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
 
 .btn-download:hover {
-    background: #1a9b94;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     color: white;
     text-decoration: none;
 }
