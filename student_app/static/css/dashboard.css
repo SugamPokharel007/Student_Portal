@@ -8,16 +8,18 @@
 
 /* Text Readability Improvements */
 .stat-label {
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
     color: rgba(255, 255, 255, 0.95) !important;
     letter-spacing: 0.025em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .stat-number {
-    font-size: 2.5rem !important;
-    font-weight: 800 !important;
+    font-size: 3rem !important;
+    font-weight: 900 !important;
     line-height: 1.1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-title {
@@ -39,13 +41,404 @@
     color: #2d3748 !important;
 }
 
-/* Faculty-wise Organization */
-.faculty-section {
+/* Simple Faculty Cards */
+.faculty-card {
+    background: white;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.faculty-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.faculty-card-header {
+    padding: 1.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.faculty-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.faculty-info {
+    flex: 1;
+}
+
+.faculty-name {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+}
+
+.faculty-system {
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.faculty-card-body {
+    padding: 1.5rem;
+}
+
+.faculty-stats-simple {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+}
+
+.faculty-stats-simple .stat-item {
+    text-align: center;
+}
+
+.faculty-stats-simple .stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #2d3748;
+    display: block;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.faculty-stats-simple .stat-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+.faculty-action {
+    text-align: center;
+}
+
+/* Faculty Resources Section */
+.faculty-resources-section {
     background: #f8fafc;
     border-radius: 12px;
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-top: 2rem;
+    border: 2px solid #e2e8f0;
+}
+
+.faculty-resources-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.faculty-resources-header h5 {
+    margin: 0;
+    color: #2d3748;
+    font-weight: 700;
+}
+
+/* Semester Cards */
+.semester-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.semester-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3182ce, #2563eb, #1d4ed8);
+}
+
+.semester-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #3182ce;
+}
+
+.semester-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.semester-header h6 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #2d3748;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+}
+
+.semester-subjects {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.semester-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.semester-actions .btn {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    background: linear-gradient(135deg, #3182ce, #2563eb);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.semester-actions .btn:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4);
+}
+
+.semester-actions .btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+}
+
+.semester-actions .btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+}
+
+.semester-actions .btn-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none;
+    color: white;
+}
+
+.semester-actions .btn-info:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+}
+
+/* Subject Cards */
+.subject-card {
+    background: white;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.subject-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    border-color: #3182ce;
+}
+
+.subject-card-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.subject-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #3182ce, #2563eb);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.subject-info {
+    flex: 1;
+}
+
+.subject-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin: 0;
+    color: #2d3748;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.subject-description {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #718096;
+    line-height: 1.4;
+}
+
+.subject-card-body {
+    padding: 1.5rem;
+}
+
+.subject-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.subject-stats .stat-item {
+    text-align: center;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.subject-stats .stat-number {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #2d3748;
+    display: block;
+    line-height: 1;
+}
+
+.subject-stats .stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+.subject-actions {
+    margin-top: 1rem;
+}
+
+.subject-actions .btn {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    background: linear-gradient(135deg, #3182ce, #2563eb);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.subject-actions .btn:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4);
+}
+
+/* Resource Sections */
+.resource-section {
+    background: white;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.resource-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.resource-header h5 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.resource-content {
+    padding: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.resource-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.resource-item:hover {
+    background: #edf2f7;
+    transform: translateX(5px);
+}
+
+.resource-info {
+    flex: 1;
+}
+
+.resource-info h6 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.resource-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.resource-actions .btn {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 0.8rem;
 }
 
 .faculty-header {
@@ -84,49 +477,64 @@
 
 .faculty-stat-item {
     background: white;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
     text-align: center;
-    min-width: 80px;
+    min-width: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.faculty-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .faculty-stat-number {
-    font-size: 1.5rem;
-    font-weight: 800;
+    font-size: 2rem;
+    font-weight: 900;
     color: #2d3748;
     display: block;
     line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .faculty-stat-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #718096;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4a5568;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
 }
 
 /* Level-wise Resource Organization */
 .level-section {
     background: white;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 1rem;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.level-section:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .level-header {
-    background: #f7fafc;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    padding: 1rem 1.25rem;
+    border-bottom: 2px solid #e2e8f0;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
 }
 
 .level-header:hover {
-    background: #edf2f7;
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+    transform: translateY(-1px);
 }
 
 .level-title {

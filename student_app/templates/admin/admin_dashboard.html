@@ -8,10 +8,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 admin-dashboard">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
@@ -309,62 +310,73 @@
         </div>
     </div>
 
-    <!-- Faculty Statistics -->
+    <!-- Faculty-wise Resource Management - Compact Cards -->
     <div class="row g-4 mb-4">
         <div class="col-12">
             <div class="dashboard-card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-university text-info me-2"></i>Faculty Statistics
+                        <i class="fas fa-university text-info me-2"></i>Faculty-wise Resource Management
                     </h5>
+                    <p class="text-muted mb-0">Click on faculty to manage resources by semester/year.</p>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Faculty</th>
-                                    <th>Subjects</th>
-                                    <th>Syllabus</th>
-                                    <th>Notes</th>
-                                    <th>Questions</th>
-                                    <th>Total Resources</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in faculty_stats %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="faculty-icon me-2">
-                                                {% if stat.faculty.name == 'BSc CSIT' %}
-                                                    <i class="fas fa-laptop-code text-primary"></i>
-                                                {% elif stat.faculty.name == 'BBS' %}
-                                                    <i class="fas fa-chart-line text-success"></i>
-                                                {% elif stat.faculty.name == 'BBA' %}
-                                                    <i class="fas fa-briefcase text-info"></i>
-                                                {% else %}
-                                                    <i class="fas fa-flask text-warning"></i>
-                                                {% endif %}
-                                            </div>
-                                            <span class="fw-semibold">{{ stat.faculty.name }}</span>
+                    <div class="row g-4">
+                        {% for stat in faculty_stats %}
+                        <div class="col-xl-6 col-lg-6 col-md-6">
+                            <div class="faculty-card-compact" onclick="window.location.href='{% url 'admin_faculty_levels' stat.faculty.slug %}'">
+                                <div class="faculty-card-header 
+                                    {% if stat.faculty.name == 'BSc CSIT' %}bg-warning text-white
+                                    {% elif stat.faculty.name == 'BBS' %}bg-success text-white
+                                    {% elif stat.faculty.name == 'BBA' %}bg-info text-white
+                                    {% else %}bg-primary text-white{% endif %}">
+                                    <div class="faculty-icon">
+                                        {% if stat.faculty.name == 'BSc CSIT' %}
+                                            <i class="fas fa-graduation-cap"></i>
+                                        {% elif stat.faculty.name == 'BBS' %}
+                                            <i class="fas fa-chart-line"></i>
+                                        {% elif stat.faculty.name == 'BBA' %}
+                                            <i class="fas fa-briefcase"></i>
+                                        {% else %}
+                                            <i class="fas fa-graduation-cap"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="faculty-info">
+                                        <h4 class="faculty-name">{{ stat.faculty.name }}</h4>
+                                        <p class="faculty-system">{{ stat.faculty.academic_structure|title }} System</p>
+                                    </div>
+                                </div>
+                                <div class="faculty-card-body">
+                                    <div class="faculty-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Subjects:</span>
+                                            <span class="stat-value">{{ stat.subjects }}</span>
                                         </div>
-                                    </td>
-                                    <td><span class="badge bg-secondary">{{ stat.subjects }}</span></td>
-                                    <td><span class="badge bg-primary">{{ stat.syllabi }}</span></td>
-                                    <td><span class="badge bg-success">{{ stat.notes }}</span></td>
-                                    <td><span class="badge bg-warning">{{ stat.questions }}</span></td>
-                                    <td><span class="badge bg-info">{{ stat.total_resources }}</span></td>
-                                    <td>
-                                        <a href="{% url 'faculty_overview' stat.faculty.slug %}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Resources:</span>
+                                            <span class="stat-value">{{ stat.total_resources }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="faculty-actions">
+                                        <button class="btn btn-primary w-100">
+                                            <i class="fas fa-cog me-2"></i>Manage Resources
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-university fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No faculties found</h5>
+                                <p class="text-muted">Please add faculties first.</p>
+                                <a href="{% url 'admin_manage_faculties' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add Faculty
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -624,8 +636,13 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <a href="{% url 'admin_manage_faculties' %}" class="btn btn-outline-dark w-100">
-                                <i class="fas fa-university me-2"></i>Manage Faculties
+                            <a href="{% url 'admin_faculty_management' %}" class="btn btn-outline-dark w-100">
+                                <i class="fas fa-university me-2"></i>Faculty Management
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_manage_faculties' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-cog me-2"></i>Manage Faculties
                             </a>
                         </div>
                         <div class="col-md-6">
@@ -688,6 +705,20 @@ function forceRefresh() {
     const currentUrl = window.location.href;
     const separator = currentUrl.indexOf('?') !== -1 ? '&' : '?';
     window.location.href = currentUrl + separator + '_t=' + timestamp;
+}
+
+// Toggle level sections
+function toggleLevel(levelId) {
+    const content = document.getElementById('content_' + levelId);
+    const toggle = document.getElementById('toggle_' + levelId);
+    
+    if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        toggle.classList.remove('expanded');
+    } else {
+        content.classList.add('expanded');
+        toggle.classList.add('expanded');
+    }
 }
 
 // Auto-refresh every 30 seconds (optional)
@@ -878,6 +909,96 @@ function forceRefresh() {
     gap: 0.5rem;
 }
 
+/* Faculty Management Compact Cards */
+.faculty-card-compact {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    overflow: hidden;
+}
+
+.faculty-card-compact:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.faculty-card-header {
+    padding: 1.5rem;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.faculty-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.faculty-info {
+    flex: 1;
+}
+
+.faculty-name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+}
+
+.faculty-system {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.875rem;
+    color: white;
+}
+
+.faculty-card-body {
+    padding: 1.5rem;
+}
+
+.faculty-stats {
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.faculty-actions {
+    margin-top: 1rem;
+}
+
 @media (max-width: 768px) {
     .stat-card {
         flex-direction: column;
@@ -896,6 +1017,16 @@ function forceRefresh() {
     
     .admin-actions .btn {
         width: 100%;
+    }
+    
+    .faculty-card-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .faculty-icon {
+        margin: 0 auto;
     }
 }
 </style>

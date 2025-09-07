@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ faculty.name }} - Levels | Sikshya Kendra{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold text-gradient mb-2">
+                        <i class="fas fa-university me-2"></i>{{ faculty.name }} - {{ faculty.academic_structure|title }} System
+                    </h1>
+                    <p class="text-muted mb-0">Select a {{ faculty.academic_structure }} to manage subjects and resources.</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_faculty_management' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Faculties
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Faculty Info Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="faculty-info-card">
+                <div class="faculty-info-header 
+                    {% if faculty.name == 'BSc CSIT' %}bg-primary text-white
+                    {% elif faculty.name == 'BBS' %}bg-success text-white
+                    {% elif faculty.name == 'BBA' %}bg-info text-white
+                    {% else %}bg-warning text-white{% endif %}">
+                    <div class="faculty-icon-large">
+                        {% if faculty.name == 'BSc CSIT' %}
+                            <i class="fas fa-laptop-code"></i>
+                        {% elif faculty.name == 'BBS' %}
+                            <i class="fas fa-chart-line"></i>
+                        {% elif faculty.name == 'BBA' %}
+                            <i class="fas fa-briefcase"></i>
+                        {% else %}
+                            <i class="fas fa-flask"></i>
+                        {% endif %}
+                    </div>
+                    <div class="faculty-details">
+                        <h3 class="faculty-title">{{ faculty.name }}</h3>
+                        <p class="faculty-description">{{ faculty.description|default:"No description available" }}</p>
+                        <div class="faculty-meta">
+                            <span class="badge bg-light text-dark me-2">{{ faculty.academic_structure|title }} System</span>
+                            <span class="badge bg-light text-dark">{{ faculty.total_levels }} {{ faculty.academic_structure }}s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Levels Grid -->
+    <div class="row g-4">
+        {% for level_data in levels_data %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="level-card" onclick="window.location.href='{% url 'admin_faculty_subjects' faculty.slug level_data.level %}'">
+                <div class="level-card-header">
+                    <div class="level-number">{{ level_data.level }}</div>
+                    <div class="level-info">
+                        <h5 class="level-name">{{ level_data.level_name }}</h5>
+                        <p class="level-subjects">{{ level_data.subjects }} Subject{{ level_data.subjects|pluralize }}</p>
+                    </div>
+                </div>
+                <div class="level-card-body">
+                    <div class="level-stats">
+                        <div class="stat-row">
+                            <div class="stat-item">
+                                <i class="fas fa-file-alt text-primary"></i>
+                                <span>{{ level_data.syllabi }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-sticky-note text-success"></i>
+                                <span>{{ level_data.notes }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-question-circle text-warning"></i>
+                                <span>{{ level_data.questions }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-list text-info"></i>
+                                <span>{{ level_data.chapters }}</span>
+                            </div>
+                        </div>
+                        <div class="total-resources">
+                            <span class="total-label">Total Resources:</span>
+                            <span class="total-value">{{ level_data.total_resources }}</span>
+                        </div>
+                    </div>
+                    <div class="level-actions">
+                        <button class="btn btn-outline-primary w-100">
+                            <i class="fas fa-cog me-2"></i>Manage Subjects
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-layer-group fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No levels found</h5>
+                <p class="text-muted">This faculty has no {{ faculty.academic_structure }}s configured.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.faculty-info-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.faculty-info-header {
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.faculty-icon-large {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.faculty-details {
+    flex: 1;
+}
+
+.faculty-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.faculty-description {
+    margin: 0 0 1rem 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.faculty-meta {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.level-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+}
+
+.level-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.level-card-header {
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.level-number {
+    width: 50px;
+    height: 50px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.level-info {
+    flex: 1;
+}
+
+.level-name {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.level-subjects {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.level-card-body {
+    padding: 1.5rem;
+}
+
+.level-stats {
+    margin-bottom: 1rem;
+}
+
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-item i {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-item span {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.total-resources {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.total-label {
+    font-weight: 500;
+    color: #64748b;
+}
+
+.total-value {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.level-actions {
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .faculty-info-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .faculty-icon-large {
+        margin: 0 auto;
+    }
+    
+    .stat-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

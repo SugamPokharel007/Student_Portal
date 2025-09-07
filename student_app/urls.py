@@ -99,9 +99,28 @@ urlpatterns = [
     path('admin-manage-chapters/', views.admin_manage_chapters, name='admin_manage_chapters'),
     path('admin-manage-articles/', views.admin_manage_articles, name='admin_manage_articles'),
     
+    # Admin workflow URLs
+    path('semester-management/<str:faculty_slug>/<int:level>/', views.admin_semester_management, name='admin_semester_management'),
+    path('subject-resources/<int:subject_id>/', views.admin_subject_resources, name='admin_subject_resources'),
+    path('add-subject/', views.admin_add_subject, name='admin_add_subject'),
+    path('add-chapter/', views.admin_add_chapter, name='admin_add_chapter'),
+    path('add-syllabus/', views.admin_add_syllabus, name='admin_add_syllabus'),
+    path('add-note/', views.admin_add_note, name='admin_add_note'),
+    path('add-question/', views.admin_add_question, name='admin_add_question'),
+    path('delete-chapter/', views.admin_delete_chapter, name='admin_delete_chapter'),
+    path('delete-syllabus/', views.admin_delete_syllabus, name='admin_delete_syllabus'),
+    path('delete-note/', views.admin_delete_note, name='admin_delete_note'),
+    path('delete-question/', views.admin_delete_question, name='admin_delete_question'),
+    
     # Admin approval actions
     path('admin-approve-resource/', views.admin_approve_resource, name='admin_approve_resource'),
     path('admin-reject-resource/', views.admin_reject_resource, name='admin_reject_resource'),
     path('admin-preview-resource/', views.admin_preview_resource, name='admin_preview_resource'),
+    
+    # Faculty-wise Resource Management URLs
+    path('admin-faculty-management/', views.admin_faculty_management, name='admin_faculty_management'),
+    path('admin-faculty-levels/<str:faculty_slug>/', views.admin_faculty_levels, name='admin_faculty_levels'),
+    path('admin-faculty-subjects/<str:faculty_slug>/<int:level>/', views.admin_faculty_subjects, name='admin_faculty_subjects'),
+    path('admin-subject-resources/<int:subject_id>/', views.admin_subject_resources_management, name='admin_subject_resources_management'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
