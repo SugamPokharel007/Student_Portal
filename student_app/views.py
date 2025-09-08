@@ -632,7 +632,7 @@ def search(request):
     resource_type = request.GET.get('type')
     level = request.GET.get('level')
     
-    notes = Note.objects.filter(status='approved').select_related('subject', 'subject__faculty')
+    subjects = Subject.objects.filter(is_active=True).select_related('faculty')
     syllabi = Syllabus.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     questionbanks = QuestionBank.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     chapters = Chapter.objects.filter(status='approved').select_related('subject', 'subject__faculty')
@@ -641,7 +641,7 @@ def search(request):
     practicals = Practical.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     
     if query:
-        notes = notes.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        subjects = subjects.filter(Q(name__icontains=query) | Q(description__icontains=query))
         syllabi = syllabi.filter(Q(title__icontains=query) | Q(content__icontains=query))
         questionbanks = questionbanks.filter(Q(title__icontains=query) | Q(description__icontains=query))
         chapters = chapters.filter(Q(title__icontains=query) | Q(description__icontains=query))
@@ -650,7 +650,7 @@ def search(request):
         practicals = practicals.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(objective__icontains=query) | Q(procedure__icontains=query))
     
     if faculty_id:
-        notes = notes.filter(subject__faculty_id=faculty_id)
+        subjects = subjects.filter(faculty_id=faculty_id)
         syllabi = syllabi.filter(subject__faculty_id=faculty_id)
         questionbanks = questionbanks.filter(subject__faculty_id=faculty_id)
         chapters = chapters.filter(subject__faculty_id=faculty_id)
@@ -659,7 +659,7 @@ def search(request):
         practicals = practicals.filter(subject__faculty_id=faculty_id)
     
     if subject_id:
-        notes = notes.filter(subject_id=subject_id)
+        subjects = subjects.filter(id=subject_id)
         syllabi = syllabi.filter(subject_id=subject_id)
         questionbanks = questionbanks.filter(subject_id=subject_id)
         chapters = chapters.filter(subject_id=subject_id)
@@ -668,7 +668,7 @@ def search(request):
         practicals = practicals.filter(subject_id=subject_id)
     
     if level:
-        notes = notes.filter(subject__level=level)
+        subjects = subjects.filter(level=level)
         syllabi = syllabi.filter(subject__level=level)
         questionbanks = questionbanks.filter(subject__level=level)
         chapters = chapters.filter(subject__level=level)
@@ -677,8 +677,8 @@ def search(request):
         practicals = practicals.filter(subject__level=level)
     
     results = []
-    if not resource_type or resource_type == 'note':
-        results += list(notes)
+    if not resource_type or resource_type == 'subject':
+        results += list(subjects)
     if not resource_type or resource_type == 'syllabus':
         results += list(syllabi)
     if not resource_type or resource_type == 'questionbank':
@@ -692,7 +692,7 @@ def search(request):
     if not resource_type or resource_type == 'practical':
         results += list(practicals)
     
-    results = sorted(results, key=lambda x: x.title.lower())
+    results = sorted(results, key=lambda x: getattr(x, 'name', getattr(x, 'title', '')).lower())
     paginator = Paginator(results, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -702,7 +702,7 @@ def search(request):
     
     # Group results by type for template
     search_results = {
-        'notes': [item for item in results if item.__class__.__name__ == 'Note'],
+        'subjects': [item for item in results if item.__class__.__name__ == 'Subject'],
         'syllabi': [item for item in results if item.__class__.__name__ == 'Syllabus'],
         'question_banks': [item for item in results if item.__class__.__name__ == 'QuestionBank'],
         'chapters': [item for item in results if item.__class__.__name__ == 'Chapter'],
@@ -714,7 +714,7 @@ def search(request):
     # Calculate search statistics
     search_stats = {
         'total_results': len(results),
-        'notes_count': len(search_results['notes']),
+        'subjects_count': len(search_results['subjects']),
         'syllabi_count': len(search_results['syllabi']),
         'question_banks_count': len(search_results['question_banks']),
         'chapters_count': len(search_results['chapters']),

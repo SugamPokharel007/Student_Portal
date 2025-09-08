@@ -25,12 +25,12 @@
                     <!-- Modern Search Form -->
                     <form method="get" class="search-form">
                         <div class="search-input-group">
-                            <input type="text" 
-                                   name="q" 
-                                   class="form-control search-input" 
-                                   placeholder="Search for notes, syllabus, question banks, chapters..." 
-                                   value="{{ query }}"
-                                   autocomplete="off">
+                        <input type="text" 
+                               name="q" 
+                               class="form-control search-input" 
+                               placeholder="Search for subjects, syllabus, question banks, chapters..." 
+                               value="{{ query }}"
+                               autocomplete="off">
                             <button type="submit" class="btn btn-search">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -62,7 +62,7 @@
                                 <div class="col-md-3">
                                     <select name="type" class="form-select filter-select">
                                         <option value="">All Types</option>
-                                        <option value="note" {% if resource_type == 'note' %}selected{% endif %}>Notes</option>
+                                        <option value="subject" {% if resource_type == 'subject' %}selected{% endif %}>Subjects</option>
                                         <option value="syllabus" {% if resource_type == 'syllabus' %}selected{% endif %}>Syllabus</option>
                                         <option value="questionbank" {% if resource_type == 'questionbank' %}selected{% endif %}>Question Banks</option>
                                         <option value="chapter" {% if resource_type == 'chapter' %}selected{% endif %}>Chapters</option>
@@ -105,8 +105,8 @@
                                     <span class="stat-label">Total Results</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-number">{{ search_stats.notes_count }}</span>
-                                    <span class="stat-label">Notes</span>
+                                    <span class="stat-number">{{ search_stats.subjects_count }}</span>
+                                    <span class="stat-label">Subjects</span>
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-number">{{ search_stats.syllabi_count }}</span>
@@ -140,46 +140,46 @@
 
             <!-- Grouped Results -->
             <div class="search-results">
-                <!-- Notes Section -->
-                {% if search_results.notes %}
+                <!-- Subjects Section -->
+                {% if search_results.subjects %}
                 <div class="result-section">
                     <div class="section-header">
                         <h2>
-                            <i class="fas fa-sticky-note me-2"></i>
-                            Notes
-                            <span class="badge badge-count">{{ search_results.notes|length }}</span>
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            Subjects
+                            <span class="badge badge-count">{{ search_results.subjects|length }}</span>
                         </h2>
                     </div>
                     <div class="results-grid">
-                        {% for note in search_results.notes %}
+                        {% for subject in search_results.subjects %}
                         <div class="result-card">
                             <div class="card-header">
                                 <div class="resource-icon">
-                                    <i class="fas fa-file-alt"></i>
+                                    <i class="fas fa-graduation-cap"></i>
                                 </div>
                                 <div class="resource-meta">
-                                    <span class="resource-type">Note</span>
-                                    <span class="resource-subject">{{ note.subject.name }}</span>
+                                    <span class="resource-type">Subject</span>
+                                    <span class="resource-subject">{{ subject.faculty.name }}</span>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <h5 class="card-title">{{ note.title }}</h5>
-                                <p class="card-description">{{ note.description|truncatewords:20 }}</p>
+                                <h5 class="card-title">{{ subject.name }}</h5>
+                                <p class="card-description">{{ subject.description|truncatewords:20 }}</p>
                                 <div class="card-stats">
                                     <span class="stat">
-                                        <i class="fas fa-download"></i>
-                                        {{ note.download_count }} downloads
+                                        <i class="fas fa-layer-group"></i>
+                                        Level {{ subject.level }}
                                     </span>
                                     <span class="stat">
-                                        <i class="fas fa-eye"></i>
-                                        {{ note.view_count }} views
+                                        <i class="fas fa-university"></i>
+                                        {{ subject.faculty.name }}
                                     </span>
                                 </div>
                             </div>
                             <div class="card-footer">
-                                <a href="{% url 'subject_notes' note.subject.id %}" class="btn btn-primary">
+                                <a href="{% url 'subject_detail' subject.id %}" class="btn btn-primary">
                                     <i class="fas fa-external-link-alt me-1"></i>
-                                    View Note
+                                    View Subject
                                 </a>
                             </div>
                         </div>
