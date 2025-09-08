@@ -44,12 +44,25 @@
         color: white;
         padding: 1.5rem 2rem;
         border-bottom: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    
+    .section-header:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
     }
     
     .section-title {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .section-title-left {
         display: flex;
         align-items: center;
     }
@@ -59,8 +72,31 @@
         font-size: 1.25rem;
     }
     
+    .section-toggle {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .section-toggle.collapsed {
+        transform: rotate(-90deg);
+    }
+    
     .section-content {
         padding: 2rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .section-content.collapsed {
+        padding: 0 2rem;
+        max-height: 0;
+        opacity: 0;
+    }
+    
+    .section-content.expanded {
+        padding: 2rem;
+        max-height: none;
+        opacity: 1;
     }
     
     .resources-grid {
@@ -297,13 +333,16 @@
         {% if has_recommendations %}
             <!-- Trending Resources Section -->
             <div class="recommendation-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-fire section-icon"></i>
-                        Trending in Your Faculty
-                    </h2>
+                <div class="section-header" onclick="toggleSection('trending')">
+                    <div class="section-title">
+                        <div class="section-title-left">
+                            <i class="fas fa-fire section-icon"></i>
+                            Trending in Your Faculty
+                        </div>
+                        <i class="fas fa-chevron-down section-toggle" id="trending-toggle"></i>
+                    </div>
                 </div>
-                <div class="section-content">
+                <div class="section-content expanded" id="trending-content">
                     {% if trending_resources %}
                         <div class="resources-grid">
                             {% for resource in trending_resources %}
@@ -390,13 +429,16 @@
 
             <!-- Similar Resources Section -->
             <div class="recommendation-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-search-plus section-icon"></i>
-                        Similar to What You Viewed
-                    </h2>
+                <div class="section-header" onclick="toggleSection('similar')">
+                    <div class="section-title">
+                        <div class="section-title-left">
+                            <i class="fas fa-search-plus section-icon"></i>
+                            Similar to What You Viewed
+                        </div>
+                        <i class="fas fa-chevron-down section-toggle collapsed" id="similar-toggle"></i>
+                    </div>
                 </div>
-                <div class="section-content">
+                <div class="section-content collapsed" id="similar-content">
                     {% if similar_resources %}
                         <div class="resources-grid">
                             {% for resource in similar_resources %}
@@ -483,13 +525,16 @@
 
             <!-- Personalized Recommendations Section -->
             <div class="recommendation-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-user-graduate section-icon"></i>
-                        Recommended for You
-                    </h2>
+                <div class="section-header" onclick="toggleSection('personalized')">
+                    <div class="section-title">
+                        <div class="section-title-left">
+                            <i class="fas fa-user-graduate section-icon"></i>
+                            Recommended for You
+                        </div>
+                        <i class="fas fa-chevron-down section-toggle collapsed" id="personalized-toggle"></i>
+                    </div>
                 </div>
-                <div class="section-content">
+                <div class="section-content collapsed" id="personalized-content">
                     {% if personalized_resources %}
                         <div class="resources-grid">
                             {% for resource in personalized_resources %}
@@ -610,4 +655,34 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function toggleSection(sectionName) {
+    const content = document.getElementById(sectionName + '-content');
+    const toggle = document.getElementById(sectionName + '-toggle');
+    
+    if (content.classList.contains('expanded')) {
+        // Collapse the section
+        content.classList.remove('expanded');
+        content.classList.add('collapsed');
+        toggle.classList.add('collapsed');
+    } else {
+        // Expand the section
+        content.classList.remove('collapsed');
+        content.classList.add('expanded');
+        toggle.classList.remove('collapsed');
+        
+        // Smooth scroll to the section header when expanding
+        setTimeout(() => {
+            const sectionHeader = document.querySelector(`[onclick="toggleSection('${sectionName}')"]`);
+            if (sectionHeader) {
+                sectionHeader.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }, 100);
+    }
+}
+</script>
 {% endblock %}

@@ -270,7 +270,7 @@
                 </h4>
             </div>
             {% for resource, explanation in recommendations.trending %}
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+            <div class="col-lg-4 col-md-6 mb-4 recommendation-item {% if forloop.counter > 3 %}d-none{% endif %}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
                 <div class="card recommendation-card border-0 shadow-sm h-100">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-3">
@@ -298,6 +298,14 @@
                 </div>
             </div>
             {% endfor %}
+            {% if recommendations.trending|length > 3 %}
+            <div class="col-12 text-center mt-3">
+                <button class="btn btn-outline-warning" onclick="toggleRecommendations('trending')">
+                    <i class="fas fa-chevron-down me-2" id="trending-icon"></i>
+                    <span id="trending-text">Show More ({{ recommendations.trending|length|add:"-3" }} more)</span>
+                </button>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
         
@@ -310,7 +318,7 @@
                 </h4>
             </div>
             {% for resource, explanation in recommendations.similar %}
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+            <div class="col-lg-4 col-md-6 mb-4 recommendation-item {% if forloop.counter > 3 %}d-none{% endif %}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
                 <div class="card recommendation-card border-0 shadow-sm h-100">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-3">
@@ -338,6 +346,14 @@
                 </div>
             </div>
             {% endfor %}
+            {% if recommendations.similar|length > 3 %}
+            <div class="col-12 text-center mt-3">
+                <button class="btn btn-outline-info" onclick="toggleRecommendations('similar')">
+                    <i class="fas fa-chevron-down me-2" id="similar-icon"></i>
+                    <span id="similar-text">Show More ({{ recommendations.similar|length|add:"-3" }} more)</span>
+                </button>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
         
@@ -350,7 +366,7 @@
                 </h4>
             </div>
             {% for resource, explanation in recommendations.personalized %}
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+            <div class="col-lg-4 col-md-6 mb-4 recommendation-item {% if forloop.counter > 3 %}d-none{% endif %}" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
                 <div class="card recommendation-card border-0 shadow-sm h-100">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-3">
@@ -378,6 +394,14 @@
                 </div>
             </div>
             {% endfor %}
+            {% if recommendations.personalized|length > 3 %}
+            <div class="col-12 text-center mt-3">
+                <button class="btn btn-outline-success" onclick="toggleRecommendations('personalized')">
+                    <i class="fas fa-chevron-down me-2" id="personalized-icon"></i>
+                    <span id="personalized-text">Show More ({{ recommendations.personalized|length|add:"-3" }} more)</span>
+                </button>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
         
@@ -560,6 +584,39 @@
             observer.observe(statsSection);
         }
     });
+    
+    // Toggle recommendations visibility
+    function toggleRecommendations(type) {
+        // Find the parent row container for this specific type
+        const button = document.querySelector(`button[onclick="toggleRecommendations('${type}')"]`);
+        const row = button.closest('.row');
+        const items = row.querySelectorAll('.recommendation-item');
+        const icon = document.getElementById(`${type}-icon`);
+        const text = document.getElementById(`${type}-text`);
+        
+        // Check if any items beyond the first 3 are visible
+        const isExpanded = Array.from(items).some((item, index) => index >= 3 && !item.classList.contains('d-none'));
+        
+        // Toggle items beyond the first 3
+        items.forEach((item, index) => {
+            if (index >= 3) {
+                if (isExpanded) {
+                    item.classList.add('d-none');
+                } else {
+                    item.classList.remove('d-none');
+                }
+            }
+        });
+        
+        // Update button text and icon
+        if (isExpanded) {
+            icon.className = 'fas fa-chevron-down me-2';
+            text.textContent = text.textContent.replace('Show Less', 'Show More');
+        } else {
+            icon.className = 'fas fa-chevron-up me-2';
+            text.textContent = text.textContent.replace('Show More', 'Show Less');
+        }
+    }
 </script>
 {% endblock %}
  
