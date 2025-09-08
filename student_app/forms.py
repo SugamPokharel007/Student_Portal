@@ -198,6 +198,17 @@ class UserProfileForm(forms.ModelForm):
             self.fields['first_name'].initial = self.instance.user.first_name
             self.fields['last_name'].initial = self.instance.user.last_name
             self.fields['email'].initial = self.instance.user.email
+        
+        # Add CSS classes to form fields
+        for field_name, field in self.fields.items():
+            if field_name in ['first_name', 'last_name', 'email']:
+                field.widget.attrs.update({'class': 'form-control'})
+            elif field_name == 'faculty':
+                field.widget.attrs.update({'class': 'form-select'})
+            elif field_name == 'bio':
+                field.widget.attrs.update({'class': 'form-control'})
+            elif field_name == 'avatar':
+                field.widget.attrs.update({'class': 'form-control'})
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -206,6 +217,22 @@ class UserProfileForm(forms.ModelForm):
             if email != self.instance.user.email and User.objects.filter(email=email).exists():
                 raise forms.ValidationError("This email address is already registered.")
         return email
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        
+        if commit:
+            # Update user fields
+            user = profile.user
+            user.first_name = self.cleaned_data['first_name']
+            user.last_name = self.cleaned_data['last_name']
+            user.email = self.cleaned_data['email']
+            user.save()
+            
+            # Save profile
+            profile.save()
+        
+        return profile
 
 
 class AdminResponseForm(forms.ModelForm):

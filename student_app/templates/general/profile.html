@@ -13,10 +13,13 @@
                     <div class="profile-info">
                         <div class="profile-avatar">
                             {% if user_profile.avatar %}
-                                <img src="{{ user_profile.avatar.url }}" alt="{{ user.get_full_name }}" class="avatar-img">
+                                <img src="{{ user_profile.avatar.url }}" alt="{{ user.get_full_name }}" class="avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="avatar-placeholder" style="display: none;">
+                                    <span class="avatar-initials">{{ user.get_full_name|slice:":2"|upper|default:user.username|slice:":2"|upper }}</span>
+                                </div>
                             {% else %}
                                 <div class="avatar-placeholder">
-                                    <i class="fas fa-user"></i>
+                                    <span class="avatar-initials">{{ user.get_full_name|slice:":2"|upper|default:user.username|slice:":2"|upper }}</span>
                                 </div>
                             {% endif %}
                             <div class="online-status"></div>
@@ -347,13 +350,20 @@
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 3rem;
     color: white;
     border: 4px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+}
+
+.avatar-initials {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .online-status {
@@ -729,13 +739,14 @@ function loadProfileEditForm() {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.form_html) {
             formContainer.innerHTML = data.form_html;
+        } else {
+            formContainer.innerHTML = '<div class="alert alert-danger">No form data received.</div>';
         }
     })
     .catch(error => {
@@ -753,11 +764,22 @@ function submitProfileForm(form) {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
     submitBtn.disabled = true;
     
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') ||
+                     document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        showAlert('danger', 'Security token not found. Please refresh the page and try again.');
+        return;
+    }
+    
     fetch(form.dataset.url, {
         method: 'POST',
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken,
         }
     })
     .then(response => response.json())

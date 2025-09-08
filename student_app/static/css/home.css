@@ -25,3 +25,90 @@
 .card:hover {
     transform: translateY(-5px);
 }
+
+/* Recommendation Cards Styling */
+.recommendation-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.recommendation-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.2rem;
+}
+
+.recommendation-explanation {
+    background: rgba(13, 202, 240, 0.1);
+    border-left: 3px solid #0dcaf0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.recommendation-btn {
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.recommendation-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Additional recommendation styling */
+.recommendation-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.recommendation-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.recommendation-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.recommendation-header p {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+.recommendation-type-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Ensure proper spacing and visual hierarchy */
+.recommendation-card .card-body {
+    position: relative;
+}
+
+.recommendation-card .card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px 3px 0 0;
+}

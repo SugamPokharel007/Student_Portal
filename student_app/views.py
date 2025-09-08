@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -19,7 +20,7 @@ from collections import Counter
 import math
 
 from .models import (
-    Subject, Notice, Syllabus, QuestionBank, Note, Chapter, Subscription, 
+    Subject, Notice, Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, 
     Faculty, UserProfile, ContactMessage, ContributorRequest,
     DownloadLog, ViewLog
 )
@@ -28,6 +29,11 @@ from .forms import (
     UserRegistrationForm, UserProfileForm, AdminResponseForm,
     ResourceFilterForm, AdvancedSearchForm
 )
+
+def invalidate_user_recommendations_cache(user_id):
+    """Invalidate user recommendations cache when user activity changes"""
+    cache_key = f"user_recommendations_{user_id}"
+    cache.delete(cache_key)
 
 
 def home(request):
@@ -60,10 +66,34 @@ def home(request):
         )
         latest_notices = Notice.objects.filter(is_general=True, is_important=True).order_by('-created_at')[:3]
     
+    # Get recommendations for authenticated users (excluding admins)
+    recommendations = None
+    if request.user.is_authenticated and not request.user.is_superuser:
+        from .recommend_utils import get_user_recommendations, get_user_faculty
+        
+        # Create a cache key that includes user ID and recent activity timestamp
+        # This ensures recommendations update when user activity changes
+        user_activity_key = f"user_recommendations_{request.user.id}"
+        
+        # Check if we have cached recommendations
+        recommendations = cache.get(user_activity_key)
+        
+        if not recommendations:
+            # Generate fresh recommendations
+            recommendations = get_user_recommendations(request.user, limit=6)
+            # Cache for 10 minutes - short enough to feel dynamic, long enough to be efficient
+            cache.set(user_activity_key, recommendations, 600)
+        else:
+            # For better user experience, we can also generate fresh recommendations
+            # in the background and update cache asynchronously
+            recommendations = get_user_recommendations(request.user, limit=6)
+            cache.set(user_activity_key, recommendations, 600)
+    
     context = {
         'latest_notices': latest_notices,
         'trending_subjects': trending_subjects,
         'recent_resources': recent_resources,
+        'recommendations': recommendations,
     }
     return render(request, 'general/home.html', context)
 
@@ -270,6 +300,8 @@ def subject_detail(request, subject_id):
             content_id=subject_id,
             ip_address=request.META.get('REMOTE_ADDR')
         )
+        # Invalidate user recommendations cache to ensure dynamic updates
+        invalidate_user_recommendations_cache(request.user.id)
     
     notices = Notice.objects.filter(subject=subject, is_general=False)
     syllabus = Syllabus.objects.filter(subject=subject, status='approved').first()
@@ -603,26 +635,46 @@ def search(request):
     notes = Note.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     syllabi = Syllabus.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     questionbanks = QuestionBank.objects.filter(status='approved').select_related('subject', 'subject__faculty')
+    chapters = Chapter.objects.filter(status='approved').select_related('subject', 'subject__faculty')
+    vivas = Viva.objects.filter(status='approved').select_related('subject', 'subject__faculty')
+    textbooks = TextBook.objects.filter(status='approved').select_related('subject', 'subject__faculty')
+    practicals = Practical.objects.filter(status='approved').select_related('subject', 'subject__faculty')
     
     if query:
         notes = notes.filter(Q(title__icontains=query) | Q(description__icontains=query))
         syllabi = syllabi.filter(Q(title__icontains=query) | Q(content__icontains=query))
         questionbanks = questionbanks.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        chapters = chapters.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        vivas = vivas.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(question__icontains=query) | Q(answer__icontains=query))
+        textbooks = textbooks.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(author__icontains=query) | Q(publisher__icontains=query))
+        practicals = practicals.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(objective__icontains=query) | Q(procedure__icontains=query))
     
     if faculty_id:
         notes = notes.filter(subject__faculty_id=faculty_id)
         syllabi = syllabi.filter(subject__faculty_id=faculty_id)
         questionbanks = questionbanks.filter(subject__faculty_id=faculty_id)
+        chapters = chapters.filter(subject__faculty_id=faculty_id)
+        vivas = vivas.filter(subject__faculty_id=faculty_id)
+        textbooks = textbooks.filter(subject__faculty_id=faculty_id)
+        practicals = practicals.filter(subject__faculty_id=faculty_id)
     
     if subject_id:
         notes = notes.filter(subject_id=subject_id)
         syllabi = syllabi.filter(subject_id=subject_id)
         questionbanks = questionbanks.filter(subject_id=subject_id)
+        chapters = chapters.filter(subject_id=subject_id)
+        vivas = vivas.filter(subject_id=subject_id)
+        textbooks = textbooks.filter(subject_id=subject_id)
+        practicals = practicals.filter(subject_id=subject_id)
     
     if level:
         notes = notes.filter(subject__level=level)
         syllabi = syllabi.filter(subject__level=level)
         questionbanks = questionbanks.filter(subject__level=level)
+        chapters = chapters.filter(subject__level=level)
+        vivas = vivas.filter(subject__level=level)
+        textbooks = textbooks.filter(subject__level=level)
+        practicals = practicals.filter(subject__level=level)
     
     results = []
     if not resource_type or resource_type == 'note':
@@ -631,6 +683,14 @@ def search(request):
         results += list(syllabi)
     if not resource_type or resource_type == 'questionbank':
         results += list(questionbanks)
+    if not resource_type or resource_type == 'chapter':
+        results += list(chapters)
+    if not resource_type or resource_type == 'viva':
+        results += list(vivas)
+    if not resource_type or resource_type == 'textbook':
+        results += list(textbooks)
+    if not resource_type or resource_type == 'practical':
+        results += list(practicals)
     
     results = sorted(results, key=lambda x: x.title.lower())
     paginator = Paginator(results, 10)
@@ -644,7 +704,11 @@ def search(request):
     search_results = {
         'notes': [item for item in results if item.__class__.__name__ == 'Note'],
         'syllabi': [item for item in results if item.__class__.__name__ == 'Syllabus'],
-        'question_banks': [item for item in results if item.__class__.__name__ == 'QuestionBank']
+        'question_banks': [item for item in results if item.__class__.__name__ == 'QuestionBank'],
+        'chapters': [item for item in results if item.__class__.__name__ == 'Chapter'],
+        'vivas': [item for item in results if item.__class__.__name__ == 'Viva'],
+        'textbooks': [item for item in results if item.__class__.__name__ == 'TextBook'],
+        'practicals': [item for item in results if item.__class__.__name__ == 'Practical']
     }
     
     # Calculate search statistics
@@ -652,7 +716,11 @@ def search(request):
         'total_results': len(results),
         'notes_count': len(search_results['notes']),
         'syllabi_count': len(search_results['syllabi']),
-        'question_banks_count': len(search_results['question_banks'])
+        'question_banks_count': len(search_results['question_banks']),
+        'chapters_count': len(search_results['chapters']),
+        'vivas_count': len(search_results['vivas']),
+        'textbooks_count': len(search_results['textbooks']),
+        'practicals_count': len(search_results['practicals'])
     }
     
     return render(request, 'general/search.html', {
@@ -679,6 +747,12 @@ def download_resource(request, content_type, content_id):
             resource = get_object_or_404(Note, id=content_id, status='approved')
         elif content_type == 'questionbank':
             resource = get_object_or_404(QuestionBank, id=content_id, status='approved')
+        elif content_type == 'chapter':
+            resource = get_object_or_404(Chapter, id=content_id, status='approved')
+        elif content_type == 'textbook':
+            resource = get_object_or_404(TextBook, id=content_id, status='approved')
+        elif content_type == 'practical':
+            resource = get_object_or_404(Practical, id=content_id, status='approved')
         else:
             return HttpResponse('Invalid content type', status=400)
         
@@ -689,6 +763,8 @@ def download_resource(request, content_type, content_id):
             content_id=content_id,
             ip_address=request.META.get('REMOTE_ADDR')
         )
+        # Invalidate user recommendations cache to ensure dynamic updates
+        invalidate_user_recommendations_cache(request.user.id)
         
         # Increment download count
         resource.increment_download()
@@ -961,7 +1037,7 @@ def get_trending_subjects(request):
 
 def base_context(request):
     """Context processor for base template"""
-    faculties = Faculty.objects.filter(is_active=True)
+    faculties = Faculty.objects.filter(is_active=True).order_by('name')
     dark_mode = request.session.get('dark_mode', True)  # Default to dark mode
     
     # Get trending subjects for sidebar
@@ -1120,12 +1196,10 @@ def syllabus_detail(request, subject_id, syllabus_id):
     subject = get_object_or_404(Subject, id=subject_id)
     syllabus = get_object_or_404(Syllabus, id=syllabus_id, subject=subject)
     
-    # Check if user has access to this subject
-    if not request.user.is_superuser:
-        # Check if user is subscribed to this subject
-        if not Subscription.objects.filter(user=request.user, subject=subject).exists():
-            messages.error(request, 'You need to subscribe to this subject to access syllabus.')
-            return redirect('subject_detail', subject_id=subject.id)
+    # Check if user has access to this subject (basic check)
+    if not request.user.is_authenticated:
+        messages.error(request, 'You need to be logged in to access syllabus.')
+        return redirect('login')
     
     # Log view
     ViewLog.objects.create(
@@ -1134,6 +1208,8 @@ def syllabus_detail(request, subject_id, syllabus_id):
         content_id=syllabus.id,
         ip_address=request.META.get('REMOTE_ADDR')
     )
+    # Invalidate user recommendations cache to ensure dynamic updates
+    invalidate_user_recommendations_cache(request.user.id)
     
     # Get related syllabi
     related_syllabi = Syllabus.objects.filter(
@@ -1155,12 +1231,10 @@ def question_bank_detail(request, subject_id, question_bank_id):
     subject = get_object_or_404(Subject, id=subject_id)
     question_bank = get_object_or_404(QuestionBank, id=question_bank_id, subject=subject)
     
-    # Check if user has access to this subject
-    if not request.user.is_superuser:
-        # Check if user is subscribed to this subject
-        if not Subscription.objects.filter(user=request.user, subject=subject).exists():
-            messages.error(request, 'You need to subscribe to this subject to access question banks.')
-            return redirect('subject_detail', subject_id=subject.id)
+    # Check if user has access to this subject (basic check)
+    if not request.user.is_authenticated:
+        messages.error(request, 'You need to be logged in to access question banks.')
+        return redirect('login')
     
     # Log view
     ViewLog.objects.create(
@@ -1169,6 +1243,8 @@ def question_bank_detail(request, subject_id, question_bank_id):
         content_id=question_bank.id,
         ip_address=request.META.get('REMOTE_ADDR')
     )
+    # Invalidate user recommendations cache to ensure dynamic updates
+    invalidate_user_recommendations_cache(request.user.id)
     
     # Get related question banks
     related_question_banks = QuestionBank.objects.filter(
@@ -1187,16 +1263,39 @@ def question_bank_detail(request, subject_id, question_bank_id):
 @login_required
 def edit_profile(request):
     """Edit user profile"""
+    # Get or create user profile
+    user_profile, created = UserProfile.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'role': 'student',
+            'bio': '',
+        }
+    )
+    
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
+        form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
-            form.save()
+            profile = form.save()
             return JsonResponse({'success': True, 'message': 'Profile updated successfully!'})
         else:
             return JsonResponse({'success': False, 'errors': form.errors})
     else:
-        form = UserProfileForm(instance=request.user.userprofile)
-        return render(request, 'general/profile_edit_form.html', {'form': form})
+        form = UserProfileForm(instance=user_profile)
+        
+        # Check if it's an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            form_html = render_to_string('general/profile_edit_form.html', {
+                'form': form,
+                'user_profile': user_profile,
+                'user': request.user
+            })
+            return JsonResponse({'form_html': form_html})
+        else:
+            return render(request, 'general/profile_edit_form.html', {
+                'form': form,
+                'user_profile': user_profile,
+                'user': request.user
+            })
 
 @login_required
 def admin_dashboard(request):
@@ -2887,3 +2986,97 @@ def admin_subject_resources_management(request, subject_id):
         'questions': questions,
     }
     return render(request, 'admin/subject_resources_management.html', context)
+@login_required
+def recommendations_dashboard(request):
+    """
+    Display personalized recommendations for the logged-in user.
+    Shows trending resources, similar resources, and personalized recommendations.
+    Provides fallback recommendations when user's faculty has no content.
+    """
+    user = request.user
+    
+    # Get user's faculty
+    from .recommend_utils import get_user_recommendations, get_user_faculty, get_global_trending_resources
+    
+    user_faculty = get_user_faculty(user)
+    
+    # Get recommendations
+    recommendations = get_user_recommendations(user, limit=5)
+    
+    # Debug information (can be removed in production)
+    debug_info = {
+        'user_faculty': user_faculty.name if user_faculty else 'None',
+        'trending_count': len(recommendations['trending']),
+        'similar_count': len(recommendations['similar']),
+        'personalized_count': len(recommendations['personalized']),
+    }
+    
+    # Prepare context
+    context = {
+        'page_title': 'Recommendations',
+        'user_faculty': user_faculty,
+        'trending_resources': recommendations['trending'],
+        'similar_resources': recommendations['similar'],
+        'personalized_resources': recommendations['personalized'],
+        'has_recommendations': any(recommendations.values()),
+        'debug_info': debug_info,  # Remove this in production
+    }
+    
+    return render(request, 'general/recommendations.html', context)
+
+
+@login_required
+def faculty_recommendations(request, faculty_slug):
+    """
+    Display recommendations for a specific faculty.
+    Useful for testing and faculty-specific recommendation pages.
+    """
+    from .recommend_utils import get_recommendations_for_faculty_slug
+    
+    try:
+        faculty = Faculty.objects.get(slug=faculty_slug, is_active=True)
+    except Faculty.DoesNotExist:
+        messages.error(request, 'Faculty not found.')
+        return redirect('recommendations')
+    
+    # Get recommendations for this faculty
+    recommendations = get_recommendations_for_faculty_slug(faculty_slug, limit=5)
+    
+    context = {
+        'page_title': f'Recommendations - {faculty.name}',
+        'faculty': faculty,
+        'trending_resources': recommendations['trending'],
+        'similar_resources': recommendations['similar'],
+        'personalized_resources': recommendations['personalized'],
+        'has_recommendations': any(recommendations.values()),
+    }
+    
+    return render(request, 'general/recommendations.html', context)
+
+
+def subject_syllabus_redirect(request, subject_id):
+    """Redirect old syllabus URL to specific syllabus ID"""
+    try:
+        # Get the first approved syllabus for this subject
+        syllabus = Syllabus.objects.filter(subject_id=subject_id, status='approved').first()
+        if syllabus:
+            return redirect('syllabus_detail', subject_id=subject_id, syllabus_id=syllabus.id)
+        else:
+            # If no syllabus found, redirect to subject detail
+            return redirect('subject_detail', subject_id=subject_id)
+    except Exception:
+        return redirect('subject_detail', subject_id=subject_id)
+
+
+def subject_questions_redirect(request, subject_id):
+    """Redirect old questions URL to specific question bank ID"""
+    try:
+        # Get the first approved question bank for this subject
+        question_bank = QuestionBank.objects.filter(subject_id=subject_id, status='approved').first()
+        if question_bank:
+            return redirect('question_bank_detail', subject_id=subject_id, question_bank_id=question_bank.id)
+        else:
+            # If no question bank found, redirect to subject detail
+            return redirect('subject_detail', subject_id=subject_id)
+    except Exception:
+        return redirect('subject_detail', subject_id=subject_id)
