@@ -4,6 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token }}" />
     <title>
       {% block title %}Sikshya Kendra - Student Portal{% endblock %}
     </title>
@@ -26,7 +27,7 @@
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
     <!-- App Base CSS -->
-    <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/base.css' %}?v=1.1" rel="stylesheet" />
     {% block extra_css %}{% endblock %}
   </head>
   <body>
@@ -49,7 +50,7 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <!-- Navigation Links - Center -->
-          <ul class="navbar-nav mx-auto">
+          <ul class="navbar-nav mx-auto d-flex align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="{% url 'home' %}">
                 <i class="fas fa-home me-1"></i>Home
@@ -65,38 +66,29 @@
                 <i class="fas fa-university me-1"></i>Faculties <i class="fas fa-chevron-down ms-1"></i>
               </a>
               <ul class="dropdown-menu">
+                {% for faculty in faculties %}
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{% url 'faculty_overview' 'bsccsit' %}"
+                    href="{% url 'faculty_overview' faculty.slug %}"
                   >
-                    <i class="fas fa-laptop-code me-2"></i>B.Sc. CSIT
+                    {% if faculty.slug == 'bsccsit' %}
+                      <i class="fas fa-laptop-code me-2"></i>
+                    {% elif faculty.slug == 'bbs' %}
+                      <i class="fas fa-briefcase me-2"></i>
+                    {% elif faculty.slug == 'bba' %}
+                      <i class="fas fa-chart-line me-2"></i>
+                    {% elif faculty.slug == 'bsc' %}
+                      <i class="fas fa-flask me-2"></i>
+                    {% else %}
+                      <i class="fas fa-graduation-cap me-2"></i>
+                    {% endif %}
+                    {{ faculty.name }}
                   </a>
                 </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{% url 'faculty_overview' 'bbs' %}"
-                  >
-                    <i class="fas fa-briefcase me-2"></i>BBS
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{% url 'faculty_overview' 'bba' %}"
-                  >
-                    <i class="fas fa-chart-line me-2"></i>BBA
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{% url 'faculty_overview' 'bsc' %}"
-                  >
-                    <i class="fas fa-flask me-2"></i>B.Sc.
-                  </a>
-                </li>
+                {% empty %}
+                <li><span class="dropdown-item text-muted">No faculties available</span></li>
+                {% endfor %}
               </ul>
             </li>
             <li class="nav-item">
@@ -109,11 +101,11 @@
                 <i class="fas fa-bullhorn me-1"></i>Notices
               </a>
             </li>
-                    <li class="nav-item">
-          <a class="nav-link" href="{% url 'articles' %}">
-            <i class="fas fa-newspaper me-1"></i>Articles
-          </a>
-        </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'articles' %}">
+                <i class="fas fa-newspaper me-1"></i>Articles
+              </a>
+            </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'contact' %}">
                 <i class="fas fa-envelope me-1"></i>Contact
@@ -127,7 +119,7 @@
           </ul>
 
           <!-- User Actions - Right -->
-          <ul class="navbar-nav">
+          <ul class="navbar-nav d-flex align-items-center">
             {% if user.is_authenticated %}
             <li class="nav-item dropdown">
               <a

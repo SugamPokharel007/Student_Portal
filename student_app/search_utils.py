@@ -328,3 +328,46 @@ def get_search_statistics(query: str, results: Dict[str, List[Any]]) -> Dict[str
         'question_banks_count': len(results.get('question_banks', [])),
         'notices_count': len(results.get('notices', []))
     }
+
+
+def get_tfidf_similarity(text1: str, text2: str) -> float:
+    """
+    Calculate TF-IDF based cosine similarity between two text strings.
+    
+    Args:
+        text1 (str): First text string
+        text2 (str): Second text string
+        
+    Returns:
+        float: Similarity score between 0 and 1
+    """
+    if not text1 or not text2:
+        return 0.0
+    
+    try:
+        # Preprocess texts
+        processed_text1 = search_engine.preprocess_text(text1)
+        processed_text2 = search_engine.preprocess_text(text2)
+        
+        if not processed_text1 or not processed_text2:
+            return 0.0
+        
+        # Create TF-IDF vectors
+        vectorizer = TfidfVectorizer(
+            max_features=1000,
+            stop_words='english',
+            ngram_range=(1, 2)
+        )
+        
+        # Fit and transform the texts
+        tfidf_matrix = vectorizer.fit_transform([processed_text1, processed_text2])
+        
+        # Calculate cosine similarity
+        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+        
+        return float(similarity)
+        
+    except Exception as e:
+        # If any error occurs, return 0 similarity
+        print(f"Error calculating similarity: {e}")
+        return 0.0

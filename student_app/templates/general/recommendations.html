@@ -1,0 +1,613 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recommendations | Sikshya Kendra{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/search.css' %}" rel="stylesheet" />
+<style>
+    .recommendations-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .recommendations-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: white;
+    }
+    
+    .recommendations-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .recommendations-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .recommendation-section {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-bottom: none;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-icon {
+        margin-right: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    .section-content {
+        padding: 2rem;
+    }
+    
+    .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .resource-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .resource-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+    
+    .resource-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .resource-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .resource-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+        color: white;
+    }
+    
+    .resource-icon.syllabus {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .resource-icon.note {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .resource-icon.questionbank {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .resource-meta {
+        flex: 1;
+    }
+    
+    .resource-type {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .resource-subject {
+        font-size: 0.9rem;
+        color: #495057;
+        margin-top: 0.25rem;
+    }
+    
+    .resource-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .resource-description {
+        font-size: 0.9rem;
+        color: #6c757d;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+    
+    .resource-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .stat i {
+        margin-right: 0.5rem;
+        color: #667eea;
+    }
+    
+    .resource-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .btn-resource {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    .btn-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .no-resources {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+    
+    .no-resources-icon {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .no-resources h3 {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .faculty-info {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .faculty-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .recommendations-title {
+            font-size: 2rem;
+        }
+        
+        .resources-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .section-content {
+            padding: 1.5rem;
+        }
+        
+        .resource-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .resource-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recommendations-container">
+    <div class="container">
+        <!-- Header -->
+        <div class="recommendations-header">
+            <h1 class="recommendations-title">
+                <i class="fas fa-lightbulb me-3"></i>
+                Smart Recommendations
+            </h1>
+            <p class="recommendations-subtitle">
+                Personalized study materials tailored to your academic journey
+            </p>
+            
+            {% if user_faculty %}
+            <div class="faculty-info">
+                <p class="faculty-name">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Recommendations for {{ user_faculty.name }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if has_recommendations %}
+            <!-- Trending Resources Section -->
+            <div class="recommendation-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-fire section-icon"></i>
+                        Trending in Your Faculty
+                    </h2>
+                </div>
+                <div class="section-content">
+                    {% if trending_resources %}
+                        <div class="resources-grid">
+                            {% for resource in trending_resources %}
+                            <div class="resource-card">
+                                <div class="resource-header">
+                                    <div class="resource-icon {{ resource|lower }}">
+                                        {% if 'syllabus' in resource|lower %}
+                                            <i class="fas fa-book"></i>
+                                        {% elif 'note' in resource|lower %}
+                                            <i class="fas fa-sticky-note"></i>
+                                        {% else %}
+                                            <i class="fas fa-question-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="resource-meta">
+                                        <div class="resource-type">
+                                            {% if 'syllabus' in resource|lower %}
+                                                Syllabus
+                                            {% elif 'note' in resource|lower %}
+                                                Note
+                                            {% else %}
+                                                Question Bank
+                                            {% endif %}
+                                        </div>
+                                        <div class="resource-subject">{{ resource.subject.name }}</div>
+                                    </div>
+                                </div>
+                                <h3 class="resource-title">{{ resource.title }}</h3>
+                                <p class="resource-description">
+                                    {% if resource.description %}
+                                        {{ resource.description|truncatewords:20 }}
+                                    {% elif resource.content %}
+                                        {{ resource.content|truncatewords:20 }}
+                                    {% else %}
+                                        Popular study material for {{ resource.subject.name }}
+                                    {% endif %}
+                                </p>
+                                <div class="resource-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ resource.view_count }} views
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-download"></i>
+                                        {{ resource.download_count }} downloads
+                                    </span>
+                                </div>
+                                <div class="resource-actions">
+                                    {% if 'syllabus' in resource|lower %}
+                                        <a href="{% url 'subject_syllabus' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Syllabus
+                                        </a>
+                                    {% elif 'note' in resource|lower %}
+                                        <a href="{% url 'subject_notes' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Notes
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'subject_questions' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Questions
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'subject_detail' resource.subject.id %}" class="btn-resource btn-outline">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Subject Details
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-resources">
+                            <div class="no-resources-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>No Trending Resources</h3>
+                            <p>No popular resources found for your faculty yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Similar Resources Section -->
+            <div class="recommendation-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-search-plus section-icon"></i>
+                        Similar to What You Viewed
+                    </h2>
+                </div>
+                <div class="section-content">
+                    {% if similar_resources %}
+                        <div class="resources-grid">
+                            {% for resource in similar_resources %}
+                            <div class="resource-card">
+                                <div class="resource-header">
+                                    <div class="resource-icon {{ resource|lower }}">
+                                        {% if 'syllabus' in resource|lower %}
+                                            <i class="fas fa-book"></i>
+                                        {% elif 'note' in resource|lower %}
+                                            <i class="fas fa-sticky-note"></i>
+                                        {% else %}
+                                            <i class="fas fa-question-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="resource-meta">
+                                        <div class="resource-type">
+                                            {% if 'syllabus' in resource|lower %}
+                                                Syllabus
+                                            {% elif 'note' in resource|lower %}
+                                                Note
+                                            {% else %}
+                                                Question Bank
+                                            {% endif %}
+                                        </div>
+                                        <div class="resource-subject">{{ resource.subject.name }}</div>
+                                    </div>
+                                </div>
+                                <h3 class="resource-title">{{ resource.title }}</h3>
+                                <p class="resource-description">
+                                    {% if resource.description %}
+                                        {{ resource.description|truncatewords:20 }}
+                                    {% elif resource.content %}
+                                        {{ resource.content|truncatewords:20 }}
+                                    {% else %}
+                                        Similar content to what you've been studying
+                                    {% endif %}
+                                </p>
+                                <div class="resource-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ resource.view_count }} views
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-download"></i>
+                                        {{ resource.download_count }} downloads
+                                    </span>
+                                </div>
+                                <div class="resource-actions">
+                                    {% if 'syllabus' in resource|lower %}
+                                        <a href="{% url 'subject_syllabus' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Syllabus
+                                        </a>
+                                    {% elif 'note' in resource|lower %}
+                                        <a href="{% url 'subject_notes' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Notes
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'subject_questions' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Questions
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'subject_detail' resource.subject.id %}" class="btn-resource btn-outline">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Subject Details
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-resources">
+                            <div class="no-resources-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3>No Similar Resources</h3>
+                            <p>View some resources to get personalized recommendations.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Personalized Recommendations Section -->
+            <div class="recommendation-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-graduate section-icon"></i>
+                        Recommended for You
+                    </h2>
+                </div>
+                <div class="section-content">
+                    {% if personalized_resources %}
+                        <div class="resources-grid">
+                            {% for resource in personalized_resources %}
+                            <div class="resource-card">
+                                <div class="resource-header">
+                                    <div class="resource-icon {{ resource|lower }}">
+                                        {% if 'syllabus' in resource|lower %}
+                                            <i class="fas fa-book"></i>
+                                        {% elif 'note' in resource|lower %}
+                                            <i class="fas fa-sticky-note"></i>
+                                        {% else %}
+                                            <i class="fas fa-question-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="resource-meta">
+                                        <div class="resource-type">
+                                            {% if 'syllabus' in resource|lower %}
+                                                Syllabus
+                                            {% elif 'note' in resource|lower %}
+                                                Note
+                                            {% else %}
+                                                Question Bank
+                                            {% endif %}
+                                        </div>
+                                        <div class="resource-subject">{{ resource.subject.name }}</div>
+                                    </div>
+                                </div>
+                                <h3 class="resource-title">{{ resource.title }}</h3>
+                                <p class="resource-description">
+                                    {% if resource.description %}
+                                        {{ resource.description|truncatewords:20 }}
+                                    {% elif resource.content %}
+                                        {{ resource.content|truncatewords:20 }}
+                                    {% else %}
+                                        Recommended based on your study patterns
+                                    {% endif %}
+                                </p>
+                                <div class="resource-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ resource.view_count }} views
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-download"></i>
+                                        {{ resource.download_count }} downloads
+                                    </span>
+                                </div>
+                                <div class="resource-actions">
+                                    {% if 'syllabus' in resource|lower %}
+                                        <a href="{% url 'subject_syllabus' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Syllabus
+                                        </a>
+                                    {% elif 'note' in resource|lower %}
+                                        <a href="{% url 'subject_notes' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Notes
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'subject_questions' resource.subject.id %}" class="btn-resource btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            View Questions
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'subject_detail' resource.subject.id %}" class="btn-resource btn-outline">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Subject Details
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-resources">
+                            <div class="no-resources-icon">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <h3>No Personalized Recommendations</h3>
+                            <p>Start viewing and downloading resources to get personalized recommendations.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <!-- No Recommendations Available -->
+            <div class="recommendation-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle section-icon"></i>
+                        No Recommendations Available
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <div class="no-resources">
+                        <div class="no-resources-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3>Get Started with Recommendations</h3>
+                        <p>To receive personalized recommendations, please:</p>
+                        <ul style="text-align: left; max-width: 400px; margin: 1rem auto;">
+                            <li>Browse and view some study materials</li>
+                            <li>Download resources you find useful</li>
+                            <li>Make sure you're enrolled in a faculty</li>
+                        </ul>
+                        <div style="margin-top: 2rem;">
+                            <a href="{% url 'dashboard' %}" class="btn-resource btn-primary">
+                                <i class="fas fa-home me-2"></i>
+                                Go to Dashboard
+                            </a>
+                            <a href="{% url 'search' %}" class="btn-resource btn-outline">
+                                <i class="fas fa-search me-2"></i>
+                                Search Resources
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

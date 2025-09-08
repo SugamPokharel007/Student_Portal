@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import (
     Faculty, Subject, Notice, ContactMessage, RegisteredUser, 
-    Syllabus, QuestionBank, Note, Chapter, Subscription, UserProfile,
+    Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, UserProfile,
     ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike
 )
 
@@ -222,6 +222,102 @@ class ViewLogAdmin(admin.ModelAdmin):
     readonly_fields = ['user', 'content_type', 'content_id', 'viewed_at', 'ip_address']
     ordering = ['-viewed_at']
     date_hierarchy = 'viewed_at'
+
+
+@admin.register(Viva)
+class VivaAdmin(admin.ModelAdmin):
+    list_display = ['title', 'subject', 'difficulty_level', 'status', 'uploaded_by', 'view_count', 'created_at']
+    list_filter = ['status', 'difficulty_level', 'subject__faculty', 'created_at']
+    search_fields = ['title', 'description', 'question', 'answer', 'subject__name']
+    list_editable = ['status', 'difficulty_level']
+    ordering = ['-created_at']
+    autocomplete_fields = ['subject', 'uploaded_by']
+    readonly_fields = ['view_count', 'last_viewed', 'created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'subject', 'description', 'status')
+        }),
+        ('Viva Content', {
+            'fields': ('question', 'answer', 'difficulty_level')
+        }),
+        ('Metadata', {
+            'fields': ('uploaded_by', 'tags', 'view_count', 'last_viewed'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(TextBook)
+class TextBookAdmin(admin.ModelAdmin):
+    list_display = ['title', 'author', 'subject', 'publisher', 'status', 'uploaded_by', 'download_count', 'view_count', 'created_at']
+    list_filter = ['status', 'subject__faculty', 'created_at']
+    search_fields = ['title', 'author', 'description', 'isbn', 'publisher', 'subject__name']
+    list_editable = ['status']
+    ordering = ['-created_at']
+    autocomplete_fields = ['subject', 'uploaded_by']
+    readonly_fields = ['download_count', 'view_count', 'last_viewed', 'created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'subject', 'description', 'status')
+        }),
+        ('Book Details', {
+            'fields': ('author', 'isbn', 'edition', 'publisher')
+        }),
+        ('File', {
+            'fields': ('file',)
+        }),
+        ('Metadata', {
+            'fields': ('uploaded_by', 'tags', 'download_count', 'view_count', 'last_viewed'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(Practical)
+class PracticalAdmin(admin.ModelAdmin):
+    list_display = ['title', 'subject', 'difficulty_level', 'estimated_time', 'status', 'uploaded_by', 'download_count', 'view_count', 'created_at']
+    list_filter = ['status', 'difficulty_level', 'subject__faculty', 'created_at']
+    search_fields = ['title', 'description', 'objective', 'materials_required', 'subject__name']
+    list_editable = ['status', 'difficulty_level']
+    ordering = ['-created_at']
+    autocomplete_fields = ['subject', 'uploaded_by']
+    readonly_fields = ['download_count', 'view_count', 'last_viewed', 'created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'subject', 'description', 'status')
+        }),
+        ('Practical Details', {
+            'fields': ('objective', 'materials_required', 'difficulty_level', 'estimated_time')
+        }),
+        ('Content', {
+            'fields': ('procedure', 'expected_result')
+        }),
+        ('File', {
+            'fields': ('file',)
+        }),
+        ('Metadata', {
+            'fields': ('uploaded_by', 'tags', 'download_count', 'view_count', 'last_viewed'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
 
 
 # Custom admin site configuration

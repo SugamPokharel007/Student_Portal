@@ -9,10 +9,13 @@
             <div class="profile-picture-section">
                 <div class="current-avatar mb-3">
                     {% if user_profile.avatar %}
-                        <img id="currentAvatar" src="{{ user_profile.avatar.url }}" alt="Current Avatar" class="avatar-preview">
+                        <img id="currentAvatar" src="{{ user_profile.avatar.url }}" alt="Current Avatar" class="avatar-preview" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div id="currentAvatarPlaceholder" class="avatar-placeholder" style="display: none;">
+                            <span class="avatar-initials">{{ user.get_full_name|slice:":2"|upper|default:user.username|slice:":2"|upper }}</span>
+                        </div>
                     {% else %}
                         <div id="currentAvatar" class="avatar-placeholder">
-                            <i class="fas fa-user"></i>
+                            <span class="avatar-initials">{{ user.get_full_name|slice:":2"|upper|default:user.username|slice:":2"|upper }}</span>
                         </div>
                     {% endif %}
                 </div>
@@ -30,50 +33,53 @@
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="id_first_name" class="form-label">
-                        <i class="fas fa-user me-1"></i>First Name
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                        <i class="fas fa-user me-1"></i>{{ form.first_name.label }}
                     </label>
-                    <input type="text" class="form-control" id="id_first_name" name="first_name" 
-                           value="{{ user.first_name }}" required>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="id_last_name" class="form-label">
-                        <i class="fas fa-user me-1"></i>Last Name
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                        <i class="fas fa-user me-1"></i>{{ form.last_name.label }}
                     </label>
-                    <input type="text" class="form-control" id="id_last_name" name="last_name" 
-                           value="{{ user.last_name }}" required>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
                 </div>
             </div>
             
             <div class="mb-3">
-                <label for="id_email" class="form-label">
-                    <i class="fas fa-envelope me-1"></i>Email Address
+                <label for="{{ form.email.id_for_label }}" class="form-label">
+                    <i class="fas fa-envelope me-1"></i>{{ form.email.label }}
                 </label>
-                <input type="email" class="form-control" id="id_email" name="email" 
-                       value="{{ user.email }}" required>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="text-danger small">{{ form.email.errors.0 }}</div>
+                {% endif %}
             </div>
             
             <div class="mb-3">
-                <label for="id_faculty" class="form-label">
-                    <i class="fas fa-university me-1"></i>Faculty
+                <label for="{{ form.faculty.id_for_label }}" class="form-label">
+                    <i class="fas fa-university me-1"></i>{{ form.faculty.label }}
                 </label>
-                <select class="form-select" id="id_faculty" name="faculty">
-                    <option value="">Select Faculty (Optional)</option>
-                    {% for faculty in form.faculty.field.queryset %}
-                        <option value="{{ faculty.id }}" 
-                                {% if user_profile.faculty.id == faculty.id %}selected{% endif %}>
-                            {{ faculty.name }}
-                        </option>
-                    {% endfor %}
-                </select>
+                {{ form.faculty }}
+                {% if form.faculty.errors %}
+                    <div class="text-danger small">{{ form.faculty.errors.0 }}</div>
+                {% endif %}
             </div>
             
             <div class="mb-3">
-                <label for="id_bio" class="form-label">
-                    <i class="fas fa-info-circle me-1"></i>Bio
+                <label for="{{ form.bio.id_for_label }}" class="form-label">
+                    <i class="fas fa-info-circle me-1"></i>{{ form.bio.label }}
                 </label>
-                <textarea class="form-control" id="id_bio" name="bio" rows="4" 
-                          placeholder="Tell us about yourself...">{{ user_profile.bio }}</textarea>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                    <div class="text-danger small">{{ form.bio.errors.0 }}</div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -111,6 +117,13 @@
     justify-content: center;
     font-size: 3rem;
     color: white;
+    font-weight: 600;
+}
+
+.avatar-initials {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .avatar-upload input[type="file"] {

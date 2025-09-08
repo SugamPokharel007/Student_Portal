@@ -266,6 +266,7 @@ class Chapter(models.Model):
     tags = TaggableManager(blank=True)
     download_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text='Last time this resource was viewed')
     student_count = models.PositiveIntegerField(default=0, help_text="Number of students who accessed this chapter")
     question_count = models.PositiveIntegerField(default=0, help_text="Number of questions available for this chapter")
 
@@ -288,6 +289,119 @@ class Chapter(models.Model):
     class Meta:
         ordering = ['chapter_number']
         unique_together = ['subject', 'chapter_number']
+
+
+class Viva(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='vivas')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    question = models.TextField(help_text="Viva question or topic")
+    answer = models.TextField(help_text="Expected answer or explanation")
+    difficulty_level = models.CharField(
+        max_length=20, 
+        choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')], 
+        default='medium'
+    )
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='vivas')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = TaggableManager(blank=True)
+    view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text='Last time this resource was viewed')
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.title}"
+
+    def increment_view(self):
+        self.view_count += 1
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class TextBook(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='textbooks')
+    title = models.CharField(max_length=200)
+    author = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    file = models.FileField(
+        upload_to='textbooks/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'epub', 'mobi'])]
+    )
+    isbn = models.CharField(max_length=20, blank=True, help_text="ISBN number if available")
+    edition = models.CharField(max_length=50, blank=True)
+    publisher = models.CharField(max_length=200, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='textbooks')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = TaggableManager(blank=True)
+    download_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text='Last time this resource was viewed')
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.title}"
+
+    def increment_download(self):
+        self.download_count += 1
+        self.save(update_fields=['download_count'])
+
+    def increment_view(self):
+        self.view_count += 1
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class Practical(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='practicals')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    objective = models.TextField(help_text="Objective of the practical")
+    materials_required = models.TextField(blank=True, help_text="Materials or software required")
+    procedure = models.TextField(help_text="Step-by-step procedure")
+    expected_result = models.TextField(blank=True, help_text="Expected result or output")
+    file = models.FileField(
+        upload_to='practicals/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'zip', 'rar'])],
+        blank=True,
+        null=True
+    )
+    difficulty_level = models.CharField(
+        max_length=20, 
+        choices=[('easy', 'Easy'), ('medium', 'Medium'), ('hard', 'Hard')], 
+        default='medium'
+    )
+    estimated_time = models.PositiveIntegerField(blank=True, null=True, help_text="Estimated time in minutes")
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='practicals')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = TaggableManager(blank=True)
+    download_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text='Last time this resource was viewed')
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.title}"
+
+    def increment_download(self):
+        self.download_count += 1
+        self.save(update_fields=['download_count'])
+
+    def increment_view(self):
+        self.view_count += 1
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 class Subscription(models.Model):

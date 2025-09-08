@@ -28,7 +28,7 @@
                             <input type="text" 
                                    name="q" 
                                    class="form-control search-input" 
-                                   placeholder="Search for notes, syllabus, question banks..." 
+                                   placeholder="Search for notes, syllabus, question banks, chapters..." 
                                    value="{{ query }}"
                                    autocomplete="off">
                             <button type="submit" class="btn btn-search">
@@ -65,6 +65,10 @@
                                         <option value="note" {% if resource_type == 'note' %}selected{% endif %}>Notes</option>
                                         <option value="syllabus" {% if resource_type == 'syllabus' %}selected{% endif %}>Syllabus</option>
                                         <option value="questionbank" {% if resource_type == 'questionbank' %}selected{% endif %}>Question Banks</option>
+                                        <option value="chapter" {% if resource_type == 'chapter' %}selected{% endif %}>Chapters</option>
+                                        <option value="viva" {% if resource_type == 'viva' %}selected{% endif %}>Viva</option>
+                                        <option value="textbook" {% if resource_type == 'textbook' %}selected{% endif %}>Text Books</option>
+                                        <option value="practical" {% if resource_type == 'practical' %}selected{% endif %}>Practical</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -111,6 +115,22 @@
                                 <div class="stat-item">
                                     <span class="stat-number">{{ search_stats.question_banks_count }}</span>
                                     <span class="stat-label">Question Banks</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ search_stats.chapters_count }}</span>
+                                    <span class="stat-label">Chapters</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ search_stats.vivas_count }}</span>
+                                    <span class="stat-label">Viva</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ search_stats.textbooks_count }}</span>
+                                    <span class="stat-label">Text Books</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ search_stats.practicals_count }}</span>
+                                    <span class="stat-label">Practical</span>
                                 </div>
                             </div>
                         </div>
@@ -256,6 +276,213 @@
                                 <a href="{% url 'subject_questions' qb.subject.id %}" class="btn btn-primary">
                                     <i class="fas fa-external-link-alt me-1"></i>
                                     View Questions
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Chapters Section -->
+                {% if search_results.chapters %}
+                <div class="result-section">
+                    <div class="section-header">
+                        <h2>
+                            <i class="fas fa-list me-2"></i>
+                            Chapters
+                            <span class="badge badge-count">{{ search_results.chapters|length }}</span>
+                        </h2>
+                    </div>
+                    <div class="results-grid">
+                        {% for chapter in search_results.chapters %}
+                        <div class="result-card">
+                            <div class="card-header">
+                                <div class="resource-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">Chapter {{ chapter.chapter_number }}</span>
+                                    <span class="resource-subject">{{ chapter.subject.name }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ chapter.title }}</h5>
+                                <p class="card-description">{{ chapter.description|truncatewords:20 }}</p>
+                                <div class="card-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-download"></i>
+                                        {{ chapter.download_count }} downloads
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ chapter.view_count }} views
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{% url 'chapter_detail' chapter.subject.id chapter.id %}" class="btn btn-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    View Chapter
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Viva Section -->
+                {% if search_results.vivas %}
+                <div class="result-section">
+                    <div class="section-header">
+                        <h2>
+                            <i class="fas fa-microphone me-2"></i>
+                            Viva
+                            <span class="badge badge-count">{{ search_results.vivas|length }}</span>
+                        </h2>
+                    </div>
+                    <div class="results-grid">
+                        {% for viva in search_results.vivas %}
+                        <div class="result-card">
+                            <div class="card-header">
+                                <div class="resource-icon">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">Viva Question</span>
+                                    <span class="resource-subject">{{ viva.subject.name }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ viva.title }}</h5>
+                                <p class="card-description">{{ viva.description|truncatewords:20 }}</p>
+                                <div class="card-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ viva.view_count }} views
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-signal"></i>
+                                        {{ viva.difficulty_level|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="#" class="btn btn-primary" onclick="showVivaModal('{{ viva.id }}', '{{ viva.title }}', '{{ viva.question|escapejs }}', '{{ viva.answer|escapejs }}')">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    View Viva
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Text Books Section -->
+                {% if search_results.textbooks %}
+                <div class="result-section">
+                    <div class="section-header">
+                        <h2>
+                            <i class="fas fa-book-open me-2"></i>
+                            Text Books
+                            <span class="badge badge-count">{{ search_results.textbooks|length }}</span>
+                        </h2>
+                    </div>
+                    <div class="results-grid">
+                        {% for textbook in search_results.textbooks %}
+                        <div class="result-card">
+                            <div class="card-header">
+                                <div class="resource-icon">
+                                    <i class="fas fa-book-open"></i>
+                                </div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">Text Book</span>
+                                    <span class="resource-subject">{{ textbook.subject.name }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ textbook.title }}</h5>
+                                <p class="card-description">{{ textbook.description|truncatewords:20 }}</p>
+                                <div class="card-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-download"></i>
+                                        {{ textbook.download_count }} downloads
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ textbook.view_count }} views
+                                    </span>
+                                </div>
+                                {% if textbook.author %}
+                                <div class="card-meta">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>Author: {{ textbook.author }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                <a href="{% url 'download_resource' 'textbook' textbook.id %}" class="btn btn-primary">
+                                    <i class="fas fa-download me-1"></i>
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Practical Section -->
+                {% if search_results.practicals %}
+                <div class="result-section">
+                    <div class="section-header">
+                        <h2>
+                            <i class="fas fa-flask me-2"></i>
+                            Practical
+                            <span class="badge badge-count">{{ search_results.practicals|length }}</span>
+                        </h2>
+                    </div>
+                    <div class="results-grid">
+                        {% for practical in search_results.practicals %}
+                        <div class="result-card">
+                            <div class="card-header">
+                                <div class="resource-icon">
+                                    <i class="fas fa-flask"></i>
+                                </div>
+                                <div class="resource-meta">
+                                    <span class="resource-type">Practical</span>
+                                    <span class="resource-subject">{{ practical.subject.name }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ practical.title }}</h5>
+                                <p class="card-description">{{ practical.description|truncatewords:20 }}</p>
+                                <div class="card-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-download"></i>
+                                        {{ practical.download_count }} downloads
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-eye"></i>
+                                        {{ practical.view_count }} views
+                                    </span>
+                                </div>
+                                <div class="card-meta">
+                                    <small class="text-muted">
+                                        <i class="fas fa-signal me-1"></i>Difficulty: {{ practical.difficulty_level|title }}
+                                        {% if practical.estimated_time %}
+                                        <i class="fas fa-clock ms-2 me-1"></i>Time: {{ practical.estimated_time }}min
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{% url 'download_resource' 'practical' practical.id %}" class="btn btn-primary">
+                                    <i class="fas fa-download me-1"></i>
+                                    Download
                                 </a>
                             </div>
                         </div>

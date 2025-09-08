@@ -36,9 +36,9 @@ urlpatterns = [
     path('faculty/<str:faculty_slug>/<int:level>/', views.faculty_subjects, name='faculty_subjects'),
     path('faculty/<str:faculty_slug>/', views.faculty_overview, name='faculty_overview'),
     path('subject/<int:subject_id>/', views.subject_detail, name='subject_detail'),
-    path('subject/<int:subject_id>/syllabus/', views.subject_syllabus, name='subject_syllabus'),
+    path('subject/<int:subject_id>/syllabus/', views.subject_syllabus_redirect, name='subject_syllabus'),
     path('subject/<int:subject_id>/notes/', views.subject_notes, name='subject_notes'),
-    path('subject/<int:subject_id>/questions/', views.subject_questions, name='subject_questions'),
+    path('subject/<int:subject_id>/questions/', views.subject_questions_redirect, name='subject_questions'),
     path('subject/<int:subject_id>/chapter/<int:chapter_id>/', views.chapter_detail, name='chapter_detail'),
     path('download/chapter/<int:chapter_id>/', views.download_chapter, name='download_chapter'),
     path('subject/<int:subject_id>/question-bank/<int:question_bank_id>/', views.question_bank_detail, name='question_bank_detail'),
@@ -53,6 +53,10 @@ urlpatterns = [
     # Search functionality
     path('search/', views.search, name='search'),
     path('advanced-search/', views.advanced_search, name='advanced_search'),
+    
+    # Recommendations
+    path('recommendations/', views.recommendations_dashboard, name='recommendations'),
+    path('recommendations/faculty/<str:faculty_slug>/', views.faculty_recommendations, name='faculty_recommendations'),
     
     # Notices
     path('notices/', views.notice_list, name='notices'),
