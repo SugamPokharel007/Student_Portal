@@ -1,6 +1,7 @@
 from django.urls import path, include
 from . import views
 from . import oauth_views
+from . import password_reset_views
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -15,6 +16,12 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    
+    # Password Reset
+    path('password-reset/', password_reset_views.password_reset_request, name='password_reset_request'),
+    path('password-reset-confirm/<str:uidb64>/<str:token>/', password_reset_views.password_reset_confirm, name='password_reset_confirm'),
+    path('password-reset-done/', password_reset_views.password_reset_done, name='password_reset_done'),
+    path('password-reset-success/', password_reset_views.password_reset_success, name='password_reset_success'),
     
     # OAuth Authentication
     path('oauth/google/', oauth_views.google_oauth_initiate, name='google_oauth_initiate'),
