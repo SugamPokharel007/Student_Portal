@@ -1,5 +1,0 @@
-[33m9650468[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge search feature and admin dashboard features - both working with CSS
-[33mda6b961[m Merge faculty management system with search feature - complete website with both features
-[33m66faf16[m[33m ([m[1;32msugam[m[33m)[m Merge pull request #10 from SugamPokharel007/feature/search-upgrade
-[33m7a570aa[m[33m ([m[1;31morigin/feature/search-upgrade[m[33m, [m[1;32mfeature/search-upgrade[m[33m)[m Upgraded search feature with TF-IDF + Cosine Similarity + UI updates
-[33me44da43[m Merge pull request #9 from SugamPokharel007/fix/resource-workflow

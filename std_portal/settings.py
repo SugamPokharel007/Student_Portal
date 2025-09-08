@@ -13,15 +13,26 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
-# Try to load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+# The .env file should be created in the project root (same folder as manage.py)
+# Required keys for email functionality:
+#   EMAIL_HOST_USER=yourgmail@gmail.com
+#   EMAIL_HOST_PASSWORD=your_app_password_here
+#   DEFAULT_FROM_EMAIL=yourgmail@gmail.com
+try:
+    from dotenv import load_dotenv
+    # Load .env file from project root
+    load_dotenv(BASE_DIR / '.env')
+    print("✅ .env file loaded successfully")
+except ImportError:
+    print("⚠️  python-dotenv not installed. Install with: pip install python-dotenv")
+    print("   Or create .env file manually in project root")
+except FileNotFoundError:
+    print("⚠️  .env file not found. Using default configuration")
+    print("   Create .env file in project root with Gmail credentials for email functionality")
 
 
 # Quick-start development settings - unsuitable for production
@@ -185,10 +196,72 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 # Django Allauth Configuration
 SITE_ID = 1
 
+# Site Configuration for Password Reset URLs
+# This ensures password reset links use the correct domain
+if DEBUG:
+    # For development, use localhost
+    SITE_DOMAIN = '127.0.0.1:8000'
+    SITE_NAME = 'Sikshya Kendra (Development)'
+else:
+    # For production, use your actual domain
+    SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'yourdomain.com')
+    SITE_NAME = os.getenv('SITE_NAME', 'Sikshya Kendra')
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+# =============================================================================
+# EMAIL CONFIGURATION FOR PASSWORD RESET
+# =============================================================================
+# 
+# This section configures email settings for the password reset feature.
+# 
+# SETUP INSTRUCTIONS:
+# 1. Create a .env file in the project root (same folder as manage.py)
+# 2. Add the following keys to your .env file:
+#    EMAIL_HOST_USER=yourgmail@gmail.com
+#    EMAIL_HOST_PASSWORD=your_app_password_here
+#    DEFAULT_FROM_EMAIL=yourgmail@gmail.com
+# 
+# GMAIL APP PASSWORD SETUP:
+# 1. Go to https://myaccount.google.com/security
+# 2. Enable 2-Step Verification
+# 3. Go to "App passwords" section
+# 4. Generate a new app password for "Mail"
+# 5. Use the 16-character password (not your regular Gmail password)
+# 
+# BEHAVIOR:
+# - If .env file exists with Gmail credentials → Uses SMTP (real emails)
+# - If .env file doesn't exist or missing credentials → Uses console (development)
+# =============================================================================
+
+# Read Gmail credentials from environment variables
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+# Configure email backend based on available credentials
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    # Gmail credentials found - use SMTP backend for real email sending
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+    print(f"✅ Email configured: Using SMTP with {EMAIL_HOST_USER}")
+    print("   Password reset emails will be sent to real email addresses")
+else:
+    # No Gmail credentials - use console backend for development
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@sikshyakendra.com')
+    print("⚠️  Email configured: Using console backend (development mode)")
+    print("   Password reset emails will be printed to console/terminal")
+    print("   To enable real email sending:")
+    print("   1. Create .env file in project root")
+    print("   2. Add EMAIL_HOST_USER and EMAIL_HOST_PASSWORD")
+    print("   3. Restart Django server")
 
 # Allauth Settings
 ACCOUNT_EMAIL_REQUIRED = True
