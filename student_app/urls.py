@@ -123,8 +123,8 @@ urlpatterns = [
     
     # MCQ URLs
     path('mcq/', views.mcq_faculty_selection, name='mcq_faculty_selection'),
-    path('mcq/faculty/<int:faculty_id>/', views.mcq_subject_selection, name='mcq_subject_selection'),
-    path('mcq/quiz/<int:subject_id>/', views.mcq_quiz, name='mcq_quiz'),
+    path('mcq/faculty/<int:faculty_id>/', views.mcq_quiz_selection, name='mcq_quiz_selection'),
+    path('mcq/quiz/<int:quiz_id>/', views.mcq_quiz, name='mcq_quiz'),
     path('mcq/result/<int:session_id>/', views.mcq_result, name='mcq_result'),
     path('mcq/retake/<int:session_id>/', views.mcq_retake_quiz, name='mcq_retake_quiz'),
     path('mcq/my-quizzes/', views.mcq_my_quizzes, name='mcq_my_quizzes'),
@@ -137,6 +137,9 @@ urlpatterns = [
     path('mcq/admin/toggle-publish/<int:question_id>/', views.mcq_admin_toggle_publish, name='mcq_admin_toggle_publish'),
     path('mcq/admin/delete-question/<int:question_id>/', views.mcq_admin_delete_question, name='mcq_admin_delete_question'),
     path('mcq/admin/delete-option/<int:option_id>/', views.mcq_admin_delete_option, name='mcq_admin_delete_option'),
-    path('mcq/admin/get-subjects/', views.mcq_admin_get_subjects, name='mcq_admin_get_subjects'),
+    path('mcq/admin/get-quizzes/', views.mcq_admin_get_quizzes, name='mcq_admin_get_quizzes'),
+    path('mcq/admin/create-quiz/', views.mcq_admin_create_quiz, name='mcq_admin_create_quiz'),
+    path('mcq/admin/faculties/', views.mcq_admin_faculty_list, name='mcq_admin_faculty_list'),
+    path('mcq/admin/faculty/<int:faculty_id>/quizzes/', views.mcq_admin_quiz_list, name='mcq_admin_quiz_list'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

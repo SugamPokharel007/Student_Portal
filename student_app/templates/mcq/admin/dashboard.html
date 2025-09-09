@@ -12,6 +12,10 @@
                     <i class="fas fa-tachometer-alt me-2"></i>
                     MCQ Admin Dashboard
                 </h2>
+                <a href="{% url 'mcq_admin_faculty_list' %}" class="btn btn-success me-2">
+                    <i class="fas fa-university me-2"></i>
+                    Manage Faculties
+                </a>
                 <a href="{% url 'mcq_admin_add_question' %}" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>
                     Add New Question
@@ -144,7 +148,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Question</th>
-                                                <th>Subject</th>
+                                                <th>Quiz</th>
                                                 <th>Created By</th>
                                                 <th>Status</th>
                                                 <th>Created</th>
@@ -161,7 +165,7 @@
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-info">
-                                                        {{ question.subject.name }}
+                                                        {{ question.quiz.display_name }}
                                                     </span>
                                                 </td>
                                                 <td>{{ question.created_by.get_full_name|default:question.created_by.username }}</td>

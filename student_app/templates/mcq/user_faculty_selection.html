@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Select Faculty - MCQ Quiz{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h2 class="text-primary">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Select Faculty for MCQ Quiz
+                </h2>
+                <p class="text-muted">Choose a faculty to start your MCQ test</p>
+            </div>
+
+            <!-- Faculty Cards -->
+            <div class="row">
+                {% for faculty in faculties %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 faculty-card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <div class="faculty-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <h5 class="card-title">{{ faculty.name }}</h5>
+                                <p class="card-text text-muted">{{ faculty.description|truncatechars:100 }}</p>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <div class="row text-center mb-3">
+                                    <div class="col-6">
+                                        <div class="stat-item">
+                                            <h4 class="stat-number">{{ faculty.mcq_quizzes.count }}</h4>
+                                            <small class="text-muted">Quizzes</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="stat-item">
+                                            <h4 class="stat-number">{{ faculty.question_count|default:0 }}</h4>
+                                            <small class="text-muted">Questions</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <a href="{% url 'mcq_quiz_selection' faculty.id %}" class="btn btn-primary">
+                                        <i class="fas fa-clipboard-list me-2"></i>
+                                        View Quizzes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No faculties available yet.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.faculty-card {
+    transition: transform 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.faculty-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.faculty-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    color: white;
+    font-size: 32px;
+}
+
+.stat-item {
+    padding: 10px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .faculty-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

@@ -26,7 +26,12 @@
                                         <label for="{{ form.faculty.id_for_label }}" class="form-label">
                                             <i class="fas fa-university me-2"></i>Faculty <span class="text-danger">*</span>
                                         </label>
-                                        {{ form.faculty }}
+                                        <div class="input-group">
+                                            {{ form.faculty }}
+                                            <button type="button" class="btn btn-outline-success" id="addQuizBtn" style="display: none;">
+                                                <i class="fas fa-plus me-1"></i>Add Quiz
+                                            </button>
+                                        </div>
                                         {% if form.faculty.errors %}
                                             <div class="text-danger small mt-1">
                                                 {% for error in form.faculty.errors %}
@@ -38,20 +43,20 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
-                                        <label for="{{ form.subject.id_for_label }}" class="form-label">
-                                            <i class="fas fa-book me-2"></i>Subject <span class="text-danger">*</span>
+                                        <label for="{{ form.quiz.id_for_label }}" class="form-label">
+                                            <i class="fas fa-clipboard-list me-2"></i>Quiz <span class="text-danger">*</span>
                                         </label>
-                                        {{ form.subject }}
-                                        {% if form.subject.errors %}
+                                        {{ form.quiz }}
+                                        {% if form.quiz.errors %}
                                             <div class="text-danger small mt-1">
-                                                {% for error in form.subject.errors %}
+                                                {% for error in form.quiz.errors %}
                                                     {{ error }}
                                                 {% endfor %}
                                             </div>
                                         {% endif %}
                                         <small class="text-muted">
                                             <i class="fas fa-info-circle me-1"></i>
-                                            Select a faculty first to see available subjects
+                                            Select a faculty first to see available quizzes
                                         </small>
                                     </div>
                                 </div>
@@ -168,20 +173,20 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const facultySelect = document.getElementById('id_faculty');
-    const subjectSelect = document.getElementById('id_subject');
+    const quizSelect = document.getElementById('id_quiz');
     
-    // Function to load subjects for a faculty
-    function loadSubjects(facultyId) {
+    // Function to load quizzes for a faculty
+    function loadQuizzes(facultyId) {
         if (!facultyId) {
-            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+            quizSelect.innerHTML = '<option value="">Select Quiz</option>';
             return;
         }
         
         // Show loading state
-        subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
-        subjectSelect.disabled = true;
+        quizSelect.innerHTML = '<option value="">Loading quizzes...</option>';
+        quizSelect.disabled = true;
         
-        fetch(`/mcq/admin/get-subjects/?faculty_id=${facultyId}`)
+        fetch(`/mcq/admin/get-quizzes/?faculty_id=${facultyId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -189,43 +194,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                // Clear and reset subject options
-                subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                // Clear and reset quiz options
+                quizSelect.innerHTML = '<option value="">Select Quiz</option>';
                 
-                if (data.subjects && data.subjects.length > 0) {
-                    data.subjects.forEach(subject => {
+                if (data.quizzes && data.quizzes.length > 0) {
+                    data.quizzes.forEach(quiz => {
                         const option = document.createElement('option');
-                        option.value = subject.id;
-                        option.textContent = subject.name;
-                        subjectSelect.appendChild(option);
+                        option.value = quiz.id;
+                        option.textContent = `Quiz ${quiz.quiz_number}: ${quiz.title}`;
+                        quizSelect.appendChild(option);
                     });
                 } else {
                     const option = document.createElement('option');
                     option.value = '';
-                    option.textContent = 'No subjects found for this faculty';
+                    option.textContent = 'No quizzes found for this faculty';
                     option.disabled = true;
-                    subjectSelect.appendChild(option);
+                    quizSelect.appendChild(option);
                 }
                 
-                subjectSelect.disabled = false;
+                quizSelect.disabled = false;
             })
             .catch(error => {
-                console.error('Error fetching subjects:', error);
-                subjectSelect.innerHTML = '<option value="">Error loading subjects</option>';
-                subjectSelect.disabled = false;
+                console.error('Error fetching quizzes:', error);
+                quizSelect.innerHTML = '<option value="">Error loading quizzes</option>';
+                quizSelect.disabled = false;
                 
                 // Show error message to user
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'alert alert-danger mt-2';
-                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Error loading subjects. Please try again.';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Error loading quizzes. Please try again.';
                 
                 // Remove any existing error messages
-                const existingError = subjectSelect.parentNode.querySelector('.alert-danger');
+                const existingError = quizSelect.parentNode.querySelector('.alert-danger');
                 if (existingError) {
                     existingError.remove();
                 }
                 
-                subjectSelect.parentNode.appendChild(errorDiv);
+                quizSelect.parentNode.appendChild(errorDiv);
                 
                 // Remove error message after 5 seconds
                 setTimeout(() => {
@@ -239,12 +244,74 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle faculty selection change
     facultySelect.addEventListener('change', function() {
         const facultyId = this.value;
-        loadSubjects(facultyId);
+        loadQuizzes(facultyId);
+        
+        // Show/hide Add Quiz button
+        const addQuizBtn = document.getElementById('addQuizBtn');
+        if (facultyId) {
+            addQuizBtn.style.display = 'block';
+        } else {
+            addQuizBtn.style.display = 'none';
+        }
     });
     
-    // Load subjects if faculty is already selected (for form validation errors)
+    // Handle Add Quiz button click
+    document.getElementById('addQuizBtn').addEventListener('click', function() {
+        const facultyId = facultySelect.value;
+        if (facultyId) {
+            // Open modal or redirect to add quiz page
+            const quizTitle = prompt('Enter Quiz Title (optional):');
+            if (quizTitle !== null) {
+                // Create new quiz via AJAX
+                createNewQuiz(facultyId, quizTitle);
+            }
+        }
+    });
+    
+    // Function to create new quiz
+    function createNewQuiz(facultyId, title) {
+        fetch('/mcq/admin/create-quiz/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                faculty_id: facultyId,
+                title: title || ''
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload quizzes list
+                loadQuizzes(facultyId);
+                
+                // Show success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'alert alert-success mt-2';
+                successDiv.innerHTML = '<i class="fas fa-check me-2"></i>Quiz created successfully!';
+                quizSelect.parentNode.appendChild(successDiv);
+                
+                // Remove success message after 3 seconds
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.remove();
+                    }
+                }, 3000);
+            } else {
+                alert('Error creating quiz: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error creating quiz:', error);
+            alert('Error creating quiz. Please try again.');
+        });
+    }
+    
+    // Load quizzes if faculty is already selected (for form validation errors)
     if (facultySelect.value) {
-        loadSubjects(facultySelect.value);
+        loadQuizzes(facultySelect.value);
     }
 });
 </script>

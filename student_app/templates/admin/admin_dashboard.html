@@ -581,7 +581,7 @@
                                 <thead>
                                     <tr>
                                         <th>Question</th>
-                                        <th>Subject</th>
+                                        <th>Quiz</th>
                                         <th>Faculty</th>
                                         <th>Created By</th>
                                         <th>Status</th>
@@ -599,10 +599,10 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-info">{{ question.subject.name }}</span>
+                                            <span class="badge bg-info">{{ question.quiz.display_name }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ question.subject.faculty.name }}</span>
+                                            <span class="badge bg-secondary">{{ question.quiz.faculty.name }}</span>
                                         </td>
                                         <td>{{ question.created_by.get_full_name|default:question.created_by.username }}</td>
                                         <td>

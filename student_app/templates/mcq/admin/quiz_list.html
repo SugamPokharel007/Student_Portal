@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}MCQ Quiz Management - {{ faculty.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Quiz Management
+                    </h2>
+                    <p class="text-muted mb-0">{{ faculty.name }}</p>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addQuizModal">
+                        <i class="fas fa-plus me-2"></i>
+                        Add New Quiz
+                    </button>
+                    <a href="{% url 'mcq_admin_faculty_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Faculties
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quizzes Grid -->
+            {% if quizzes %}
+                <div class="row">
+                    {% for quiz in quizzes %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 quiz-card">
+                            <div class="card-body d-flex flex-column">
+                                <div class="text-center mb-3">
+                                    <div class="quiz-icon">
+                                        <i class="fas fa-clipboard-list"></i>
+                                    </div>
+                                    <h5 class="card-title">{{ quiz.display_name }}</h5>
+                                    <p class="card-text text-muted">{{ quiz.title|default:"No title" }}</p>
+                                </div>
+                                
+                                <div class="mt-auto">
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <div class="stat-item">
+                                                <h4 class="stat-number">{{ quiz.questions.count }}</h4>
+                                                <small class="text-muted">Questions</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="stat-item">
+                                                <h4 class="stat-number">{{ quiz.questions.filter.published.count }}</h4>
+                                                <small class="text-muted">Published</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'mcq_admin_question_list' %}?quiz={{ quiz.id }}" class="btn btn-primary">
+                                            <i class="fas fa-edit me-2"></i>
+                                            Manage Questions
+                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="editQuiz({{ quiz.id }}, '{{ quiz.title }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteQuiz({{ quiz.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No quizzes available for this faculty yet.
+                    <br>
+                    <button type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addQuizModal">
+                        <i class="fas fa-plus me-2"></i>
+                        Create First Quiz
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Quiz Modal -->
+<div class="modal fade" id="addQuizModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Quiz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addQuizForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="quizTitle" class="form-label">Quiz Title (Optional)</label>
+                        <input type="text" class="form-control" id="quizTitle" placeholder="Enter quiz title">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="createQuiz()">Create Quiz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.quiz-card {
+    transition: transform 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.quiz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.quiz-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    color: white;
+    font-size: 24px;
+}
+
+.stat-item {
+    padding: 10px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .quiz-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<script>
+function createQuiz() {
+    const title = document.getElementById('quizTitle').value.trim();
+    const facultyId = {{ faculty.id }};
+    
+    fetch('/mcq/admin/create-quiz/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            faculty_id: facultyId,
+            title: title
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error creating quiz: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error creating quiz:', error);
+        alert('Error creating quiz. Please try again.');
+    });
+}
+
+function editQuiz(quizId, currentTitle) {
+    const newTitle = prompt('Enter new quiz title:', currentTitle);
+    if (newTitle !== null && newTitle !== currentTitle) {
+        // TODO: Implement edit quiz functionality
+        alert('Edit functionality will be implemented soon!');
+    }
+}
+
+function deleteQuiz(quizId) {
+    if (confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) {
+        // TODO: Implement delete quiz functionality
+        alert('Delete functionality will be implemented soon!');
+    }
+}
+</script>
+{% endblock %}

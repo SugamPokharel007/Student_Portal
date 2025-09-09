@@ -638,8 +638,31 @@ class ArticleLike(models.Model):
 
 
 # MCQ Models
+class MCQQuiz(models.Model):
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='mcq_quizzes')
+    quiz_number = models.PositiveIntegerField()
+    title = models.CharField(max_length=200, default="")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_mcq_quizzes')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'MCQ Quiz'
+        verbose_name_plural = 'MCQ Quizzes'
+        unique_together = ['faculty', 'quiz_number']
+        ordering = ['faculty', 'quiz_number']
+    
+    def __str__(self):
+        return f"{self.faculty.name} - Quiz {self.quiz_number}: {self.title}"
+    
+    @property
+    def display_name(self):
+        return f"Quiz {self.quiz_number}: {self.title}" if self.title else f"Quiz {self.quiz_number}"
+
+
 class MCQQuestion(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='mcq_questions')
+    quiz = models.ForeignKey(MCQQuiz, on_delete=models.CASCADE, related_name='questions', null=True, blank=True)
     question_text = models.TextField(help_text="Enter the question text")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_mcq_questions')
     published = models.BooleanField(default=False, help_text="Only published questions are visible to students")
@@ -652,7 +675,7 @@ class MCQQuestion(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.subject.name} - {self.question_text[:50]}..."
+        return f"{self.quiz.display_name} - {self.question_text[:50]}..."
     
     @property
     def is_valid(self):
@@ -732,7 +755,7 @@ class MCQUserAnswer(models.Model):
 
 class MCQQuizSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mcq_sessions')
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='mcq_sessions')
+    quiz = models.ForeignKey(MCQQuiz, on_delete=models.CASCADE, related_name='sessions', null=True, blank=True)
     questions = models.ManyToManyField(MCQQuestion, related_name='quiz_sessions')
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -746,7 +769,7 @@ class MCQQuizSession(models.Model):
         ordering = ['-started_at']
     
     def __str__(self):
-        return f"{self.user.username} - {self.subject.name} - {self.started_at.strftime('%Y-%m-%d %H:%M')}"
+        return f"{self.user.username} - {self.quiz.display_name} - {self.started_at.strftime('%Y-%m-%d %H:%M')}"
     
     def calculate_score(self):
         """Calculate and update the quiz score"""

@@ -22,7 +22,7 @@ import math
 from .models import (
     Subject, Notice, Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, 
     Faculty, UserProfile, ContactMessage, ContributorRequest,
-    DownloadLog, ViewLog, MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession
+    DownloadLog, ViewLog, MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession, MCQQuiz
 )
 from .forms import (
     ContributeResourceForm, ContributorRequestForm, EnhancedContactForm,
@@ -1416,7 +1416,7 @@ def admin_dashboard(request):
     total_mcq_quizzes = MCQQuizSession.objects.count()
     
     # Recent MCQ Questions
-    recent_mcq_questions = MCQQuestion.objects.select_related('subject', 'created_by', 'subject__faculty').order_by('-created_at')[:10]
+    recent_mcq_questions = MCQQuestion.objects.select_related('quiz', 'created_by', 'quiz__faculty').order_by('-created_at')[:10]
     
     context = {
         'total_users': total_users,
@@ -3102,61 +3102,56 @@ def mcq_faculty_selection(request):
         messages.warning(request, 'Please login to access MCQ quizzes.')
         return redirect('login')
     
-    form = FacultySelectionForm()
-    
-    if request.method == 'POST':
-        form = FacultySelectionForm(request.POST)
-        if form.is_valid():
-            faculty = form.cleaned_data['faculty']
-            return redirect('mcq_subject_selection', faculty_id=faculty.id)
+    faculties = Faculty.objects.filter(is_active=True).annotate(
+        quiz_count=Count('mcq_quizzes', filter=Q(mcq_quizzes__is_active=True)),
+        question_count=Count('mcq_quizzes__questions', filter=Q(mcq_quizzes__is_active=True))
+    ).order_by('name')
     
     context = {
-        'form': form,
+        'faculties': faculties,
         'title': 'Select Faculty - MCQ Quiz'
     }
-    return render(request, 'mcq/faculty_selection.html', context)
+    return render(request, 'mcq/user_faculty_selection.html', context)
 
 
-def mcq_subject_selection(request, faculty_id):
-    """MCQ Subject Selection Page"""
+def mcq_quiz_selection(request, faculty_id):
+    """MCQ Quiz Selection Page"""
     if not request.user.is_authenticated:
         messages.warning(request, 'Please login to access MCQ quizzes.')
         return redirect('login')
     
     faculty = get_object_or_404(Faculty, id=faculty_id, is_active=True)
-    form = SubjectSelectionForm(faculty)
+    quizzes = MCQQuiz.objects.filter(faculty=faculty, is_active=True).order_by('quiz_number')
     
-    if request.method == 'POST':
-        form = SubjectSelectionForm(faculty, request.POST)
-        if form.is_valid():
-            subject = form.cleaned_data['subject']
-            return redirect('mcq_quiz', subject_id=subject.id)
+    if not quizzes.exists():
+        messages.warning(request, f'No quizzes available for {faculty.name}.')
+        return redirect('mcq_faculty_selection')
     
     context = {
-        'form': form,
+        'quizzes': quizzes,
         'faculty': faculty,
-        'title': f'Select Subject - {faculty.name}'
+        'title': f'Select Quiz - {faculty.name}'
     }
-    return render(request, 'mcq/subject_selection.html', context)
+    return render(request, 'mcq/quiz_selection.html', context)
 
 
 @login_required
-def mcq_quiz(request, subject_id):
+def mcq_quiz(request, quiz_id):
     """MCQ Quiz Page"""
-    subject = get_object_or_404(Subject, id=subject_id, is_active=True)
+    quiz = get_object_or_404(MCQQuiz, id=quiz_id, is_active=True)
     questions = MCQQuestion.objects.filter(
-        subject=subject, 
+        quiz=quiz, 
         published=True
     ).prefetch_related('options')
     
     if not questions.exists():
-        messages.warning(request, f'No published MCQ questions available for {subject.name}.')
+        messages.warning(request, f'No published MCQ questions available for {quiz.display_name}.')
         return redirect('mcq_faculty_selection')
     
     # Check if user has already taken this quiz
     existing_session = MCQQuizSession.objects.filter(
         user=request.user, 
-        subject=subject,
+        quiz=quiz,
         completed_at__isnull=False
     ).first()
     
@@ -3171,7 +3166,7 @@ def mcq_quiz(request, subject_id):
             retake_session = MCQQuizSession.objects.get(
                 id=session_id, 
                 user=request.user,
-                subject=subject,
+                quiz=quiz,
                 completed_at__isnull=True  # Only allow retake of reset sessions
             )
             # Use the existing session for retake
@@ -3191,7 +3186,7 @@ def mcq_quiz(request, subject_id):
             if not quiz_session:
                 quiz_session = MCQQuizSession.objects.create(
                     user=request.user,
-                    subject=subject
+                    quiz=quiz
                 )
                 quiz_session.questions.set(questions)
             
@@ -3206,9 +3201,9 @@ def mcq_quiz(request, subject_id):
     
     context = {
         'form': form,
-        'subject': subject,
+        'quiz': quiz,
         'questions': questions,
-        'title': f'MCQ Quiz - {subject.name}'
+        'title': f'MCQ Quiz - {quiz.display_name}'
     }
     return render(request, 'mcq/quiz.html', context)
 
@@ -3243,7 +3238,7 @@ def mcq_result(request, session_id):
     context = {
         'session': session,
         'questions_with_answers': questions_with_answers,
-        'title': f'Quiz Result - {session.subject.name}'
+        'title': f'Quiz Result - {session.quiz.display_name}'
     }
     return render(request, 'mcq/result.html', context)
 
@@ -3278,7 +3273,7 @@ def mcq_admin_dashboard(request):
     total_faculties = Faculty.objects.filter(is_active=True).count()
     
     # Get recent questions
-    recent_questions = MCQQuestion.objects.select_related('subject', 'created_by').order_by('-created_at')[:10]
+    recent_questions = MCQQuestion.objects.select_related('quiz', 'created_by').order_by('-created_at')[:10]
     
     context = {
         'total_questions': total_questions,
@@ -3353,17 +3348,17 @@ def mcq_admin_question_list(request):
         messages.error(request, 'Access denied. Admin privileges required.')
         return redirect('home')
     
-    questions = MCQQuestion.objects.select_related('subject', 'created_by').order_by('-created_at')
+    questions = MCQQuestion.objects.select_related('quiz', 'created_by').order_by('-created_at')
     
     # Filter by faculty if provided
     faculty_id = request.GET.get('faculty')
     if faculty_id:
-        questions = questions.filter(subject__faculty_id=faculty_id)
+        questions = questions.filter(quiz__faculty_id=faculty_id)
     
-    # Filter by subject if provided
-    subject_id = request.GET.get('subject')
-    if subject_id:
-        questions = questions.filter(subject_id=subject_id)
+    # Filter by quiz if provided
+    quiz_id = request.GET.get('quiz')
+    if quiz_id:
+        questions = questions.filter(quiz_id=quiz_id)
     
     # Filter by published status
     published = request.GET.get('published')
@@ -3377,14 +3372,14 @@ def mcq_admin_question_list(request):
     page_obj = paginator.get_page(page_number)
     
     faculties = Faculty.objects.filter(is_active=True)
-    subjects = Subject.objects.filter(is_active=True) if not faculty_id else Subject.objects.filter(faculty_id=faculty_id, is_active=True)
+    quizzes = MCQQuiz.objects.filter(is_active=True) if not faculty_id else MCQQuiz.objects.filter(faculty_id=faculty_id, is_active=True)
     
     context = {
         'page_obj': page_obj,
         'faculties': faculties,
-        'subjects': subjects,
+        'quizzes': quizzes,
         'selected_faculty': faculty_id,
-        'selected_subject': subject_id,
+        'selected_quiz': quiz_id,
         'selected_published': published,
         'title': 'MCQ Questions Management'
     }
@@ -3430,15 +3425,15 @@ def mcq_admin_delete_question(request, question_id):
     return redirect('mcq_admin_question_list')
 
 
-def mcq_admin_get_subjects(request):
-    """AJAX endpoint to get subjects for a faculty"""
+def mcq_admin_get_quizzes(request):
+    """AJAX endpoint to get quizzes for a faculty"""
     if request.method != 'GET':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     faculty_id = request.GET.get('faculty_id')
     
     if not faculty_id:
-        return JsonResponse({'subjects': [], 'error': 'Faculty ID is required'})
+        return JsonResponse({'quizzes': [], 'error': 'Faculty ID is required'})
     
     try:
         # Validate faculty_id is a number
@@ -3448,33 +3443,33 @@ def mcq_admin_get_subjects(request):
         faculty = Faculty.objects.filter(id=faculty_id, is_active=True).first()
         if not faculty:
             return JsonResponse({
-                'subjects': [], 
+                'quizzes': [], 
                 'error': 'Faculty not found or inactive'
             })
         
-        # Get subjects for this faculty
-        subjects = Subject.objects.filter(
+        # Get quizzes for this faculty
+        quizzes = MCQQuiz.objects.filter(
             faculty_id=faculty_id, 
             is_active=True
-        ).order_by('name').values('id', 'name')
+        ).order_by('quiz_number').values('id', 'quiz_number', 'title')
         
-        subjects_list = list(subjects)
+        quizzes_list = list(quizzes)
         
         return JsonResponse({
-            'subjects': subjects_list,
+            'quizzes': quizzes_list,
             'faculty_name': faculty.name,
-            'count': len(subjects_list)
+            'count': len(quizzes_list)
         })
         
     except ValueError:
         return JsonResponse({
-            'subjects': [], 
+            'quizzes': [], 
             'error': 'Invalid faculty ID format'
         })
     except Exception as e:
-        print(f"Error in mcq_admin_get_subjects: {e}")  # Debug logging
+        print(f"Error in mcq_admin_get_quizzes: {e}")  # Debug logging
         return JsonResponse({
-            'subjects': [], 
+            'quizzes': [], 
             'error': 'Internal server error'
         })
 
@@ -3501,7 +3496,7 @@ def mcq_retake_quiz(request, session_id):
     # Check if session is completed
     if not session.completed_at:
         messages.error(request, 'This quiz is not completed yet.')
-        return redirect('mcq_quiz', subject_id=session.subject.id)
+        return redirect('mcq_quiz', quiz_id=session.quiz.id)
     
     # Delete existing user answers for this session
     MCQUserAnswer.objects.filter(
@@ -3518,4 +3513,92 @@ def mcq_retake_quiz(request, session_id):
     messages.success(request, 'Quiz reset successfully! You can now retake the quiz.')
     from django.http import HttpResponseRedirect
     from django.urls import reverse
-    return HttpResponseRedirect(reverse('mcq_quiz', args=[session.subject.id]) + f'?session_id={session_id}')
+    return HttpResponseRedirect(reverse('mcq_quiz', args=[session.quiz.id]) + f'?session_id={session_id}')
+
+@login_required
+def mcq_admin_create_quiz(request):
+    """AJAX endpoint to create a new quiz"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Admin privileges required'}, status=403)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        faculty_id = data.get('faculty_id')
+        title = data.get('title', '').strip()
+        
+        if not faculty_id:
+            return JsonResponse({'error': 'Faculty ID is required'}, status=400)
+        
+        faculty = Faculty.objects.filter(id=faculty_id, is_active=True).first()
+        if not faculty:
+            return JsonResponse({'error': 'Faculty not found or inactive'}, status=404)
+        
+        # Get the next quiz number for this faculty
+        last_quiz = MCQQuiz.objects.filter(faculty=faculty).order_by('-quiz_number').first()
+        next_quiz_number = (last_quiz.quiz_number + 1) if last_quiz else 1
+        
+        # Create new quiz
+        quiz = MCQQuiz.objects.create(
+            faculty=faculty,
+            quiz_number=next_quiz_number,
+            title=title,
+            created_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'quiz': {
+                'id': quiz.id,
+                'quiz_number': quiz.quiz_number,
+                'title': quiz.title,
+                'display_name': quiz.display_name
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        print(f"Error in mcq_admin_create_quiz: {e}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+@login_required
+def mcq_admin_faculty_list(request):
+    """MCQ Faculty List Page for Admin"""
+    if not request.user.is_staff:
+        messages.error(request, 'Admin privileges required.')
+        return redirect('dashboard')
+    
+    faculties = Faculty.objects.filter(is_active=True).annotate(
+        quiz_count=Count('mcq_quizzes', filter=Q(mcq_quizzes__is_active=True)),
+        question_count=Count('mcq_quizzes__questions', filter=Q(mcq_quizzes__is_active=True))
+    ).order_by('name')
+    
+    context = {
+        'faculties': faculties,
+        'title': 'MCQ Faculty Management'
+    }
+    return render(request, 'mcq/admin/faculty_list.html', context)
+
+@login_required
+def mcq_admin_quiz_list(request, faculty_id):
+    """MCQ Quiz List Page for Admin"""
+    if not request.user.is_staff:
+        messages.error(request, 'Admin privileges required.')
+        return redirect('dashboard')
+    
+    faculty = get_object_or_404(Faculty, id=faculty_id, is_active=True)
+    quizzes = MCQQuiz.objects.filter(faculty=faculty, is_active=True).annotate(
+        question_count=Count('questions'),
+        published_count=Count('questions', filter=Q(questions__published=True))
+    ).order_by('quiz_number')
+    
+    context = {
+        'faculty': faculty,
+        'quizzes': quizzes,
+        'title': f'Quiz Management - {faculty.name}'
+    }
+    return render(request, 'mcq/admin/quiz_list.html', context)

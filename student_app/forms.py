@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Subject, ContributorRequest, ContactMessage, UserProfile, Faculty, MCQQuestion, MCQOption, MCQUserAnswer
+from .models import Subject, ContributorRequest, ContactMessage, UserProfile, Faculty, MCQQuiz, MCQQuestion, MCQOption, MCQUserAnswer
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Button, HTML, Fieldset, Div
 from crispy_forms.bootstrap import PrependedText, PrependedAppendedText
@@ -336,44 +336,44 @@ class MCQQuestionForm(forms.ModelForm):
     
     class Meta:
         model = MCQQuestion
-        fields = ['subject', 'question_text', 'published']
+        fields = ['quiz', 'question_text', 'published']
         widgets = {
             'question_text': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'subject': forms.Select(attrs={'class': 'form-control', 'id': 'id_subject'}),
+            'quiz': forms.Select(attrs={'class': 'form-control', 'id': 'id_quiz'}),
             'published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Initialize subject queryset as empty
-        self.fields['subject'].queryset = Subject.objects.none()
-        self.fields['subject'].empty_label = "Select Subject"
+        # Initialize quiz queryset as empty
+        self.fields['quiz'].queryset = MCQQuiz.objects.none()
+        self.fields['quiz'].empty_label = "Select Quiz"
         
         # Check if form is being submitted with faculty data
         if self.data:
             try:
                 faculty_id = int(self.data.get('faculty'))
                 if faculty_id:
-                    self.fields['subject'].queryset = Subject.objects.filter(
+                    self.fields['quiz'].queryset = MCQQuiz.objects.filter(
                         faculty_id=faculty_id, 
                         is_active=True
-                    ).order_by('name')
+                    ).order_by('quiz_number')
             except (ValueError, TypeError):
                 pass
         # If editing existing question
-        elif self.instance.pk and self.instance.subject:
-            self.fields['subject'].queryset = Subject.objects.filter(
-                faculty=self.instance.subject.faculty,
+        elif self.instance.pk and self.instance.quiz:
+            self.fields['quiz'].queryset = MCQQuiz.objects.filter(
+                faculty=self.instance.quiz.faculty,
                 is_active=True
-            ).order_by('name')
+            ).order_by('quiz_number')
             # Set initial faculty value
-            self.fields['faculty'].initial = self.instance.subject.faculty.id
+            self.fields['faculty'].initial = self.instance.quiz.faculty.id
         
         self.helper = FormHelper()
         self.helper.layout = Layout(
             'faculty',
-            'subject',
+            'quiz',
             'question_text',
             'published',
             Submit('submit', 'Create Question', css_class='btn btn-primary')
@@ -382,13 +382,13 @@ class MCQQuestionForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         faculty = cleaned_data.get('faculty')
-        subject = cleaned_data.get('subject')
+        quiz = cleaned_data.get('quiz')
         
-        # Validate that subject belongs to selected faculty
-        if faculty and subject:
-            if subject.faculty != faculty:
+        # Validate that quiz belongs to selected faculty
+        if faculty and quiz:
+            if quiz.faculty != faculty:
                 raise forms.ValidationError(
-                    "Selected subject does not belong to the selected faculty."
+                    "Selected quiz does not belong to the selected faculty."
                 )
         
         return cleaned_data
