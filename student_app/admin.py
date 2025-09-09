@@ -8,7 +8,8 @@ from datetime import timedelta
 from .models import (
     Faculty, Subject, Notice, ContactMessage, RegisteredUser, 
     Syllabus, QuestionBank, QuestionBankSolution, Note, Chapter, Viva, TextBook, Practical, Subscription, UserProfile,
-    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike
+    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike,
+    MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession
 )
 
 @admin.register(Faculty)
