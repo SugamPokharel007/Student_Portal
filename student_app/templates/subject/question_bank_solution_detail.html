@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ solution.title }} | {{ subject.name }} | Sikshya Kendra{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/chapter_detail.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="chapter-container">
+    <div class="chapter-layout">
+        <!-- Left Sidebar -->
+        <div class="chapter-sidebar">
+            <div class="sidebar-header">
+                <h3>{{ subject.name }}</h3>
+                <p>Question Bank Solutions</p>
+            </div>
+            <div class="chapter-list">
+                {% for sol in related_solutions %}
+                <a href="{% url 'question_bank_solution_detail' subject.id sol.id %}" 
+                   class="chapter-link {% if sol.id == solution.id %}active{% endif %}">
+                    <div class="chapter-link-content">
+                        <div class="chapter-number">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="chapter-title">{{ sol.title }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="chapter-main">
+            <div class="chapter-header">
+                <div class="breadcrumb-nav">
+                    <a href="{% url 'faculty_overview' subject.faculty.slug %}">{{ subject.faculty.name }}</a>
+                    <span>></span>
+                    <a href="{% url 'faculty_subjects' subject.faculty.slug subject.level %}">
+                        {% if subject.faculty.academic_structure == 'semester' %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Semester{% else %}{{ subject.level }}{% if subject.level == 1 %}st{% elif subject.level == 2 %}nd{% elif subject.level == 3 %}rd{% else %}th{% endif %} Year{% endif %}
+                    </a>
+                    <span>></span>
+                    <a href="{% url 'subject_detail' subject.id %}">{{ subject.name }}</a>
+                    <span>></span>
+                    <span>{{ solution.title }}</span>
+                </div>
+                
+                <div class="chapter-title-section">
+                    <h1>{{ solution.title }}</h1>
+                    <div class="chapter-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-user"></i>
+                            <span>Uploaded by {{ solution.uploaded_by.username }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ solution.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-download"></i>
+                            <span>{{ solution.download_count }} downloads</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-eye"></i>
+                            <span>{{ solution.view_count }} views</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-content">
+                {% if solution.description %}
+                <div class="chapter-description">
+                    <h3>Description</h3>
+                    <p>{{ solution.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                <div class="chapter-actions">
+                    <a href="{{ solution.file.url }}" class="btn-read" download>
+                        <i class="fas fa-download"></i>
+                        Download Solution
+                    </a>
+                    <a href="{% url 'subject_detail' subject.id %}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Subject
+                    </a>
+                </div>
+
+                {% if solution.tags.all %}
+                <div class="chapter-tags">
+                    <h4>Tags</h4>
+                    <div class="tags-list">
+                        {% for tag in solution.tags.all %}
+                        <span class="tag">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chapter-number i.fa-clipboard-check {
+        color: #667eea;
+    }
+    
+    .sidebar-header p {
+        color: #667eea;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

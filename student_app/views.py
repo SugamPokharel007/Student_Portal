@@ -20,7 +20,7 @@ from collections import Counter
 import math
 
 from .models import (
-    Subject, Notice, Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, 
+    Subject, Notice, Syllabus, QuestionBank, QuestionBankSolution, Note, Chapter, Viva, TextBook, Practical, Subscription, 
     Faculty, UserProfile, ContactMessage, ContributorRequest,
     DownloadLog, ViewLog, MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession, MCQQuiz
 )
@@ -307,6 +307,7 @@ def subject_detail(request, subject_id):
     notices = Notice.objects.filter(subject=subject, is_general=False)
     syllabus = Syllabus.objects.filter(subject=subject, status='approved').first()
     question_banks = QuestionBank.objects.filter(subject=subject, status='approved')
+    question_bank_solutions = QuestionBankSolution.objects.filter(subject=subject, status='approved')
     notes = Note.objects.filter(subject=subject, status='approved')
     chapters = Chapter.objects.filter(subject=subject, status='approved').order_by('chapter_number')
     
@@ -315,6 +316,7 @@ def subject_detail(request, subject_id):
         'notices': notices,
         'syllabus': syllabus,
         'question_banks': question_banks,
+        'question_bank_solutions': question_bank_solutions,
         'notes': notes,
         'chapters': chapters
     })
@@ -971,6 +973,60 @@ def add_question_bank(request, subject_id):
     return render(request, 'add_question_bank.html', {'subject': subject})
 
 @login_required
+def add_question_bank_solution(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    
+    # Check if user has permission to add question bank solution
+    user_profile = UserProfile.objects.get(user=request.user)
+    if not user_profile.can_upload() and not request.user.is_superuser:
+        messages.error(request, 'You need contributor access to add question bank solutions.')
+        return redirect('subject_detail', subject_id=subject_id)
+    
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        file = request.FILES.get('file')
+        
+        # Validate required fields
+        if not title:
+            messages.error(request, 'Title is required.')
+            return render(request, 'add_question_bank_solution.html', {'subject': subject})
+        
+        if not file:
+            messages.error(request, 'File is required for question bank solutions.')
+            return render(request, 'add_question_bank_solution.html', {'subject': subject})
+        
+        # Validate file
+        # Check file size (10MB limit)
+        if file.size > 10 * 1024 * 1024:
+            messages.error(request, 'File size must be under 10MB.')
+            return render(request, 'add_question_bank_solution.html', {'subject': subject})
+        
+        # Check file extension
+        allowed_extensions = ['pdf', 'doc', 'docx', 'txt']
+        file_extension = file.name.split('.')[-1].lower()
+        if file_extension not in allowed_extensions:
+            messages.error(request, f"Invalid file type. Allowed types: {', '.join(allowed_extensions)}")
+            return render(request, 'add_question_bank_solution.html', {'subject': subject})
+        
+        try:
+            QuestionBankSolution.objects.create(
+                subject=subject,
+                title=title,
+                description=description or '',
+                file=file,
+                uploaded_by=request.user,
+                status='pending' if not request.user.is_superuser else 'approved'
+            )
+            messages.success(request, 'Question bank solution added successfully!')
+            return redirect('subject_detail', subject_id=subject_id)
+        except Exception as e:
+            messages.error(request, f'Error adding question bank solution: {str(e)}')
+            return render(request, 'add_question_bank_solution.html', {'subject': subject})
+    
+    return render(request, 'add_question_bank_solution.html', {'subject': subject})
+
+@login_required
 def add_subject_notice(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
     if request.method == 'POST':
@@ -1262,6 +1318,41 @@ def question_bank_detail(request, subject_id, question_bank_id):
     return render(request, 'subject/question_bank_detail.html', context)
 
 @login_required
+def question_bank_solution_detail(request, subject_id, solution_id):
+    """Display question bank solution detail"""
+    subject = get_object_or_404(Subject, id=subject_id)
+    solution = get_object_or_404(QuestionBankSolution, id=solution_id, subject=subject)
+    
+    # Check if user has access to this subject (basic check)
+    if not request.user.is_authenticated:
+        messages.error(request, 'You need to be logged in to access question bank solutions.')
+        return redirect('login')
+    
+    # Log view
+    ViewLog.objects.create(
+        user=request.user,
+        content_type='questionbanksolution',
+        content_id=solution.id,
+        ip_address=request.META.get('REMOTE_ADDR')
+    )
+    # Invalidate user recommendations cache to ensure dynamic updates
+    invalidate_user_recommendations_cache(request.user.id)
+    
+    # Get related question bank solutions
+    related_solutions = QuestionBankSolution.objects.filter(
+        subject=subject,
+        status='approved'
+    ).exclude(id=solution_id)[:5]
+    
+    context = {
+        'subject': subject,
+        'solution': solution,
+        'related_solutions': related_solutions,
+    }
+    
+    return render(request, 'subject/question_bank_solution_detail.html', context)
+
+@login_required
 def edit_profile(request):
     """Edit user profile"""
     # Get or create user profile
@@ -1353,19 +1444,23 @@ def admin_dashboard(request):
         for level in range(1, faculty.total_levels + 1):
             level_subjects = Subject.objects.filter(faculty=faculty, level=level)
             level_syllabi = Syllabus.objects.filter(subject__faculty=faculty, subject__level=level).count()
-            level_notes = Note.objects.filter(subject__faculty=faculty, subject__level=level).count()
             level_questions = QuestionBank.objects.filter(subject__faculty=faculty, subject__level=level).count()
             level_chapters = Chapter.objects.filter(subject__faculty=faculty, subject__level=level).count()
+            level_textbooks = TextBook.objects.filter(subject__faculty=faculty, subject__level=level).count()
+            level_practicals = Practical.objects.filter(subject__faculty=faculty, subject__level=level).count()
+            level_vivas = Viva.objects.filter(subject__faculty=faculty, subject__level=level).count()
             
             level_breakdown.append({
                 'level': level,
                 'level_name': faculty.get_level_display_name(level),
                 'subjects': level_subjects.count(),
                 'syllabi': level_syllabi,
-                'notes': level_notes,
                 'questions': level_questions,
                 'chapters': level_chapters,
-                'total_resources': level_syllabi + level_notes + level_questions + level_chapters,
+                'textbooks': level_textbooks,
+                'practicals': level_practicals,
+                'vivas': level_vivas,
+                'total_resources': level_syllabi + level_questions + level_chapters + level_textbooks + level_practicals + level_vivas,
                 'subject_list': list(level_subjects.values('id', 'name', 'level'))
             })
         
@@ -2476,9 +2571,11 @@ def admin_faculty_management(request):
     faculties = Faculty.objects.filter(is_active=True).annotate(
         subject_count=Count('subjects', filter=Q(subjects__is_active=True)),
         resource_count=Count('subjects__syllabi', filter=Q(subjects__syllabi__status='approved')) +
-                     Count('subjects__notes', filter=Q(subjects__notes__status='approved')) +
                      Count('subjects__question_banks', filter=Q(subjects__question_banks__status='approved')) +
-                     Count('subjects__chapters', filter=Q(subjects__chapters__status='approved'))
+                     Count('subjects__chapters', filter=Q(subjects__chapters__status='approved')) +
+                     Count('subjects__textbooks', filter=Q(subjects__textbooks__status='approved')) +
+                     Count('subjects__practicals', filter=Q(subjects__practicals__status='approved')) +
+                     Count('subjects__vivas', filter=Q(subjects__vivas__status='approved'))
     ).order_by('name')
     
     context = {
@@ -2505,19 +2602,23 @@ def admin_faculty_levels(request, faculty_slug):
     for level in range(1, faculty.total_levels + 1):
         level_subjects = Subject.objects.filter(faculty=faculty, level=level, is_active=True)
         level_syllabi = Syllabus.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
-        level_notes = Note.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
         level_questions = QuestionBank.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
         level_chapters = Chapter.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
+        level_textbooks = TextBook.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
+        level_practicals = Practical.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
+        level_vivas = Viva.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
         
         levels_data.append({
             'level': level,
             'level_name': faculty.get_level_display_name(level),
             'subjects': level_subjects.count(),
             'syllabi': level_syllabi,
-            'notes': level_notes,
             'questions': level_questions,
             'chapters': level_chapters,
-            'total_resources': level_syllabi + level_notes + level_questions + level_chapters,
+            'textbooks': level_textbooks,
+            'practicals': level_practicals,
+            'vivas': level_vivas,
+            'total_resources': level_syllabi + level_questions + level_chapters + level_textbooks + level_practicals + level_vivas,
             'subject_list': list(level_subjects.values('id', 'name', 'level'))
         })
     
@@ -2623,8 +2724,10 @@ def admin_subject_resources_management(request, subject_id):
     # Get all resources for this subject
     chapters = Chapter.objects.filter(subject=subject).order_by('chapter_number')
     syllabi = Syllabus.objects.filter(subject=subject).order_by('-created_at')
-    notes = Note.objects.filter(subject=subject).order_by('-created_at')
     questions = QuestionBank.objects.filter(subject=subject).order_by('-created_at')
+    textbooks = TextBook.objects.filter(subject=subject).order_by('-created_at')
+    practicals = Practical.objects.filter(subject=subject).order_by('-created_at')
+    vivas = Viva.objects.filter(subject=subject).order_by('-created_at')
     
     # Handle POST requests for resource management
     if request.method == 'POST':
@@ -2636,7 +2739,7 @@ def admin_subject_resources_management(request, subject_id):
             description = request.POST.get('description', '')
             file = request.FILES.get('file')
             
-            if title and file:
+            if title:
                 try:
                     if resource_type == 'chapter':
                         chapter_number = request.POST.get('chapter_number')
@@ -2666,17 +2769,6 @@ def admin_subject_resources_management(request, subject_id):
                         )
                         messages.success(request, f'Syllabus "{title}" added successfully.')
                     
-                    elif resource_type == 'note':
-                        Note.objects.create(
-                            title=title,
-                            description=description,
-                            subject=subject,
-                            file=file,
-                            uploaded_by=request.user,
-                            status='approved'
-                        )
-                        messages.success(request, f'Note "{title}" added successfully.')
-                    
                     elif resource_type == 'question':
                         QuestionBank.objects.create(
                             title=title,
@@ -2688,10 +2780,53 @@ def admin_subject_resources_management(request, subject_id):
                         )
                         messages.success(request, f'Question Bank "{title}" added successfully.')
                     
+                    elif resource_type == 'textbook':
+                        TextBook.objects.create(
+                            title=title,
+                            author=request.POST.get('author', ''),
+                            publisher=request.POST.get('publisher', ''),
+                            isbn=request.POST.get('isbn', ''),
+                            description=description,
+                            subject=subject,
+                            file=file,
+                            uploaded_by=request.user,
+                            status='approved'
+                        )
+                        messages.success(request, f'Textbook "{title}" added successfully.')
+                    
+                    elif resource_type == 'practical':
+                        Practical.objects.create(
+                            title=title,
+                            description=description,
+                            objective=request.POST.get('objective', ''),
+                            materials_required=request.POST.get('materials_required', ''),
+                            procedure=request.POST.get('procedure', ''),
+                            expected_result=request.POST.get('expected_result', ''),
+                            difficulty_level=request.POST.get('difficulty_level', 'medium'),
+                            subject=subject,
+                            file=file,
+                            uploaded_by=request.user,
+                            status='approved'
+                        )
+                        messages.success(request, f'Practical "{title}" added successfully.')
+                    
+                    elif resource_type == 'viva':
+                        Viva.objects.create(
+                            title=title,
+                            description=description,
+                            question=request.POST.get('question', ''),
+                            answer=request.POST.get('answer', ''),
+                            difficulty_level=request.POST.get('difficulty_level', 'medium'),
+                            subject=subject,
+                            uploaded_by=request.user,
+                            status='approved'
+                        )
+                        messages.success(request, f'Viva "{title}" added successfully.')
+                    
                 except Exception as e:
                     messages.error(request, f'Error adding resource: {str(e)}')
             else:
-                messages.error(request, 'Title and file are required.')
+                messages.error(request, 'Title is required.')
         
         elif action == 'delete_resource':
             resource_id = request.POST.get('resource_id')
@@ -2701,10 +2836,14 @@ def admin_subject_resources_management(request, subject_id):
                     resource = Chapter.objects.get(id=resource_id, subject=subject)
                 elif resource_type == 'syllabus':
                     resource = Syllabus.objects.get(id=resource_id, subject=subject)
-                elif resource_type == 'note':
-                    resource = Note.objects.get(id=resource_id, subject=subject)
                 elif resource_type == 'question':
                     resource = QuestionBank.objects.get(id=resource_id, subject=subject)
+                elif resource_type == 'textbook':
+                    resource = TextBook.objects.get(id=resource_id, subject=subject)
+                elif resource_type == 'practical':
+                    resource = Practical.objects.get(id=resource_id, subject=subject)
+                elif resource_type == 'viva':
+                    resource = Viva.objects.get(id=resource_id, subject=subject)
                 else:
                     messages.error(request, 'Invalid resource type.')
                     return redirect('admin_subject_resources_management', subject_id=subject_id)
@@ -2726,8 +2865,10 @@ def admin_subject_resources_management(request, subject_id):
         'level_name': level_name,
         'chapters': chapters,
         'syllabi': syllabi,
-        'notes': notes,
         'questions': questions,
+        'textbooks': textbooks,
+        'practicals': practicals,
+        'vivas': vivas,
     }
     return render(request, 'admin/subject_resources_management.html', context)
 
@@ -2744,9 +2885,11 @@ def admin_faculty_management(request):
     faculties = Faculty.objects.filter(is_active=True).annotate(
         subject_count=Count('subjects', filter=Q(subjects__is_active=True)),
         resource_count=Count('subjects__syllabi', filter=Q(subjects__syllabi__status='approved')) +
-                     Count('subjects__notes', filter=Q(subjects__notes__status='approved')) +
                      Count('subjects__question_banks', filter=Q(subjects__question_banks__status='approved')) +
-                     Count('subjects__chapters', filter=Q(subjects__chapters__status='approved'))
+                     Count('subjects__chapters', filter=Q(subjects__chapters__status='approved')) +
+                     Count('subjects__textbooks', filter=Q(subjects__textbooks__status='approved')) +
+                     Count('subjects__practicals', filter=Q(subjects__practicals__status='approved')) +
+                     Count('subjects__vivas', filter=Q(subjects__vivas__status='approved'))
     ).order_by('name')
     
     context = {
@@ -2773,19 +2916,23 @@ def admin_faculty_levels(request, faculty_slug):
     for level in range(1, faculty.total_levels + 1):
         level_subjects = Subject.objects.filter(faculty=faculty, level=level, is_active=True)
         level_syllabi = Syllabus.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
-        level_notes = Note.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
         level_questions = QuestionBank.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
         level_chapters = Chapter.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
+        level_textbooks = TextBook.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
+        level_practicals = Practical.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
+        level_vivas = Viva.objects.filter(subject__faculty=faculty, subject__level=level, status='approved').count()
         
         levels_data.append({
             'level': level,
             'level_name': faculty.get_level_display_name(level),
             'subjects': level_subjects.count(),
             'syllabi': level_syllabi,
-            'notes': level_notes,
             'questions': level_questions,
             'chapters': level_chapters,
-            'total_resources': level_syllabi + level_notes + level_questions + level_chapters,
+            'textbooks': level_textbooks,
+            'practicals': level_practicals,
+            'vivas': level_vivas,
+            'total_resources': level_syllabi + level_questions + level_chapters + level_textbooks + level_practicals + level_vivas,
             'subject_list': list(level_subjects.values('id', 'name', 'level'))
         })
     
@@ -2892,8 +3039,10 @@ def admin_subject_resources_management(request, subject_id):
     # Get all resources for this subject
     chapters = Chapter.objects.filter(subject=subject).order_by('chapter_number')
     syllabi = Syllabus.objects.filter(subject=subject).order_by('-created_at')
-    notes = Note.objects.filter(subject=subject).order_by('-created_at')
     questions = QuestionBank.objects.filter(subject=subject).order_by('-created_at')
+    textbooks = TextBook.objects.filter(subject=subject).order_by('-created_at')
+    practicals = Practical.objects.filter(subject=subject).order_by('-created_at')
+    vivas = Viva.objects.filter(subject=subject).order_by('-created_at')
     
     # Handle POST requests for resource management
     if request.method == 'POST':
@@ -2905,7 +3054,7 @@ def admin_subject_resources_management(request, subject_id):
             description = request.POST.get('description', '')
             file = request.FILES.get('file')
             
-            if title and file:
+            if title:
                 try:
                     if resource_type == 'chapter':
                         chapter_number = request.POST.get('chapter_number')
@@ -2935,17 +3084,6 @@ def admin_subject_resources_management(request, subject_id):
                         )
                         messages.success(request, f'Syllabus "{title}" added successfully.')
                     
-                    elif resource_type == 'note':
-                        Note.objects.create(
-                            title=title,
-                            description=description,
-                            subject=subject,
-                            file=file,
-                            uploaded_by=request.user,
-                            status='approved'
-                        )
-                        messages.success(request, f'Note "{title}" added successfully.')
-                    
                     elif resource_type == 'question':
                         QuestionBank.objects.create(
                             title=title,
@@ -2957,10 +3095,53 @@ def admin_subject_resources_management(request, subject_id):
                         )
                         messages.success(request, f'Question Bank "{title}" added successfully.')
                     
+                    elif resource_type == 'textbook':
+                        TextBook.objects.create(
+                            title=title,
+                            author=request.POST.get('author', ''),
+                            publisher=request.POST.get('publisher', ''),
+                            isbn=request.POST.get('isbn', ''),
+                            description=description,
+                            subject=subject,
+                            file=file,
+                            uploaded_by=request.user,
+                            status='approved'
+                        )
+                        messages.success(request, f'Textbook "{title}" added successfully.')
+                    
+                    elif resource_type == 'practical':
+                        Practical.objects.create(
+                            title=title,
+                            description=description,
+                            objective=request.POST.get('objective', ''),
+                            materials_required=request.POST.get('materials_required', ''),
+                            procedure=request.POST.get('procedure', ''),
+                            expected_result=request.POST.get('expected_result', ''),
+                            difficulty_level=request.POST.get('difficulty_level', 'medium'),
+                            subject=subject,
+                            file=file,
+                            uploaded_by=request.user,
+                            status='approved'
+                        )
+                        messages.success(request, f'Practical "{title}" added successfully.')
+                    
+                    elif resource_type == 'viva':
+                        Viva.objects.create(
+                            title=title,
+                            description=description,
+                            question=request.POST.get('question', ''),
+                            answer=request.POST.get('answer', ''),
+                            difficulty_level=request.POST.get('difficulty_level', 'medium'),
+                            subject=subject,
+                            uploaded_by=request.user,
+                            status='approved'
+                        )
+                        messages.success(request, f'Viva "{title}" added successfully.')
+                    
                 except Exception as e:
                     messages.error(request, f'Error adding resource: {str(e)}')
             else:
-                messages.error(request, 'Title and file are required.')
+                messages.error(request, 'Title is required.')
         
         elif action == 'delete_resource':
             resource_id = request.POST.get('resource_id')
@@ -2970,10 +3151,14 @@ def admin_subject_resources_management(request, subject_id):
                     resource = Chapter.objects.get(id=resource_id, subject=subject)
                 elif resource_type == 'syllabus':
                     resource = Syllabus.objects.get(id=resource_id, subject=subject)
-                elif resource_type == 'note':
-                    resource = Note.objects.get(id=resource_id, subject=subject)
                 elif resource_type == 'question':
                     resource = QuestionBank.objects.get(id=resource_id, subject=subject)
+                elif resource_type == 'textbook':
+                    resource = TextBook.objects.get(id=resource_id, subject=subject)
+                elif resource_type == 'practical':
+                    resource = Practical.objects.get(id=resource_id, subject=subject)
+                elif resource_type == 'viva':
+                    resource = Viva.objects.get(id=resource_id, subject=subject)
                 else:
                     messages.error(request, 'Invalid resource type.')
                     return redirect('admin_subject_resources_management', subject_id=subject_id)
@@ -2995,8 +3180,10 @@ def admin_subject_resources_management(request, subject_id):
         'level_name': level_name,
         'chapters': chapters,
         'syllabi': syllabi,
-        'notes': notes,
         'questions': questions,
+        'textbooks': textbooks,
+        'practicals': practicals,
+        'vivas': vivas,
     }
     return render(request, 'admin/subject_resources_management.html', context)
 @login_required

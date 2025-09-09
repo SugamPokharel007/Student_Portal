@@ -49,11 +49,13 @@ urlpatterns = [
     path('subject/<int:subject_id>/chapter/<int:chapter_id>/', views.chapter_detail, name='chapter_detail'),
     path('download/chapter/<int:chapter_id>/', views.download_chapter, name='download_chapter'),
     path('subject/<int:subject_id>/question-bank/<int:question_bank_id>/', views.question_bank_detail, name='question_bank_detail'),
+    path('subject/<int:subject_id>/question-bank-solution/<int:solution_id>/', views.question_bank_solution_detail, name='question_bank_solution_detail'),
     path('subject/<int:subject_id>/syllabus/<int:syllabus_id>/', views.syllabus_detail, name='syllabus_detail'),
     
     # Resource management
     path('subject/<int:subject_id>/add-syllabus/', views.add_syllabus, name='add_syllabus'),
     path('subject/<int:subject_id>/add-question-bank/', views.add_question_bank, name='add_question_bank'),
+    path('subject/<int:subject_id>/add-question-bank-solution/', views.add_question_bank_solution, name='add_question_bank_solution'),
     path('subject/<int:subject_id>/add-notice/', views.add_subject_notice, name='add_subject_notice'),
     path('contribute/', views.contribute_resource, name='contribute_resource'),
     
