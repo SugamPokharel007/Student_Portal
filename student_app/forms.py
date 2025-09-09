@@ -2,11 +2,10 @@ from django import forms
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Subject, ContributorRequest, ContactMessage, UserProfile
+from .models import Subject, ContributorRequest, ContactMessage, UserProfile, Faculty, MCQQuestion, MCQOption, MCQUserAnswer
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit, Button, HTML
+from crispy_forms.layout import Layout, Row, Column, Submit, Button, HTML, Fieldset, Div
 from crispy_forms.bootstrap import PrependedText, PrependedAppendedText
-from .models import Faculty
 
 class ContributeResourceForm(forms.Form):
     RESOURCE_TYPES = [
@@ -323,4 +322,201 @@ class AdvancedSearchForm(forms.Form):
         super().__init__(*args, **kwargs)
         from .models import Faculty
         self.fields['faculty'].queryset = Faculty.objects.filter(is_active=True)
-        self.fields['subject'].queryset = Subject.objects.filter(is_active=True, faculty__isnull=False) 
+        self.fields['subject'].queryset = Subject.objects.filter(is_active=True, faculty__isnull=False)
+
+
+# MCQ Forms
+class MCQQuestionForm(forms.ModelForm):
+    faculty = forms.ModelChoiceField(
+        queryset=Faculty.objects.all(),
+        empty_label="Select Faculty",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_faculty'}),
+        required=True
+    )
+    
+    class Meta:
+        model = MCQQuestion
+        fields = ['subject', 'question_text', 'published']
+        widgets = {
+            'question_text': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'subject': forms.Select(attrs={'class': 'form-control', 'id': 'id_subject'}),
+            'published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Initialize subject queryset as empty
+        self.fields['subject'].queryset = Subject.objects.none()
+        self.fields['subject'].empty_label = "Select Subject"
+        
+        # Check if form is being submitted with faculty data
+        if self.data:
+            try:
+                faculty_id = int(self.data.get('faculty'))
+                if faculty_id:
+                    self.fields['subject'].queryset = Subject.objects.filter(
+                        faculty_id=faculty_id, 
+                        is_active=True
+                    ).order_by('name')
+            except (ValueError, TypeError):
+                pass
+        # If editing existing question
+        elif self.instance.pk and self.instance.subject:
+            self.fields['subject'].queryset = Subject.objects.filter(
+                faculty=self.instance.subject.faculty,
+                is_active=True
+            ).order_by('name')
+            # Set initial faculty value
+            self.fields['faculty'].initial = self.instance.subject.faculty.id
+        
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'faculty',
+            'subject',
+            'question_text',
+            'published',
+            Submit('submit', 'Create Question', css_class='btn btn-primary')
+        )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        faculty = cleaned_data.get('faculty')
+        subject = cleaned_data.get('subject')
+        
+        # Validate that subject belongs to selected faculty
+        if faculty and subject:
+            if subject.faculty != faculty:
+                raise forms.ValidationError(
+                    "Selected subject does not belong to the selected faculty."
+                )
+        
+        return cleaned_data
+
+
+class MCQOptionForm(forms.ModelForm):
+    class Meta:
+        model = MCQOption
+        fields = ['option_text', 'is_correct']
+        widgets = {
+            'option_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter option text'}),
+            'is_correct': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.question = kwargs.pop('question', None)
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('option_text', css_class='col-md-10'),
+                Column('is_correct', css_class='col-md-2'),
+            ),
+            Submit('submit', 'Add Option', css_class='btn btn-success btn-sm')
+        )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        is_correct = cleaned_data.get('is_correct')
+        
+        if is_correct and self.question:
+            # Check if there's already a correct option for this question
+            existing_correct = MCQOption.objects.filter(
+                question=self.question, 
+                is_correct=True
+            ).exclude(id=self.instance.id if self.instance.pk else None)
+            if existing_correct.exists():
+                raise forms.ValidationError("Only one option can be marked as correct per question.")
+        
+        return cleaned_data
+
+
+class MCQOptionInlineFormSet(forms.BaseInlineFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+        
+        correct_options = 0
+        for form in self.forms:
+            if form.cleaned_data.get('is_correct'):
+                correct_options += 1
+        
+        if correct_options == 0:
+            raise forms.ValidationError("At least one option must be marked as correct.")
+        elif correct_options > 1:
+            raise forms.ValidationError("Only one option can be marked as correct.")
+
+
+class MCQQuizForm(forms.Form):
+    def __init__(self, questions, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        for question in questions:
+            options = question.options.all()
+            choices = [(option.id, option.option_text) for option in options]
+            
+            self.fields[f'question_{question.id}'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+                label=question.question_text,
+                required=False
+            )
+    
+    def save_answers(self, user, questions):
+        """Save user answers to the database"""
+        for question in questions:
+            field_name = f'question_{question.id}'
+            if field_name in self.cleaned_data and self.cleaned_data[field_name]:
+                selected_option_id = self.cleaned_data[field_name]
+                selected_option = MCQOption.objects.get(id=selected_option_id)
+                
+                # Create or update user answer
+                MCQUserAnswer.objects.update_or_create(
+                    user=user,
+                    question=question,
+                    defaults={'selected_option': selected_option}
+                )
+            else:
+                # For unanswered questions, create an answer with no selected option
+                # This ensures all questions are counted in the result
+                MCQUserAnswer.objects.update_or_create(
+                    user=user,
+                    question=question,
+                    defaults={'selected_option': None}
+                )
+
+
+class FacultySelectionForm(forms.Form):
+    faculty = forms.ModelChoiceField(
+        queryset=Faculty.objects.filter(is_active=True),
+        empty_label="Select Faculty",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'faculty',
+            Submit('submit', 'Next', css_class='btn btn-primary')
+        )
+
+
+class SubjectSelectionForm(forms.Form):
+    subject = forms.ModelChoiceField(
+        queryset=Subject.objects.none(),
+        empty_label="Select Subject",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    def __init__(self, faculty, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['subject'].queryset = Subject.objects.filter(
+            faculty=faculty, 
+            is_active=True
+        )
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'subject',
+            Submit('submit', 'Start Quiz', css_class='btn btn-primary')
+        )

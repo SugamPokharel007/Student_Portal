@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        MCQ Quiz Portal
+                    </h2>
+                    <p class="mb-0 mt-2">Select your faculty to start the quiz</p>
+                </div>
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="quiz-icon mb-3">
+                            <i class="fas fa-question-circle text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="text-muted">Choose Your Faculty</h4>
+                        <p class="text-muted">Select the faculty you belong to and start taking MCQ quizzes for your subjects.</p>
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            {{ form|crispy }}
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                Next
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-5">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="feature-box p-3">
+                                    <i class="fas fa-clock text-info mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Timed Quizzes</h6>
+                                    <small class="text-muted">Test your knowledge with timed questions</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-box p-3">
+                                    <i class="fas fa-chart-line text-success mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Instant Results</h6>
+                                    <small class="text-muted">Get immediate feedback on your performance</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-box p-3">
+                                    <i class="fas fa-trophy text-warning mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Track Progress</h6>
+                                    <small class="text-muted">Monitor your improvement over time</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.quiz-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.feature-box {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card {
+    border-radius: 15px;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+</style>
+{% endblock %}

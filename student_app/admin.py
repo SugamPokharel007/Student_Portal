@@ -8,7 +8,8 @@ from datetime import timedelta
 from .models import (
     Faculty, Subject, Notice, ContactMessage, RegisteredUser, 
     Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, UserProfile,
-    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike
+    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike,
+    MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession
 )
 
 @admin.register(Faculty)
@@ -464,3 +465,107 @@ class ArticleLikeAdmin(admin.ModelAdmin):
     autocomplete_fields = ['article', 'user']
     readonly_fields = ['created_at']
     date_hierarchy = 'created_at'
+
+
+# MCQ Admin Classes
+class MCQOptionInline(admin.TabularInline):
+    model = MCQOption
+    extra = 1
+    fields = ['option_text', 'is_correct']
+    ordering = ['id']
+
+
+@admin.register(MCQQuestion)
+class MCQQuestionAdmin(admin.ModelAdmin):
+    list_display = ['question_text_short', 'subject', 'faculty', 'created_by', 'published', 'options_count', 'created_at']
+    list_filter = ['published', 'created_at', 'subject__faculty', 'created_by']
+    search_fields = ['question_text', 'subject__name', 'created_by__username']
+    ordering = ['-created_at']
+    inlines = [MCQOptionInline]
+    autocomplete_fields = ['subject', 'created_by']
+    readonly_fields = ['created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Question Details', {
+            'fields': ('subject', 'question_text', 'published')
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def question_text_short(self, obj):
+        return obj.question_text[:80] + '...' if len(obj.question_text) > 80 else obj.question_text
+    question_text_short.short_description = 'Question'
+    
+    def faculty(self, obj):
+        return obj.subject.faculty.name
+    faculty.short_description = 'Faculty'
+    
+    def options_count(self, obj):
+        return obj.options.count()
+    options_count.short_description = 'Options'
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # If creating new object
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(MCQOption)
+class MCQOptionAdmin(admin.ModelAdmin):
+    list_display = ['option_text_short', 'question', 'is_correct', 'created_at']
+    list_filter = ['is_correct', 'created_at', 'question__subject__faculty']
+    search_fields = ['option_text', 'question__question_text']
+    ordering = ['question', 'id']
+    autocomplete_fields = ['question']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'
+    
+    def option_text_short(self, obj):
+        return obj.option_text[:50] + '...' if len(obj.option_text) > 50 else obj.option_text
+    option_text_short.short_description = 'Option Text'
+
+
+@admin.register(MCQUserAnswer)
+class MCQUserAnswerAdmin(admin.ModelAdmin):
+    list_display = ['user', 'question_short', 'selected_option_short', 'is_correct', 'submitted_at']
+    list_filter = ['is_correct', 'submitted_at', 'question__subject__faculty']
+    search_fields = ['user__username', 'question__question_text', 'selected_option__option_text']
+    ordering = ['-submitted_at']
+    autocomplete_fields = ['user', 'question', 'selected_option']
+    readonly_fields = ['submitted_at']
+    date_hierarchy = 'submitted_at'
+    
+    def question_short(self, obj):
+        return obj.question.question_text[:50] + '...' if len(obj.question.question_text) > 50 else obj.question.question_text
+    question_short.short_description = 'Question'
+    
+    def selected_option_short(self, obj):
+        return obj.selected_option.option_text[:30] + '...' if len(obj.selected_option.option_text) > 30 else obj.selected_option.option_text
+    selected_option_short.short_description = 'Selected Option'
+
+
+@admin.register(MCQQuizSession)
+class MCQQuizSessionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'subject', 'score_percentage', 'correct_answers', 'total_questions', 'completed_at']
+    list_filter = ['completed_at', 'subject__faculty', 'score_percentage']
+    search_fields = ['user__username', 'subject__name']
+    ordering = ['-completed_at']
+    autocomplete_fields = ['user', 'subject']
+    readonly_fields = ['started_at', 'completed_at', 'score_percentage']
+    date_hierarchy = 'completed_at'
+    
+    fieldsets = (
+        ('Session Details', {
+            'fields': ('user', 'subject', 'questions')
+        }),
+        ('Results', {
+            'fields': ('total_questions', 'correct_answers', 'score_percentage', 'started_at', 'completed_at')
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(completed_at__isnull=False)

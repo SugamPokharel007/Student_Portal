@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        My Quiz History
+                    </h2>
+                    <p class="mb-0 mt-2">Track your quiz performance over time</p>
+                </div>
+                <div class="card-body p-4">
+                    {% if sessions %}
+                        <div class="row">
+                            {% for session in sessions %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="quiz-history-card">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-book me-2"></i>
+                                                {{ session.subject.name }}
+                                            </h6>
+                                            <span class="badge {% if session.score_percentage >= 80 %}bg-success{% elif session.score_percentage >= 60 %}bg-info{% elif session.score_percentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ session.score_percentage|floatformat:1 }}%
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="quiz-stats mb-3">
+                                                <div class="row text-center">
+                                                    <div class="col-4">
+                                                        <div class="stat-item">
+                                                            <div class="stat-number text-success">{{ session.correct_answers }}</div>
+                                                            <div class="stat-label">Correct</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="stat-item">
+                                                            <div class="stat-number text-danger">{{ session.total_questions|add:"-"|add:session.correct_answers }}</div>
+                                                            <div class="stat-label">Wrong</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="stat-item">
+                                                            <div class="stat-number text-muted">{{ session.total_questions }}</div>
+                                                            <div class="stat-label">Total</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="quiz-info">
+                                                <p class="mb-2">
+                                                    <i class="fas fa-calendar me-2"></i>
+                                                    <strong>Completed:</strong> {{ session.completed_at|date:"M d, Y H:i" }}
+                                                </p>
+                                                <p class="mb-2">
+                                                    <i class="fas fa-clock me-2"></i>
+                                                    <strong>Duration:</strong> 
+                                                    {% with duration=session.completed_at|timesince:session.started_at %}
+                                                        {{ duration }}
+                                                    {% endwith %}
+                                                </p>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-graduation-cap me-2"></i>
+                                                    <strong>Faculty:</strong> {{ session.subject.faculty.name }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer text-center">
+                                            <a href="{% url 'mcq_result' session.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                        <nav aria-label="Quiz history pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list text-muted mb-3" style="font-size: 4rem;"></i>
+                                <h4 class="text-muted">No Quiz History</h4>
+                                <p class="text-muted">You haven't taken any quizzes yet. Start your first quiz now!</p>
+                                <a href="{% url 'mcq_faculty_selection' %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-play me-2"></i>
+                                    Take Your First Quiz
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.quiz-history-card {
+    transition: all 0.3s ease;
+}
+
+.quiz-history-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-item {
+    padding: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quiz-info p {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    padding: 3rem;
+}
+
+.card {
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    background: #f8f9fa !important;
+    color: #495057 !important;
+}
+
+.card-footer {
+    border-radius: 0 0 10px 10px !important;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+}
+</style>
+{% endblock %}

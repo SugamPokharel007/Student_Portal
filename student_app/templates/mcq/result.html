@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white text-center py-4" 
+                     style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <h2 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>
+                        Quiz Results
+                    </h2>
+                    <p class="mb-0 mt-2">{{ session.subject.name }}</p>
+                </div>
+                <div class="card-body p-5">
+                    <!-- Score Summary -->
+                    <div class="score-summary mb-5">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="score-box">
+                                    <div class="score-circle">
+                                        <span class="score-percentage">{{ session.score_percentage|floatformat:1 }}%</span>
+                                    </div>
+                                    <h6 class="mt-3">Overall Score</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="score-box">
+                                    <div class="score-number correct">{{ session.correct_answers }}</div>
+                                    <h6 class="mt-2">Correct</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="score-box">
+                                    <div class="score-number wrong">{{ session.total_questions|add:"-"|add:session.correct_answers }}</div>
+                                    <h6 class="mt-2">Wrong</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="score-box">
+                                    <div class="score-number total">{{ session.total_questions }}</div>
+                                    <h6 class="mt-2">Total</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Message -->
+                    <div class="performance-message text-center mb-5">
+                        {% if session.score_percentage >= 80 %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-star me-2"></i>
+                                <strong>Excellent!</strong> You scored {{ session.score_percentage|floatformat:1 }}%. Outstanding performance!
+                            </div>
+                        {% elif session.score_percentage >= 60 %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-thumbs-up me-2"></i>
+                                <strong>Good Job!</strong> You scored {{ session.score_percentage|floatformat:1 }}%. Well done!
+                            </div>
+                        {% elif session.score_percentage >= 40 %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Not Bad!</strong> You scored {{ session.score_percentage|floatformat:1 }}%. Keep practicing!
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-redo me-2"></i>
+                                <strong>Keep Trying!</strong> You scored {{ session.score_percentage|floatformat:1 }}%. Review the material and try again!
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Detailed Results -->
+                    <div class="detailed-results">
+                        <h4 class="mb-4">
+                            <i class="fas fa-list-alt me-2"></i>
+                            Detailed Results
+                        </h4>
+                        
+                        {% for item in questions_with_answers %}
+                        <div class="question-result mb-4">
+                            <div class="card">
+                                <div class="card-header {% if item.is_correct %}bg-success text-white{% else %}bg-danger text-white{% endif %}">
+                                    <h6 class="mb-0">
+                                        <span class="question-number">{{ forloop.counter }}.</span>
+                                        {{ item.question.question_text }}
+                                        {% if item.is_correct %}
+                                            <i class="fas fa-check-circle float-end"></i>
+                                        {% else %}
+                                            <i class="fas fa-times-circle float-end"></i>
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="text-success">
+                                                <i class="fas fa-check me-2"></i>
+                                                Correct Answer:
+                                            </h6>
+                                            <div class="correct-answer">
+                                                {{ item.correct_option.option_text }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="{% if item.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                                <i class="fas fa-user me-2"></i>
+                                                Your Answer:
+                                            </h6>
+                                            <div class="user-answer">
+                                                {% if item.user_answer %}
+                                                    {{ item.user_answer.selected_option.option_text }}
+                                                {% else %}
+                                                    <span class="text-muted">No answer selected</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-5">
+                        <a href="{% url 'mcq_retake_quiz' session.id %}" class="btn btn-warning btn-lg me-3">
+                            <i class="fas fa-redo me-2"></i>
+                            Retake This Quiz
+                        </a>
+                        <a href="{% url 'mcq_faculty_selection' %}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-plus me-2"></i>
+                            Take Another Quiz
+                        </a>
+                        <a href="{% url 'mcq_my_quizzes' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-history me-2"></i>
+                            View My Quizzes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+}
+
+.score-number {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.score-number.correct {
+    color: #28a745;
+}
+
+.score-number.wrong {
+    color: #dc3545;
+}
+
+.score-number.total {
+    color: #6c757d;
+}
+
+.score-box {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.score-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.question-number {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.correct-answer {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    border-radius: 5px;
+    color: #155724;
+}
+
+.user-answer {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    color: #721c24;
+}
+
+.question-result {
+    transition: all 0.3s ease;
+}
+
+.question-result:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.performance-message .alert {
+    border-radius: 10px;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+}
+</style>
+{% endblock %}

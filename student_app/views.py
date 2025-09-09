@@ -22,12 +22,13 @@ import math
 from .models import (
     Subject, Notice, Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, 
     Faculty, UserProfile, ContactMessage, ContributorRequest,
-    DownloadLog, ViewLog
+    DownloadLog, ViewLog, MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession
 )
 from .forms import (
     ContributeResourceForm, ContributorRequestForm, EnhancedContactForm,
     UserRegistrationForm, UserProfileForm, AdminResponseForm,
-    ResourceFilterForm, AdvancedSearchForm
+    ResourceFilterForm, AdvancedSearchForm, MCQQuestionForm, MCQOptionForm,
+    MCQQuizForm, FacultySelectionForm, SubjectSelectionForm
 )
 
 def invalidate_user_recommendations_cache(user_id):
@@ -1409,6 +1410,14 @@ def admin_dashboard(request):
     # Contact messages
     recent_contacts = ContactMessage.objects.filter(status='pending').order_by('-submitted_at')[:10]
     
+    # MCQ Statistics
+    total_mcq_questions = MCQQuestion.objects.count()
+    published_mcq_questions = MCQQuestion.objects.filter(published=True).count()
+    total_mcq_quizzes = MCQQuizSession.objects.count()
+    
+    # Recent MCQ Questions
+    recent_mcq_questions = MCQQuestion.objects.select_related('subject', 'created_by', 'subject__faculty').order_by('-created_at')[:10]
+    
     context = {
         'total_users': total_users,
         'total_subjects': total_subjects,
@@ -1423,6 +1432,10 @@ def admin_dashboard(request):
         'pending_approvals': pending_approvals,
         'contributor_requests': contributor_requests,
         'recent_contacts': recent_contacts,
+        'total_mcq_questions': total_mcq_questions,
+        'published_mcq_questions': published_mcq_questions,
+        'total_mcq_quizzes': total_mcq_quizzes,
+        'recent_mcq_questions': recent_mcq_questions,
         'resource_breakdown': {
             'syllabi': {'total': total_syllabi, 'pending': pending_syllabi, 'approved': approved_syllabi},
             'notes': {'total': total_notes, 'pending': pending_notes, 'approved': approved_notes},
@@ -3080,3 +3093,429 @@ def subject_questions_redirect(request, subject_id):
             return redirect('subject_detail', subject_id=subject_id)
     except Exception:
         return redirect('subject_detail', subject_id=subject_id)
+
+
+# MCQ Views
+def mcq_faculty_selection(request):
+    """MCQ Faculty Selection Page"""
+    if not request.user.is_authenticated:
+        messages.warning(request, 'Please login to access MCQ quizzes.')
+        return redirect('login')
+    
+    form = FacultySelectionForm()
+    
+    if request.method == 'POST':
+        form = FacultySelectionForm(request.POST)
+        if form.is_valid():
+            faculty = form.cleaned_data['faculty']
+            return redirect('mcq_subject_selection', faculty_id=faculty.id)
+    
+    context = {
+        'form': form,
+        'title': 'Select Faculty - MCQ Quiz'
+    }
+    return render(request, 'mcq/faculty_selection.html', context)
+
+
+def mcq_subject_selection(request, faculty_id):
+    """MCQ Subject Selection Page"""
+    if not request.user.is_authenticated:
+        messages.warning(request, 'Please login to access MCQ quizzes.')
+        return redirect('login')
+    
+    faculty = get_object_or_404(Faculty, id=faculty_id, is_active=True)
+    form = SubjectSelectionForm(faculty)
+    
+    if request.method == 'POST':
+        form = SubjectSelectionForm(faculty, request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            return redirect('mcq_quiz', subject_id=subject.id)
+    
+    context = {
+        'form': form,
+        'faculty': faculty,
+        'title': f'Select Subject - {faculty.name}'
+    }
+    return render(request, 'mcq/subject_selection.html', context)
+
+
+@login_required
+def mcq_quiz(request, subject_id):
+    """MCQ Quiz Page"""
+    subject = get_object_or_404(Subject, id=subject_id, is_active=True)
+    questions = MCQQuestion.objects.filter(
+        subject=subject, 
+        published=True
+    ).prefetch_related('options')
+    
+    if not questions.exists():
+        messages.warning(request, f'No published MCQ questions available for {subject.name}.')
+        return redirect('mcq_faculty_selection')
+    
+    # Check if user has already taken this quiz
+    existing_session = MCQQuizSession.objects.filter(
+        user=request.user, 
+        subject=subject,
+        completed_at__isnull=False
+    ).first()
+    
+    if existing_session:
+        messages.info(request, 'You have already completed this quiz.')
+        return redirect('mcq_result', session_id=existing_session.id)
+    
+    # Check if this is a retake request (session_id in URL)
+    session_id = request.GET.get('session_id')
+    if session_id:
+        try:
+            retake_session = MCQQuizSession.objects.get(
+                id=session_id, 
+                user=request.user,
+                subject=subject,
+                completed_at__isnull=True  # Only allow retake of reset sessions
+            )
+            # Use the existing session for retake
+            quiz_session = retake_session
+        except MCQQuizSession.DoesNotExist:
+            # Create new session if retake session not found
+            quiz_session = None
+    else:
+        quiz_session = None
+    
+    form = MCQQuizForm(questions)
+    
+    if request.method == 'POST':
+        form = MCQQuizForm(questions, request.POST)
+        if form.is_valid():
+            # Create quiz session if not already exists (for retake)
+            if not quiz_session:
+                quiz_session = MCQQuizSession.objects.create(
+                    user=request.user,
+                    subject=subject
+                )
+                quiz_session.questions.set(questions)
+            
+            # Save answers
+            form.save_answers(request.user, questions)
+            
+            # Calculate score
+            quiz_session.calculate_score()
+            
+            messages.success(request, 'Quiz submitted successfully!')
+            return redirect('mcq_result', session_id=quiz_session.id)
+    
+    context = {
+        'form': form,
+        'subject': subject,
+        'questions': questions,
+        'title': f'MCQ Quiz - {subject.name}'
+    }
+    return render(request, 'mcq/quiz.html', context)
+
+
+@login_required
+def mcq_result(request, session_id):
+    """MCQ Result Page"""
+    session = get_object_or_404(MCQQuizSession, id=session_id, user=request.user)
+    
+    # Get user answers for this session
+    user_answers = MCQUserAnswer.objects.filter(
+        user=request.user,
+        question__in=session.questions.all()
+    ).select_related('question', 'selected_option')
+    
+    # Create a dictionary for easy lookup
+    answers_dict = {answer.question.id: answer for answer in user_answers}
+    
+    # Get all questions with their correct options
+    questions_with_answers = []
+    for question in session.questions.all():
+        correct_option = question.options.filter(is_correct=True).first()
+        user_answer = answers_dict.get(question.id)
+        
+        questions_with_answers.append({
+            'question': question,
+            'correct_option': correct_option,
+            'user_answer': user_answer,
+            'is_correct': user_answer.is_correct if user_answer else False
+        })
+    
+    context = {
+        'session': session,
+        'questions_with_answers': questions_with_answers,
+        'title': f'Quiz Result - {session.subject.name}'
+    }
+    return render(request, 'mcq/result.html', context)
+
+
+@login_required
+def mcq_my_quizzes(request):
+    """User's Quiz History"""
+    sessions = MCQQuizSession.objects.filter(
+        user=request.user,
+        completed_at__isnull=False
+    ).order_by('-completed_at')
+    
+    context = {
+        'sessions': sessions,
+        'title': 'My Quiz History'
+    }
+    return render(request, 'mcq/my_quizzes.html', context)
+
+
+# Admin Views for MCQ
+@login_required
+def mcq_admin_dashboard(request):
+    """Admin MCQ Dashboard"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    # Get statistics
+    total_questions = MCQQuestion.objects.count()
+    published_questions = MCQQuestion.objects.filter(published=True).count()
+    total_quizzes = MCQQuizSession.objects.count()
+    total_faculties = Faculty.objects.filter(is_active=True).count()
+    
+    # Get recent questions
+    recent_questions = MCQQuestion.objects.select_related('subject', 'created_by').order_by('-created_at')[:10]
+    
+    context = {
+        'total_questions': total_questions,
+        'published_questions': published_questions,
+        'total_quizzes': total_quizzes,
+        'total_faculties': total_faculties,
+        'recent_questions': recent_questions,
+        'title': 'MCQ Admin Dashboard'
+    }
+    return render(request, 'mcq/admin/dashboard.html', context)
+
+
+@login_required
+def mcq_admin_add_question(request):
+    """Admin Add Question Page"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        form = MCQQuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.created_by = request.user
+            question.save()
+            messages.success(request, 'Question created successfully! Now add options.')
+            return redirect('mcq_admin_add_options', question_id=question.id)
+    else:
+        form = MCQQuestionForm()
+    
+    context = {
+        'form': form,
+        'title': 'Add MCQ Question'
+    }
+    return render(request, 'mcq/admin/add_question.html', context)
+
+
+@login_required
+def mcq_admin_add_options(request, question_id):
+    """Admin Add Options Page"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    question = get_object_or_404(MCQQuestion, id=question_id, created_by=request.user)
+    options = question.options.all()
+    
+    if request.method == 'POST':
+        form = MCQOptionForm(request.POST, question=question)
+        if form.is_valid():
+            option = form.save(commit=False)
+            option.question = question
+            option.save()
+            messages.success(request, 'Option added successfully!')
+            return redirect('mcq_admin_add_options', question_id=question.id)
+    else:
+        form = MCQOptionForm(question=question)
+    
+    context = {
+        'form': form,
+        'question': question,
+        'options': options,
+        'title': f'Add Options - {question.question_text[:50]}...'
+    }
+    return render(request, 'mcq/admin/add_options.html', context)
+
+
+@login_required
+def mcq_admin_question_list(request):
+    """Admin Question List"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    questions = MCQQuestion.objects.select_related('subject', 'created_by').order_by('-created_at')
+    
+    # Filter by faculty if provided
+    faculty_id = request.GET.get('faculty')
+    if faculty_id:
+        questions = questions.filter(subject__faculty_id=faculty_id)
+    
+    # Filter by subject if provided
+    subject_id = request.GET.get('subject')
+    if subject_id:
+        questions = questions.filter(subject_id=subject_id)
+    
+    # Filter by published status
+    published = request.GET.get('published')
+    if published == 'true':
+        questions = questions.filter(published=True)
+    elif published == 'false':
+        questions = questions.filter(published=False)
+    
+    paginator = Paginator(questions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    faculties = Faculty.objects.filter(is_active=True)
+    subjects = Subject.objects.filter(is_active=True) if not faculty_id else Subject.objects.filter(faculty_id=faculty_id, is_active=True)
+    
+    context = {
+        'page_obj': page_obj,
+        'faculties': faculties,
+        'subjects': subjects,
+        'selected_faculty': faculty_id,
+        'selected_subject': subject_id,
+        'selected_published': published,
+        'title': 'MCQ Questions Management'
+    }
+    return render(request, 'mcq/admin/question_list.html', context)
+
+
+@login_required
+def mcq_admin_toggle_publish(request, question_id):
+    """Toggle question published status"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    question = get_object_or_404(MCQQuestion, id=question_id, created_by=request.user)
+    
+    if question.published:
+        question.published = False
+        messages.success(request, 'Question unpublished successfully!')
+    else:
+        # Check if question has valid options before publishing
+        if question.options.count() < 2:
+            messages.error(request, 'Question must have at least 2 options to be published.')
+        elif question.options.filter(is_correct=True).count() != 1:
+            messages.error(request, 'Question must have exactly one correct option to be published.')
+        else:
+            question.published = True
+            messages.success(request, 'Question published successfully!')
+    
+    question.save()
+    return redirect('mcq_admin_question_list')
+
+
+@login_required
+def mcq_admin_delete_question(request, question_id):
+    """Delete question"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    question = get_object_or_404(MCQQuestion, id=question_id, created_by=request.user)
+    question.delete()
+    messages.success(request, 'Question deleted successfully!')
+    return redirect('mcq_admin_question_list')
+
+
+def mcq_admin_get_subjects(request):
+    """AJAX endpoint to get subjects for a faculty"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    faculty_id = request.GET.get('faculty_id')
+    
+    if not faculty_id:
+        return JsonResponse({'subjects': [], 'error': 'Faculty ID is required'})
+    
+    try:
+        # Validate faculty_id is a number
+        faculty_id = int(faculty_id)
+        
+        # Check if faculty exists and is active
+        faculty = Faculty.objects.filter(id=faculty_id, is_active=True).first()
+        if not faculty:
+            return JsonResponse({
+                'subjects': [], 
+                'error': 'Faculty not found or inactive'
+            })
+        
+        # Get subjects for this faculty
+        subjects = Subject.objects.filter(
+            faculty_id=faculty_id, 
+            is_active=True
+        ).order_by('name').values('id', 'name')
+        
+        subjects_list = list(subjects)
+        
+        return JsonResponse({
+            'subjects': subjects_list,
+            'faculty_name': faculty.name,
+            'count': len(subjects_list)
+        })
+        
+    except ValueError:
+        return JsonResponse({
+            'subjects': [], 
+            'error': 'Invalid faculty ID format'
+        })
+    except Exception as e:
+        print(f"Error in mcq_admin_get_subjects: {e}")  # Debug logging
+        return JsonResponse({
+            'subjects': [], 
+            'error': 'Internal server error'
+        })
+
+
+@login_required
+def mcq_admin_delete_option(request, option_id):
+    """Delete option"""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+    
+    option = get_object_or_404(MCQOption, id=option_id, question__created_by=request.user)
+    question_id = option.question.id
+    option.delete()
+    messages.success(request, 'Option deleted successfully!')
+    return redirect('mcq_admin_add_options', question_id=question_id)
+
+
+@login_required
+def mcq_retake_quiz(request, session_id):
+    """Retake a completed quiz"""
+    session = get_object_or_404(MCQQuizSession, id=session_id, user=request.user)
+    
+    # Check if session is completed
+    if not session.completed_at:
+        messages.error(request, 'This quiz is not completed yet.')
+        return redirect('mcq_quiz', subject_id=session.subject.id)
+    
+    # Delete existing user answers for this session
+    MCQUserAnswer.objects.filter(
+        user=request.user,
+        question__in=session.questions.all()
+    ).delete()
+    
+    # Reset session
+    session.completed_at = None
+    session.correct_answers = 0
+    session.score_percentage = 0.0
+    session.save()
+    
+    messages.success(request, 'Quiz reset successfully! You can now retake the quiz.')
+    from django.http import HttpResponseRedirect
+    from django.urls import reverse
+    return HttpResponseRedirect(reverse('mcq_quiz', args=[session.subject.id]) + f'?session_id={session_id}')

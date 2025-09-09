@@ -8,6 +8,7 @@ from django.core.validators import FileExtensionValidator
 from taggit.managers import TaggableManager
 from django.db.models import Count, Q
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class Faculty(models.Model):
@@ -634,6 +635,136 @@ class ArticleLike(models.Model):
     
     def __str__(self):
         return f"{self.user.username} likes {self.article.title}"
+
+
+# MCQ Models
+class MCQQuestion(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='mcq_questions')
+    question_text = models.TextField(help_text="Enter the question text")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_mcq_questions')
+    published = models.BooleanField(default=False, help_text="Only published questions are visible to students")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'MCQ Question'
+        verbose_name_plural = 'MCQ Questions'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.subject.name} - {self.question_text[:50]}..."
+    
+    @property
+    def is_valid(self):
+        """Check if question has valid options for publishing"""
+        if not self.pk:
+            return False  # Can't validate if not saved yet
+        
+        options_count = self.options.count()
+        correct_options_count = self.options.filter(is_correct=True).count()
+        return options_count >= 2 and correct_options_count == 1
+    
+    def clean(self):
+        super().clean()
+        if self.published and self.pk:
+            # Only validate if question is already saved (has primary key)
+            # Check if question has at least 2 options
+            if self.options.count() < 2:
+                raise ValidationError("A published question must have at least 2 options.")
+            
+            # Check if exactly one option is marked as correct
+            correct_options = self.options.filter(is_correct=True).count()
+            if correct_options != 1:
+                raise ValidationError("A published question must have exactly one correct option.")
+
+
+class MCQOption(models.Model):
+    question = models.ForeignKey(MCQQuestion, on_delete=models.CASCADE, related_name='options')
+    option_text = models.CharField(max_length=500, help_text="Enter the option text")
+    is_correct = models.BooleanField(default=False, help_text="Mark this option as correct")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'MCQ Option'
+        verbose_name_plural = 'MCQ Options'
+        ordering = ['id']
+    
+    def __str__(self):
+        return f"{self.question.question_text[:30]}... - {self.option_text[:30]}..."
+    
+    def clean(self):
+        super().clean()
+        if self.is_correct and self.question_id:
+            # Check if there's already a correct option for this question
+            existing_correct = MCQOption.objects.filter(
+                question_id=self.question_id, 
+                is_correct=True
+            ).exclude(id=self.id)
+            if existing_correct.exists():
+                raise ValidationError("Only one option can be marked as correct per question.")
+
+
+class MCQUserAnswer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mcq_answers')
+    question = models.ForeignKey(MCQQuestion, on_delete=models.CASCADE, related_name='user_answers')
+    selected_option = models.ForeignKey(MCQOption, on_delete=models.CASCADE, related_name='user_selections', null=True, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    is_correct = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'MCQ User Answer'
+        verbose_name_plural = 'MCQ User Answers'
+        unique_together = ['user', 'question']  # One answer per user per question
+        ordering = ['-submitted_at']
+    
+    def __str__(self):
+        option_text = self.selected_option.option_text[:30] if self.selected_option else "No Answer"
+        return f"{self.user.username} - {self.question.question_text[:30]}... - {option_text}..."
+    
+    def save(self, *args, **kwargs):
+        # Automatically set is_correct based on selected option
+        if self.selected_option:
+            self.is_correct = self.selected_option.is_correct
+        else:
+            self.is_correct = False  # Unanswered questions are marked as incorrect
+        super().save(*args, **kwargs)
+
+
+class MCQQuizSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mcq_sessions')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='mcq_sessions')
+    questions = models.ManyToManyField(MCQQuestion, related_name='quiz_sessions')
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    total_questions = models.PositiveIntegerField(default=0)
+    correct_answers = models.PositiveIntegerField(default=0)
+    score_percentage = models.FloatField(default=0.0)
+    
+    class Meta:
+        verbose_name = 'MCQ Quiz Session'
+        verbose_name_plural = 'MCQ Quiz Sessions'
+        ordering = ['-started_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.subject.name} - {self.started_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def calculate_score(self):
+        """Calculate and update the quiz score"""
+        total_questions = self.questions.count()
+        if total_questions == 0:
+            return
+        
+        correct_answers = MCQUserAnswer.objects.filter(
+            user=self.user,
+            question__in=self.questions.all(),
+            is_correct=True
+        ).count()
+        
+        self.total_questions = total_questions
+        self.correct_answers = correct_answers
+        self.score_percentage = (correct_answers / total_questions) * 100
+        self.completed_at = timezone.now()
+        self.save()
 
 
 # NOTE: After these changes, run 'python manage.py makemigrations student_app' and 'python manage.py migrate' to apply the new models and fields.

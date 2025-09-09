@@ -120,5 +120,23 @@ urlpatterns = [
     path('admin-faculty-levels/<str:faculty_slug>/', views.admin_faculty_levels, name='admin_faculty_levels'),
     path('admin-faculty-subjects/<str:faculty_slug>/<int:level>/', views.admin_faculty_subjects, name='admin_faculty_subjects'),
     path('admin-subject-resources/<int:subject_id>/', views.admin_subject_resources_management, name='admin_subject_resources_management'),
+    
+    # MCQ URLs
+    path('mcq/', views.mcq_faculty_selection, name='mcq_faculty_selection'),
+    path('mcq/faculty/<int:faculty_id>/', views.mcq_subject_selection, name='mcq_subject_selection'),
+    path('mcq/quiz/<int:subject_id>/', views.mcq_quiz, name='mcq_quiz'),
+    path('mcq/result/<int:session_id>/', views.mcq_result, name='mcq_result'),
+    path('mcq/retake/<int:session_id>/', views.mcq_retake_quiz, name='mcq_retake_quiz'),
+    path('mcq/my-quizzes/', views.mcq_my_quizzes, name='mcq_my_quizzes'),
+    
+    # MCQ Admin URLs
+    path('mcq/admin/', views.mcq_admin_dashboard, name='mcq_admin_dashboard'),
+    path('mcq/admin/add-question/', views.mcq_admin_add_question, name='mcq_admin_add_question'),
+    path('mcq/admin/add-options/<int:question_id>/', views.mcq_admin_add_options, name='mcq_admin_add_options'),
+    path('mcq/admin/questions/', views.mcq_admin_question_list, name='mcq_admin_question_list'),
+    path('mcq/admin/toggle-publish/<int:question_id>/', views.mcq_admin_toggle_publish, name='mcq_admin_toggle_publish'),
+    path('mcq/admin/delete-question/<int:question_id>/', views.mcq_admin_delete_question, name='mcq_admin_delete_question'),
+    path('mcq/admin/delete-option/<int:option_id>/', views.mcq_admin_delete_option, name='mcq_admin_delete_option'),
+    path('mcq/admin/get-subjects/', views.mcq_admin_get_subjects, name='mcq_admin_get_subjects'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

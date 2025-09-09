@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-info text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        MCQ Quiz - {{ subject.name }}
+                    </h2>
+                    <p class="mb-0 mt-2">Answer all questions and submit your quiz</p>
+                </div>
+                <div class="card-body p-5">
+                    <div class="quiz-info mb-4">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <i class="fas fa-list-ol text-primary mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Total Questions</h6>
+                                    <span class="badge bg-primary fs-6">{{ questions.count }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <i class="fas fa-clock text-warning mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Time Limit</h6>
+                                    <select class="form-select form-select-sm mt-2" id="timeLimitSelect">
+                                        <option value="0">No Limit</option>
+                                        <option value="5">5 minutes</option>
+                                        <option value="10">10 minutes</option>
+                                        <option value="15">15 minutes</option>
+                                        <option value="30">30 minutes</option>
+                                        <option value="60">1 hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <i class="fas fa-stopwatch text-danger mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Time Remaining</h6>
+                                    <span class="badge bg-danger fs-6" id="timeRemaining">--:--</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <i class="fas fa-check-circle text-success mb-2" style="font-size: 2rem;"></i>
+                                    <h6>Passing Score</h6>
+                                    <span class="badge bg-success fs-6">50%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" id="quizForm">
+                        {% csrf_token %}
+                        <div class="quiz-questions">
+                            {% for question in questions %}
+                            <div class="question-card mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">
+                                            <span class="question-number">{{ forloop.counter }}.</span>
+                                            {{ question.question_text }}
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="options">
+                                            {% for option in question.options.all %}
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="question_{{ question.id }}" 
+                                                       value="{{ option.id }}" 
+                                                       id="option_{{ option.id }}">
+                                                <label class="form-check-label" for="option_{{ option.id }}">
+                                                    <span class="option-letter">{{ forloop.counter|add:"0"|add:"A"|slice:"-1" }}.</span>
+                                                    {{ option.option_text }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Submit Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.question-card {
+    transition: all 0.3s ease;
+}
+
+.question-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.question-number {
+    background: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.option-letter {
+    background: #f8f9fa;
+    color: #495057;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-right: 10px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.info-box {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.form-check-label {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.form-check-label:hover {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+#submitBtn {
+    position: relative;
+    overflow: hidden;
+}
+
+#submitBtn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+#submitBtn:hover:before {
+    left: 100%;
+}
+
+/* Disabled time limit select styling */
+#timeLimitSelect.disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#timeLimitSelect:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quizForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const timeLimitSelect = document.getElementById('timeLimitSelect');
+    const timeRemaining = document.getElementById('timeRemaining');
+    
+    let timeLimit = 0; // in minutes
+    let timeLeft = 0; // in seconds
+    let timer = null;
+    let isTimerActive = false;
+    
+    // Reset button to normal state on page load
+    function resetButton() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Quiz';
+        submitBtn.classList.remove('btn-secondary');
+        submitBtn.classList.add('btn-success');
+    }
+    
+    // Function to show processing state
+    function showProcessing() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        submitBtn.classList.add('btn-secondary');
+        submitBtn.classList.remove('btn-success');
+    }
+    
+    // Function to reset time limit select
+    function resetTimeLimitSelect() {
+        timeLimitSelect.disabled = false;
+        timeLimitSelect.classList.remove('disabled');
+        timeLimitSelect.value = '0';
+        timeRemaining.textContent = '--:--';
+        timeRemaining.classList.remove('bg-warning', 'bg-danger');
+        timeRemaining.classList.add('bg-danger');
+    }
+    
+    // Function to format time as MM:SS
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Function to start timer
+    function startTimer() {
+        if (timeLimit <= 0) {
+            timeRemaining.textContent = 'No Limit';
+            return;
+        }
+        
+        timeLeft = timeLimit * 60; // Convert minutes to seconds
+        isTimerActive = true;
+        timeRemaining.textContent = formatTime(timeLeft);
+        
+        timer = setInterval(() => {
+            timeLeft--;
+            timeRemaining.textContent = formatTime(timeLeft);
+            
+            // Change color when time is running low
+            if (timeLeft <= 60) { // Last minute
+                timeRemaining.classList.remove('bg-danger');
+                timeRemaining.classList.add('bg-warning');
+            }
+            if (timeLeft <= 30) { // Last 30 seconds
+                timeRemaining.classList.remove('bg-warning');
+                timeRemaining.classList.add('bg-danger');
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                isTimerActive = false;
+                // Auto submit form
+                alert('Time is up! Your quiz will be submitted automatically.');
+                showProcessing();
+                // Force submit by creating a new form and submitting it
+                setTimeout(() => {
+                    // Create a new form for auto submit
+                    const autoSubmitForm = document.createElement('form');
+                    autoSubmitForm.method = 'POST';
+                    autoSubmitForm.action = form.action;
+                    
+                    // Copy all form data
+                    const formData = new FormData(form);
+                    for (let [key, value] of formData.entries()) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        autoSubmitForm.appendChild(input);
+                    }
+                    
+                    // Add CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken.value;
+                        autoSubmitForm.appendChild(csrfInput);
+                    }
+                    
+                    // Submit the new form
+                    document.body.appendChild(autoSubmitForm);
+                    autoSubmitForm.submit();
+                }, 100);
+            }
+        }, 1000);
+    }
+    
+    // Function to stop timer
+    function stopTimer() {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+        isTimerActive = false;
+    }
+    
+    // Handle time limit selection change
+    timeLimitSelect.addEventListener('change', function() {
+        timeLimit = parseInt(this.value);
+        stopTimer();
+        
+        if (timeLimit > 0) {
+            startTimer();
+            // Disable the select after user chooses a time limit
+            this.disabled = true;
+            this.classList.add('disabled');
+        } else {
+            timeRemaining.textContent = 'No Limit';
+            timeRemaining.classList.remove('bg-warning', 'bg-danger');
+            timeRemaining.classList.add('bg-danger');
+        }
+    });
+    
+    // Ensure button starts in normal state
+    resetButton();
+    // Ensure time limit select starts in normal state
+    resetTimeLimitSelect();
+    
+    // Add confirmation before submit
+    form.addEventListener('submit', function(e) {
+        // Check if this is auto submit from timer (no user interaction)
+        if (!e.isTrusted) {
+            // This is auto submit from timer, don't prevent default
+            return;
+        }
+        
+        e.preventDefault(); // Always prevent default first
+        
+        // Stop timer when submitting
+        stopTimer();
+        // Reset time limit select when submitting
+        resetTimeLimitSelect();
+        
+        const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+        const totalQuestions = {{ questions.count }};
+        
+        if (answeredQuestions < totalQuestions) {
+            const unanswered = totalQuestions - answeredQuestions;
+            const confirmed = confirm(`You have ${unanswered} unanswered question(s). Are you sure you want to submit?`);
+            if (confirmed) {
+                showProcessing();
+                // Use setTimeout to ensure button state is updated before form submit
+                setTimeout(() => {
+                    form.submit();
+                }, 100);
+            } else {
+                // User cancelled - ensure button is reset and restart timer
+                resetButton();
+                if (timeLimit > 0) {
+                    startTimer();
+                }
+            }
+        } else {
+            const confirmed = confirm('Are you sure you want to submit your quiz?');
+            if (confirmed) {
+                showProcessing();
+                // Use setTimeout to ensure button state is updated before form submit
+                setTimeout(() => {
+                    form.submit();
+                }, 100);
+            } else {
+                // User cancelled - ensure button is reset and restart timer
+                resetButton();
+                if (timeLimit > 0) {
+                    startTimer();
+                }
+            }
+        }
+    });
+    
+    // Reset button on any radio button change (in case user changes answers)
+    const radioInputs = document.querySelectorAll('input[type="radio"]');
+    radioInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const questionCard = this.closest('.question-card');
+            questionCard.style.borderLeft = '4px solid #28a745';
+            // Reset button when user changes answers
+            resetButton();
+        });
+    });
+    
+    // Reset button on page focus (in case user navigates back)
+    window.addEventListener('focus', function() {
+        resetButton();
+    });
+    
+    // Reset button on page load
+    window.addEventListener('load', function() {
+        resetButton();
+    });
+    
+    // Force reset button every 2 seconds to prevent stuck state
+    setInterval(function() {
+        if (submitBtn.innerHTML.includes('Processing...') && !submitBtn.disabled) {
+            resetButton();
+        }
+    }, 2000);
+    
+    // Stop timer when page is unloaded
+    window.addEventListener('beforeunload', function() {
+        stopTimer();
+    });
+    
+    // Stop timer when page loses focus (optional)
+    window.addEventListener('blur', function() {
+        // Don't stop timer on blur, just pause visual updates
+    });
+    
+    // Resume timer when page gains focus
+    window.addEventListener('focus', function() {
+        if (timeLimit > 0 && !isTimerActive) {
+            startTimer();
+        }
+    });
+});
+</script>
+{% endblock %}

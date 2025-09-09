@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-list me-2"></i>
+                    MCQ Questions Management
+                </h2>
+                <a href="{% url 'mcq_admin_add_question' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Add New Question
+                </a>
+            </div>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="faculty" class="form-label">Filter by Faculty</label>
+                            <select name="faculty" id="faculty" class="form-select">
+                                <option value="">All Faculties</option>
+                                {% for faculty in faculties %}
+                                    <option value="{{ faculty.id }}" {% if selected_faculty == faculty.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ faculty.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="subject" class="form-label">Filter by Subject</label>
+                            <select name="subject" id="subject" class="form-select">
+                                <option value="">All Subjects</option>
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ subject.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="published" class="form-label">Filter by Status</label>
+                            <select name="published" id="published" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="true" {% if selected_published == "true" %}selected{% endif %}>Published</option>
+                                <option value="false" {% if selected_published == "false" %}selected{% endif %}>Draft</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-filter me-1"></i>
+                                Filter
+                            </button>
+                            <a href="{% url 'mcq_admin_question_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>
+                                Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Questions List -->
+            <div class="card">
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Subject</th>
+                                        <th>Faculty</th>
+                                        <th>Created By</th>
+                                        <th>Status</th>
+                                        <th>Options</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for question in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <div class="question-preview">
+                                                <strong>{{ question.question_text|truncatechars:80 }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ question.subject.name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                {{ question.subject.faculty.name }}
+                                            </span>
+                                        </td>
+                                        <td>{{ question.created_by.get_full_name|default:question.created_by.username }}</td>
+                                        <td>
+                                            {% if question.published %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>
+                                                    Published
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-edit me-1"></i>
+                                                    Draft
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                {{ question.options.count }} options
+                                            </span>
+                                            {% if question.is_valid %}
+                                                <span class="badge bg-success ms-1">
+                                                    <i class="fas fa-check me-1"></i>
+                                                    Valid
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger ms-1">
+                                                    <i class="fas fa-times me-1"></i>
+                                                    Invalid
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ question.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'mcq_admin_add_options' question.id %}" 
+                                                   class="btn btn-outline-primary" title="Manage Options">
+                                                    <i class="fas fa-list"></i>
+                                                </a>
+                                                <a href="{% url 'mcq_admin_toggle_publish' question.id %}" 
+                                                   class="btn btn-outline-{% if question.published %}warning{% else %}success{% endif %}" 
+                                                   title="{% if question.published %}Unpublish{% else %}Publish{% endif %}"
+                                                   onclick="return confirm('Are you sure you want to {% if question.published %}unpublish{% else %}publish{% endif %} this question?')">
+                                                    <i class="fas fa-{% if question.published %}eye-slash{% else %}eye{% endif %}"></i>
+                                                </a>
+                                                <a href="{% url 'mcq_admin_delete_question' question.id %}" 
+                                                   class="btn btn-outline-danger" 
+                                                   title="Delete"
+                                                   onclick="return confirm('Are you sure you want to delete this question? This action cannot be undone.')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Questions pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if selected_faculty %}&faculty={{ selected_faculty }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_published %}&published={{ selected_published }}{% endif %}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_faculty %}&faculty={{ selected_faculty }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_published %}&published={{ selected_published }}{% endif %}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_faculty %}&faculty={{ selected_faculty }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_published %}&published={{ selected_published }}{% endif %}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_faculty %}&faculty={{ selected_faculty }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_published %}&published={{ selected_published }}{% endif %}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-question-circle text-muted mb-3" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted">No Questions Found</h4>
+                            <p class="text-muted">
+                                {% if selected_faculty or selected_subject or selected_published %}
+                                    No questions match your current filters. Try adjusting your search criteria.
+                                {% else %}
+                                    You haven't created any MCQ questions yet. Start by adding your first question.
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'mcq_admin_add_question' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>
+                                Add First Question
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.question-preview {
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.btn-group .btn {
+    border-radius: 5px;
+    margin-right: 2px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background: #f8f9fa;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.form-select, .form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+</style>
+
+<script>
+// Auto-submit form when faculty changes to update subjects
+document.getElementById('faculty').addEventListener('change', function() {
+    this.form.submit();
+});
+</script>
+{% endblock %}

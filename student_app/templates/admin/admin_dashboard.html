@@ -89,6 +89,39 @@
                 </div>
             </div>
         </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-danger text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_mcq_questions }}</h3>
+                    <p class="stat-label stat-label-white">MCQ Questions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-success text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ published_mcq_questions }}</h3>
+                    <p class="stat-label stat-label-white">Published MCQs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card bg-info text-white">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">{{ total_mcq_quizzes }}</h3>
+                    <p class="stat-label stat-label-white">Quizzes Taken</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Faculty-wise Resource Management Section -->
@@ -529,6 +562,107 @@
         </div>
     </div>
 
+    <!-- MCQ Management Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle text-danger me-2"></i>Recent MCQ Questions
+                        <a href="{% url 'mcq_admin_dashboard' %}" class="btn btn-sm btn-outline-primary float-end">
+                            <i class="fas fa-cog me-1"></i>Manage MCQs
+                        </a>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_mcq_questions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Subject</th>
+                                        <th>Faculty</th>
+                                        <th>Created By</th>
+                                        <th>Status</th>
+                                        <th>Options</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for question in recent_mcq_questions %}
+                                    <tr>
+                                        <td>
+                                            <div class="question-preview">
+                                                <strong>{{ question.question_text|truncatechars:60 }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ question.subject.name }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ question.subject.faculty.name }}</span>
+                                        </td>
+                                        <td>{{ question.created_by.get_full_name|default:question.created_by.username }}</td>
+                                        <td>
+                                            {% if question.published %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Published
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-edit me-1"></i>Draft
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ question.options.count }} options</span>
+                                            {% if question.is_valid %}
+                                                <span class="badge bg-success ms-1">
+                                                    <i class="fas fa-check me-1"></i>Valid
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger ms-1">
+                                                    <i class="fas fa-times me-1"></i>Invalid
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ question.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'mcq_admin_add_options' question.id %}" 
+                                                   class="btn btn-outline-primary" title="Manage Options">
+                                                    <i class="fas fa-list"></i>
+                                                </a>
+                                                <a href="{% url 'mcq_admin_toggle_publish' question.id %}" 
+                                                   class="btn btn-outline-{% if question.published %}warning{% else %}success{% endif %}" 
+                                                   title="{% if question.published %}Unpublish{% else %}Publish{% endif %}"
+                                                   onclick="return confirm('Are you sure you want to {% if question.published %}unpublish{% else %}publish{% endif %} this question?')">
+                                                    <i class="fas fa-{% if question.published %}eye-slash{% else %}eye{% endif %}"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No MCQ questions found</h6>
+                            <p class="text-muted mb-3">MCQ questions created by admins will appear here.</p>
+                            <a href="{% url 'mcq_admin_add_question' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add First MCQ Question
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Activity & Pending Items -->
     <div class="row g-4">
         <!-- Recent Uploads -->
@@ -703,6 +837,11 @@
                         <div class="col-md-6">
                             <a href="{% url 'admin_manage_contacts' %}" class="btn btn-outline-teal w-100">
                                 <i class="fas fa-envelope me-2"></i>Manage Contacts
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'mcq_admin_dashboard' %}" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-question-circle me-2"></i>MCQ Management
                             </a>
                         </div>
                         <div class="col-12">
