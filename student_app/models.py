@@ -221,6 +221,41 @@ class QuestionBank(models.Model):
         self.save(update_fields=['view_count', 'last_viewed'])
 
 
+class QuestionBankSolution(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='question_bank_solutions')
+    title = models.CharField(max_length=200)
+    file = models.FileField(
+        upload_to='question_bank_solutions/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt'])]
+    )
+    description = models.TextField(blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='question_bank_solutions')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = TaggableManager(blank=True)
+    download_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateTimeField(null=True, blank=True, help_text="Last time this resource was viewed")
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.title}"
+
+    def increment_download(self):
+        self.download_count += 1
+        self.save(update_fields=['download_count'])
+
+    def increment_view(self):
+        self.view_count += 1
+        self.last_viewed = timezone.now()
+        self.save(update_fields=['view_count', 'last_viewed'])
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Question Bank Solution'
+        verbose_name_plural = 'Question Bank Solutions'
+
+
 class Note(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='notes')
     title = models.CharField(max_length=200)

@@ -7,9 +7,8 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import (
     Faculty, Subject, Notice, ContactMessage, RegisteredUser, 
-    Syllabus, QuestionBank, Note, Chapter, Viva, TextBook, Practical, Subscription, UserProfile,
-    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike,
-    MCQQuestion, MCQOption, MCQUserAnswer, MCQQuizSession
+    Syllabus, QuestionBank, QuestionBankSolution, Note, Chapter, Viva, TextBook, Practical, Subscription, UserProfile,
+    ContributorRequest, DownloadLog, ViewLog, Article, ArticleComment, ArticleLike
 )
 
 @admin.register(Faculty)
@@ -132,6 +131,16 @@ class SyllabusAdmin(ResourceAdmin):
 
 @admin.register(QuestionBank)
 class QuestionBankAdmin(ResourceAdmin):
+    list_display = ['title', 'subject', 'subject__faculty', 'subject__level', 'status', 'uploaded_by', 'created_at']
+    list_filter = ['status', 'subject__faculty', 'subject__level', 'created_at']
+    search_fields = ['title', 'description', 'subject__name', 'subject__faculty__name']
+    ordering = ['-created_at']
+    autocomplete_fields = ['subject', 'uploaded_by']
+    readonly_fields = ['download_count', 'view_count', 'created_at', 'updated_at']
+
+
+@admin.register(QuestionBankSolution)
+class QuestionBankSolutionAdmin(ResourceAdmin):
     list_display = ['title', 'subject', 'subject__faculty', 'subject__level', 'status', 'uploaded_by', 'created_at']
     list_filter = ['status', 'subject__faculty', 'subject__level', 'created_at']
     search_fields = ['title', 'description', 'subject__name', 'subject__faculty__name']
